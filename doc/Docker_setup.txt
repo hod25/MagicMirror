@@ -52,10 +52,10 @@ docker images -a --format "{{.Repository}}:{{.ID}}" | grep '<none>' | %{ $a=$_.S
 
 
 
-Image für pi mit Docker:
+Image für pi raspian
 https://www.raspberrypi.org/downloads/raspbian/
 
-user: pirate
+user: pi
 pwd: raspberry
 
 Mit LAN-Kabel verbinden und Zugriff per putty
@@ -130,12 +130,17 @@ sudo pip install docker-compose
 sudo apt-get -y xrdp 
 
 ########## Autostart im Host-Pi:
+
+sudo apt-get install -y unclutter 
+
 nano /home/pi/.config/lxsession/LXDE-pi/autostart
 
 #Screensaver aus
 @xset s noblank
 @xset s off
 @xset -dpms
+@unclutter -idle 0.1 -pi
+
 
 #wichtig für Display<->Docker:
 nano ~/.bashrc
@@ -149,3 +154,12 @@ sudo raspi-config: boot wait for network = on
 
 ##########################
 
+Ordner modules und config für mm übertragen
+
+###########git repo docker mm
+
+git clone https://github.com/khassel/docker-mm.git ~/docker-mm
+
+###########container holen
+
+docker pull karsten13/mm_hyp
