@@ -10,16 +10,26 @@ services:
       - ~/magic_mirror/config:/opt/magic_mirror/config
       - ~/magic_mirror/modules:/opt/magic_mirror/modules
       - /tmp/.X11-unix:/tmp/.X11-unix
-#1      - /opt/vc:/opt/vc/:ro
-#3    devices:
-#3      - /dev/vchiq
+      - /etc/localtime:/etc/localtime:ro
+      - /opt/vc:/opt/vc/:ro
+    devices:
+      - /dev/vchiq
     environment:
-#1      LD_LIBRARY_PATH: /opt/vc/lib
+      LD_LIBRARY_PATH: /opt/vc/lib
       DISPLAY: unix$DISPLAY
-#2    network_mode: host
+    network_mode: host
     entrypoint: /opt/magic_mirror/docker-entrypoint.sh "npm start"   
     restart: always
 
-#1  needed for module MMM-Systemtemperature
-#2  needed for module MMM-NetworkScanner
-#3  needed for #1 and #2
+#  needed for module MMM-Systemtemperature:
+#    volumes:
+#      - /opt/vc:/opt/vc/:ro
+#    environment:
+#      LD_LIBRARY_PATH: /opt/vc/lib
+
+#  needed for module MMM-NetworkScanner
+#    network_mode: host
+
+#  needed for module MMM-Systemtemperature and MMM-NetworkScanner
+#    devices:
+#      - /dev/vchiq
