@@ -12,6 +12,7 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix
       - /etc/localtime:/etc/localtime:ro
       - /opt/vc:/opt/vc/:ro
+      - /run/systemd:/run/systemd
     devices:
       - /dev/vchiq
     environment:
@@ -26,10 +27,14 @@ services:
 #      - /opt/vc:/opt/vc/:ro
 #    environment:
 #      LD_LIBRARY_PATH: /opt/vc/lib
-
+#
 #  needed for module MMM-NetworkScanner
 #    network_mode: host
-
+#
 #  needed for module MMM-Systemtemperature and MMM-NetworkScanner
 #    devices:
 #      - /dev/vchiq
+#
+#  needed for module MMM-Remote-Control
+#    volumes:
+#      - /run/systemd:/run/systemd

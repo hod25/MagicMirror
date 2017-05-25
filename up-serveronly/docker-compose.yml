@@ -9,6 +9,6 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ~/magic_mirror/config:/opt/magic_mirror/config
-      - ~/magic_mirror/modules:/opt/magic_mirror/modules
+      - ../../MagicMirror/config:/opt/magic_mirror/config
+      - ../../MagicMirror/modules:/opt/magic_mirror/modules
     entrypoint: /opt/magic_mirror/docker-entrypoint.sh "node serveronly"
