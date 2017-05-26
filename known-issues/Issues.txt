@@ -1,0 +1,6 @@
+1. 3rd party modules in general:
+--> include apt-get-dependencies in base Dockerfile?
+--> write documentaion in 3rd party repos or here?
+
+2. MMM-Remote-Control:
+--> restart mm and other things not working ...
