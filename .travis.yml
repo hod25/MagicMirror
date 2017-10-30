@@ -12,7 +12,8 @@ script:
 - docker-compose up -d
 # push image
 - >
-  if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+  if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_TAG" != "" ]; then
     docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
-    docker push karsten13/mm_hyp:latest
+    docker push karsten13/mm_hyp:$TRAVIS_TAG
+    docker tag karsten13/mm_hyp:$TRAVIS_TAG karsten13/mm_hyp:latest
   fi

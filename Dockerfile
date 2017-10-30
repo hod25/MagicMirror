@@ -1,6 +1,5 @@
 FROM hypriot/rpi-node:latest
 
-ENV NODE_ENV production
 EXPOSE 8080
 
 RUN apt-get update
@@ -12,8 +11,10 @@ RUN apt-get -qy install dos2unix libgtk2.0-0 libx11-xcb-dev libxtst6 libxss1 lib
 RUN apt-get -qy install nano arp-scan
 
 WORKDIR /opt/magic_mirror
+
+ARG MagicMirror_Version
 # getting MagicMirror from github
-RUN git clone --depth 1 -b master https://github.com/MichMich/MagicMirror.git .
+RUN git clone --depth 1 -b $MagicMirror_Version https://github.com/MichMich/MagicMirror.git .
 
 # install (without param the mirror remains black):
 RUN npm install --unsafe-perm
@@ -28,11 +29,3 @@ RUN cp -R config /opt/magic_mirror/unmount_config
 # copy startscript into container:
 COPY docker-entrypoint.sh /opt/magic_mirror
 RUN dos2unix docker-entrypoint.sh && chmod +x docker-entrypoint.sh
-
-# delete "core" on startup
-#COPY del_core.sh /etc/init.d/del_core.sh
-#RUN dos2unix /etc/init.d/del_core.sh
-#RUN chmod 755 /etc/init.d/del_core.sh
-#RUN update-rc.d del_core.sh defaults
-
-ENTRYPOINT ["/opt/magic_mirror/docker-entry-raspberry.sh"]

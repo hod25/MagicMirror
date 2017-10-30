@@ -1,9 +1,11 @@
-version: '2'
+version: '3'
 
 # for build only
 services:
   mm_serveronly:
     build: 
       context: ./
+      args: 
+        MagicMirror_Version: ${MagicMirror_Version}
     container_name: mm
-    image: karsten13/mm_hyp:latest
+    image: karsten13/mm_hyp:${MagicMirror_Version}
