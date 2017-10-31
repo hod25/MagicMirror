@@ -8,4 +8,4 @@ services:
       args: 
         MagicMirror_Version: ${MagicMirror_Version}
     container_name: mm
-    image: karsten13/mm_hyp:${MagicMirror_Version}
+    image: karsten13/mm_hyp:latest

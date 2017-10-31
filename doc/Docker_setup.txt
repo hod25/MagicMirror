@@ -124,7 +124,7 @@ curl https://bootstrap.pypa.io/get-pip.py | sudo python
 
 sudo pip install docker-compose
 
-
+--> Upgrade: sudo pip install docker-compose --upgrade
 
 ##########RemoteDesktopverbindung
 sudo apt-get -y xrdp 

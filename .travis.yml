@@ -7,13 +7,22 @@ script:
 - docker run --rm --privileged multiarch/qemu-user-static:register --reset
 # build image
 - docker-compose build
+- echo "TRAVIS_TAG="$TRAVIS_TAG;
+# push image
+- >
+  if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+
+    docker login -u="$DOCKER_USER" -p="$DOCKER_PASS";    
+    
+    if [ -z "$TRAVIS_TAG" ]; then
+      docker push karsten13/mm_hyp:latest;
+    else
+      docker push karsten13/mm_hyp:latest;
+      docker tag karsten13/mm_hyp:latest karsten13/mm_hyp:$TRAVIS_TAG;
+    fi
+  fi
+
 # test image
 - cd ./up-serveronly
 - docker-compose up -d
-# push image
-- >
-  if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_TAG" != "" ]; then
-    docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
-    docker push karsten13/mm_hyp:$TRAVIS_TAG
-    docker tag karsten13/mm_hyp:$TRAVIS_TAG karsten13/mm_hyp:latest
-  fi
+  

@@ -14,7 +14,7 @@ WORKDIR /opt/magic_mirror
 
 ARG MagicMirror_Version
 # getting MagicMirror from github
-RUN git clone --depth 1 -b $MagicMirror_Version https://github.com/MichMich/MagicMirror.git .
+RUN git clone --depth 1 -b $MagicMirror_Version --single-branch https://github.com/MichMich/MagicMirror.git .
 
 # install (without param the mirror remains black):
 RUN npm install --unsafe-perm
