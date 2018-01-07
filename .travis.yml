@@ -8,18 +8,17 @@ script:
 # build image
 - docker-compose build
 - echo "TRAVIS_TAG="$TRAVIS_TAG;
+- echo "TRAVIS_PULL_REQUEST="$TRAVIS_PULL_REQUEST;
+- echo "TRAVIS_BRANCH="$TRAVIS_BRANCH;
 # push image
 - >
-  if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-
+  if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "$TRAVIS_TAG" ]; then
+        
     docker login -u="$DOCKER_USER" -p="$DOCKER_PASS";    
-    
-    if [ -z "$TRAVIS_TAG" ]; then
-      docker push karsten13/mm_hyp:latest;
-    else
-      docker push karsten13/mm_hyp:latest;
-      docker tag karsten13/mm_hyp:latest karsten13/mm_hyp:$TRAVIS_TAG;
-    fi
+
+    docker push karsten13/mm_hyp:latest;
+    docker tag karsten13/mm_hyp:latest karsten13/mm_hyp:$TRAVIS_TAG;
+    docker push karsten13/mm_hyp:$TRAVIS_TAG;
   fi
 
 # test image
