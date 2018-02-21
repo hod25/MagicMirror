@@ -1,0 +1,13 @@
+version: '3'
+
+# for build only
+services:
+  magicmirror:
+    build: 
+      context: ./
+      args: 
+        myimage: "resin/armv7hf-debian:jessie"
+#        myimage: "resin/rpi-raspbian:stretch"
+        MagicMirror_Version: "v2.2.2"
+    container_name: mm
+    image: karsten13/magicmirror:rpi

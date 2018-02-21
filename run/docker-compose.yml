@@ -3,7 +3,7 @@ version: '3'
 services:
   mm_raspberry:
     container_name: mm
-    image: karsten13/mm_hyp:latest
+    image: karsten13/magicmirror:rpi
     ports:
       - "8080:8080"
     volumes:
