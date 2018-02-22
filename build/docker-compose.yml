@@ -7,6 +7,6 @@ services:
       context: ./
       args: 
         myimage: "debian:jessie"
-        MagicMirror_Version: "v2.2.2"
+        MagicMirror_Version: ${MagicMirror_Version}
     container_name: mm
     image: karsten13/magicmirror:debian
