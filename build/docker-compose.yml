@@ -1,0 +1,12 @@
+version: '3'
+
+# for build only
+services:
+  magicmirror:
+    build: 
+      context: ./
+      args: 
+        myimage: "debian:jessie"
+        MagicMirror_Version: "v2.2.2"
+    container_name: mm
+    image: karsten13/magicmirror:debian
