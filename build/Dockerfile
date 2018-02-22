@@ -11,7 +11,7 @@ RUN apt-get -qy install git dos2unix libgtk2.0-0 libx11-xcb-dev libxtst6 libxss1
 
 # node
 RUN echo "install nodejs" && curl -sL https://deb.nodesource.com/setup_9.x | bash -
-RUN apt-get install -y nodejs && node -v && ldconfig
+RUN apt-get install -y nodejs
 
 WORKDIR /opt/magic_mirror
 
