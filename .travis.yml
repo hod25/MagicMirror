@@ -14,7 +14,3 @@ script:
 # push image
 - docker login -u="$DOCKER_USER" -p="$DOCKER_PASS";    
 - docker push $DOCKER_USER/magicmirror:$TRAVIS_BRANCH;
-# test image
-- cd ../run
-- docker-compose up -d
-  
