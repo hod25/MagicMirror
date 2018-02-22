@@ -7,11 +7,12 @@ EXPOSE 8080
 RUN apt-get update && apt-get upgrade -y
 
 # arp-scan only needed for the module MMM-NetworkScanner, nano as editor:
-RUN apt-get -qy install git dos2unix libgtk2.0-0 libx11-xcb-dev libxtst6 libxss1 libgconf-2-4 libnss3-dev libasound2 nano arp-scan
+RUN apt-get -qy install git curl dos2unix libgtk2.0-0 libx11-xcb-dev libxtst6 libxss1 libgconf-2-4 \
+ libnss3-dev libasound2 nano arp-scan && apt-get clean
 
 # node
 RUN echo "install nodejs" && curl -sL https://deb.nodesource.com/setup_9.x | bash -
-RUN apt-get install -y nodejs && node -v && ldconfig
+RUN apt-get install -y nodejs && node -v && apt-get clean
 
 WORKDIR /opt/magic_mirror
 

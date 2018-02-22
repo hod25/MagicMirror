@@ -9,7 +9,7 @@ MagicMirror² focuses on a modular plugin system and uses [Electron](http://elec
 # Why Docker?
 There are 2 usecases:
 - Starting the application in server only mode by manually running `node serveronly`. This will start the server, after which you can open the application in your browser of choice. This is e.g useful for testing. Using docker simplifies this usecase by using the container instead of setting up the host with installing the node.js stuff etc.
-- Using docker on the raspberry pi. The whole MagicMirror-stuff (including node.js, electron, ...) is already installed in the container, no need to install this stuff on your raspberry pi. Getting/Updating the container is done with one command ```docker pull karsten13/mm_hyp```.
+- Using docker on the raspberry pi. The whole MagicMirror-stuff (including node.js, electron, ...) is already installed in the container, no need to install this stuff on your raspberry pi. Getting/Updating the container is done with one command ```docker pull karsten13/magicmirror:rpi```.
 
 # Run MagicMirror² in server only mode
 You need a successful [Docker installation](https://docs.docker.com/engine/installation/) and docker-compose, which is not included in the docker linux installation. So if you are using linux you have to install it with:
@@ -21,11 +21,11 @@ sudo pip install docker-compose
 
 Open a shell in the parent directory of MagicMirror and run 
 ```bash
-git clone --depth 1 -b master https://github.com/khassel/docker-mm.git ~/docker-MagicMirror
+git clone --depth 1 -b debian https://github.com/khassel/docker-mm.git
 ```
-This will create a new subdirectory docker-MagicMirror beside the MagicMirror directory.
+This will create a new subdirectory docker-mm beside the MagicMirror directory.
 
-Navigate to the docker-MagicMirror directory and open a shell in the subdirectory up-serveronly. Then execute
+Navigate to the docker-mm directory and open a shell in the subdirectory run. Then execute
 
 ```bash
 docker-compose up -d
@@ -55,7 +55,7 @@ var config = {
 if (typeof module !== "undefined") { module.exports = config; }
 ```
 
-# Run MagicMirror² in on a raspberry pi
+# Run MagicMirror² on a raspberry pi
 
 ### Requirements
 - raspberry pi version 2 or 3 with running raspian jessie
@@ -100,16 +100,16 @@ sudo pip install docker-compose
 
 ### Setup docker-MagicMirror
 ```bash
-git clone --depth 1 -b master https://github.com/khassel/docker-mm.git ~/docker-MagicMirror
+git clone --depth 1 -b rpi https://github.com/khassel/docker-mm.git
 ```
 
 ### Get the docker image
 ```bash
-docker pull karsten13/mm_hyp
+docker pull karsten13/magicmirror:rpi
 ```
 
 ### Starting MagicMirror
-- goto ```cd ~/docker-MagicMirror/up-raspberry``` and execute ```docker-compose up -d```
+- goto ```cd ~/docker-mm/run``` and execute ```docker-compose up -d```
 - in case you want to stop it ```docker-compose down```
 
 > The container is configured to restart automatically so after executing ```docker-compose up -d``` it will restart with every reboot of your pi.

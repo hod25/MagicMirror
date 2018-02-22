@@ -7,7 +7,6 @@ services:
       context: ./
       args: 
         myimage: "resin/armv7hf-debian:jessie"
-#        myimage: "resin/rpi-raspbian:stretch"
-        MagicMirror_Version: "v2.2.2"
+        MagicMirror_Version: ${MagicMirror_Version}
     container_name: mm
     image: karsten13/magicmirror:rpi
