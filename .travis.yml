@@ -16,3 +16,5 @@ script:
 # push image
 - docker login -u="$DOCKER_USER" -p="$DOCKER_PASS";    
 - docker push "$DOCKER_USER"/magicmirror:"$TRAVIS_BRANCH"_"$MagicMirror_Version";
+- docker tag "$DOCKER_USER"/magicmirror:"$TRAVIS_BRANCH"_"$MagicMirror_Version" "$DOCKER_USER"/magicmirror:"$TRAVIS_BRANCH";
+- docker push "$DOCKER_USER"/magicmirror:"$TRAVIS_BRANCH";
