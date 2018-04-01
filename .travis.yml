@@ -8,6 +8,8 @@ script:
 # build image
 - cd ./build
 - docker-compose build
+# get variables from .env
+- export $(cat .env | grep -v ^# | xargs)
 - echo "TRAVIS_TAG="$TRAVIS_TAG;
 - echo "TRAVIS_BRANCH="$TRAVIS_BRANCH;
 - echo "MagicMirror_Version="$MagicMirror_Version;
