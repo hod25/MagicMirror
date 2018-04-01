@@ -9,4 +9,4 @@ services:
         myimage: "debian:jessie"
         MagicMirror_Version: ${MagicMirror_Version}
     container_name: mm
-    image: karsten13/magicmirror:debian
+    image: karsten13/magicmirror:debian_${MagicMirror_Version}
