@@ -7,7 +7,7 @@ EXPOSE 8080
 RUN apt-get update && apt-get upgrade -y
 
 # arp-scan only needed for the module MMM-NetworkScanner, nano as editor:
-RUN apt-get -qy install git curl dos2unix libgtk2.0-0 libx11-xcb-dev libxtst6 libxss1 libgconf-2-4 \
+RUN apt-get -qy install git curl dos2unix libgtk-3-0 libx11-xcb-dev libxtst6 libxss1 libgconf-2-4 \
  libnss3-dev libasound2 nano arp-scan && apt-get clean
 
 # node
