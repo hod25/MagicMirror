@@ -19,7 +19,7 @@ services:
       LD_LIBRARY_PATH: /opt/vc/lib
       DISPLAY: unix$DISPLAY
     network_mode: host
-    entrypoint: /opt/magic_mirror/docker-entrypoint.sh "npm start"   
+    entrypoint: /opt/magic_mirror/entrypoint.sh "npm start"   
     restart: always
 
 #  needed for module MMM-Systemtemperature:
