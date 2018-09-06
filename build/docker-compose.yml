@@ -6,7 +6,7 @@ services:
     build: 
       context: ./
       args: 
-        myimage: "resin/armv7hf-debian:jessie"
+        myimage: "arm32v7/node:slim"
         MagicMirror_Version: ${MagicMirror_Version}
     container_name: mm
     image: karsten13/magicmirror:rpi_${MagicMirror_Version}
