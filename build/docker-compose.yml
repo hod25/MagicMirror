@@ -6,7 +6,7 @@ services:
     build: 
       context: ./
       args: 
-        myimage: "arm32v7/node:slim"
+        myimage: "resin/armv7hf-node:9-slim"
         MagicMirror_Version: ${MagicMirror_Version}
     container_name: mm
     image: karsten13/magicmirror:rpi_${MagicMirror_Version}
