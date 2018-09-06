@@ -6,7 +6,7 @@ services:
     build: 
       context: ./
       args: 
-        myimage: "debian:jessie"
+        myimage: "node:slim"
         MagicMirror_Version: ${MagicMirror_Version}
     container_name: mm
     image: karsten13/magicmirror:debian_${MagicMirror_Version}
