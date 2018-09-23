@@ -22,6 +22,8 @@ RUN set -e; \
     npm install --unsafe-perm --only=production; \
     npm cache clean -f; \
     cp config/config.js.sample config/config.js; \
+    sed -i "s:address\: \"localhost\":address\: \"0.0.0.0\":" config/config.js; \
+    sed -i "s:ipWhitelist\: \[.*\],:ipWhitelist\: \[\],:" config/config.js; \
     cp -R modules /opt/magic_mirror/unmount_modules; \
     cp -R config /opt/magic_mirror/unmount_config;\
     mv /tmp/entrypoint.sh .; \
