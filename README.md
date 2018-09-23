@@ -3,7 +3,7 @@
 # Why Docker?
 There are 2 usecases:
 - Starting the application in server only mode by manually running `node serveronly`. This will start the server, after which you can open the application in your browser of choice. This is e.g useful for testing. Using docker simplifies this usecase by using the container instead of setting up the host with installing the node.js stuff etc.
-- Using docker on the raspberry pi. The whole MagicMirror-stuff (including node.js, electron, ...) is already installed in the container, no need to install this stuff on your raspberry pi. Getting/Updating the container is done with one command ```docker pull karsten13/magicmirror:rpi```.
+- Using docker on the raspberry pi. The whole MagicMirror-stuff (including node.js, electron, ...) is already installed in the container, no need to install this stuff on your raspberry pi. Getting/Updating the container is done with one command.
 
 # Run MagicMirror² in server only mode
 You need a successful [Docker installation](https://docs.docker.com/engine/installation/) and docker-compose, which is not included in the docker linux installation. So if you are using linux you have to install it with:
@@ -15,7 +15,8 @@ sudo pip install docker-compose
 
 Open a shell in the parent directory of MagicMirror and run 
 ```bash
-git clone --depth 1 -b debian https://github.com/khassel/docker-mm.git
+git clone --depth 1 -b master https://github.com/khassel/docker-mm.git
+./prepare_env debian
 ```
 This will create a new subdirectory docker-mm beside the MagicMirror directory.
 
@@ -38,16 +39,6 @@ docker-compose down
 ```
 
 will stop and remove the MagicMirror container.
-
-You may need to add your Docker Host IP to your `ipWhitelist` option. If you have some issues setting up this configuration, check [this forum post](https://forum.magicmirror.builders/topic/1326/ipwhitelist-howto).
-
-```javascript
-var config = {
-	ipWhitelist: ["127.0.0.1", "::ffff:127.0.0.1", "::1", "::ffff:172.17.0.1"]
-};
-
-if (typeof module !== "undefined") { module.exports = config; }
-```
 
 # Run MagicMirror² on a raspberry pi
 
@@ -94,12 +85,8 @@ sudo pip install docker-compose
 
 ### Setup docker-MagicMirror
 ```bash
-git clone --depth 1 -b rpi https://github.com/khassel/docker-mm.git
-```
-
-### Get the docker image
-```bash
-docker pull karsten13/magicmirror:rpi
+git clone --depth 1 -b master https://github.com/khassel/docker-mm.git
+./prepare_env rpi
 ```
 
 ### Starting MagicMirror
@@ -107,3 +94,24 @@ docker pull karsten13/magicmirror:rpi
 - in case you want to stop it ```docker-compose down```
 
 > The container is configured to restart automatically so after executing ```docker-compose up -d``` it will restart with every reboot of your pi.
+
+# Problems seeing the MagicMirror
+
+If you have problmes to access your MagicMirror, check the params `address` and `ipWhitelist` in your 
+`config.js`, check [this forum post](https://forum.magicmirror.builders/topic/1326/ipwhitelist-howto).
+
+```javascript
+var config = {
+	address: "localhost", // Address to listen on, can be:
+	                      // - "localhost", "127.0.0.1", "::1" to listen on loopback interface
+	                      // - another specific IPv4/6 to listen on a specific interface
+	                      // - "", "0.0.0.0", "::" to listen on any interface
+	                      // Default, when address config is left out, is "localhost"
+	port: 8080,
+	ipWhitelist: ["127.0.0.1", "::ffff:127.0.0.1", "::1"], // Set [] to allow all IP addresses
+	                                                       // or add a specific IPv4 of 192.168.1.5 :
+	                                                       // ["127.0.0.1", "::ffff:127.0.0.1", "::1", "::ffff:192.168.1.5"],
+	                                                       // or IPv4 range of 192.168.3.0 --> 192.168.3.15 use CIDR format :
+	                                                       // ["127.0.0.1", "::ffff:127.0.0.1", "::1", "::ffff:192.168.3.0/28"],
+```
+

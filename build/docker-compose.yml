@@ -1,0 +1,12 @@
+version: '3'
+
+# for build only
+services:
+  magicmirror:
+    build: 
+      context: ./
+      args: 
+        myimage: ${myimage}
+        MagicMirror_Version: ${MagicMirror_Version}
+    container_name: mm
+    image: karsten13/magicmirror:${BuildEnv}_${MagicMirror_Version}
