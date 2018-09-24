@@ -16,6 +16,7 @@ sudo pip install docker-compose
 Open a shell in the parent directory of MagicMirror and run 
 ```bash
 git clone --depth 1 -b master https://github.com/khassel/docker-mm.git
+cd ./docker-mm
 ./prepare_env debian
 ```
 This will create a new subdirectory docker-mm beside the MagicMirror directory.
@@ -86,6 +87,7 @@ sudo pip install docker-compose
 ### Setup docker-MagicMirror
 ```bash
 git clone --depth 1 -b master https://github.com/khassel/docker-mm.git
+cd ./docker-mm
 ./prepare_env rpi
 ```
 
