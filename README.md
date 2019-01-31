@@ -1,8 +1,6 @@
 **MagicMirror²** is an open source modular smart mirror platform. For more info visit the [project website](https://github.com/MichMich/MagicMirror).
 
-[![DockerHub Badge](https://dockeri.co/image/karsten13/magicmirror)](https://hub.docker.com/r/karsten13/magicmirror/)
-
-# Why Docker? [![pipeline status](https://gitlab.com/khassel/magicmirror/badges/master/pipeline.svg)](https://gitlab.com/khassel/magicmirror/commits/master)
+# Why Docker?
 There are 2 usecases:
 - Starting the application in server only mode by manually running `node serveronly`. This will start the server, after which you can open the application in your browser of choice. This is e.g useful for testing. Using docker simplifies this usecase by using the container instead of setting up the host with installing the node.js stuff etc.
 - Using docker on the raspberry pi. The whole MagicMirror-stuff (including node.js, electron, ...) is already installed in the container, no need to install this stuff on your raspberry pi. Getting/Updating the container is done with one command.
@@ -17,7 +15,7 @@ sudo pip install docker-compose
 
 Open a shell in the parent directory of MagicMirror and run 
 ````bash
-git clone --depth 1 -b master https://github.com/khassel/docker-mm.git
+git clone --depth 1 -b master https://gitlab.com/khassel/magicmirror.git
 cd ./docker-mm
 ./prepare_env debian
 ````
@@ -91,7 +89,7 @@ xhost +local:root
 
 ### Setup docker-MagicMirror
 ````bash
-git clone --depth 1 -b master https://github.com/khassel/docker-mm.git
+git clone --depth 1 -b master https://gitlab.com/khassel/magicmirror.git
 cd ./docker-mm
 ./prepare_env rpi
 ````
