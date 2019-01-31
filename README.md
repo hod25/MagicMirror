@@ -2,7 +2,7 @@
 
 [![DockerHub Badge](https://dockeri.co/image/karsten13/magicmirror)](https://hub.docker.com/r/karsten13/magicmirror/)
 
-# Why Docker? [![Build Status](https://travis-ci.org/khassel/docker-mm.svg?branch=master)](https://travis-ci.org/khassel/docker-mm)
+# Why Docker? [![pipeline status](https://gitlab.com/khassel/magicmirror/badges/master/pipeline.svg)](https://gitlab.com/khassel/magicmirror/commits/master)
 There are 2 usecases:
 - Starting the application in server only mode by manually running `node serveronly`. This will start the server, after which you can open the application in your browser of choice. This is e.g useful for testing. Using docker simplifies this usecase by using the container instead of setting up the host with installing the node.js stuff etc.
 - Using docker on the raspberry pi. The whole MagicMirror-stuff (including node.js, electron, ...) is already installed in the container, no need to install this stuff on your raspberry pi. Getting/Updating the container is done with one command.

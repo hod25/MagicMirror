@@ -1,0 +1,60 @@
+image: docker:stable
+
+variables:
+  # When using dind, it's wise to use the overlayfs driver for
+  # improved performance.
+  DOCKER_DRIVER: overlay2
+  GIT_DEPTH: "1"
+  DOCKER_USER: "karsten13"
+
+services:
+- docker:dind
+
+before_script:
+- docker info
+# install docker-compose
+- apk add --no-cache py-pip
+- pip install docker-compose
+- docker-compose version
+
+.build: &do_build
+  script:
+  - echo "MyBuildEnv="$MyBuildEnv
+  - ./prepare_env $MyBuildEnv
+  # get variables from .env
+  - export $(cat .env | grep -v ^# | xargs)
+  - echo "BuildEnv="$BuildEnv;
+  - echo "myimage="$myimage;
+  - echo "MagicMirror_Version="$MagicMirror_Version;
+  # build image
+  - cd ./build
+  - |
+    if [ "$BuildEnv" = "rpi" ]; then \
+      # prepare qemu
+      docker run --rm --privileged multiarch/qemu-user-static:register --reset; \
+    fi; \
+    docker-compose build;
+  # push image
+  - docker login -u="$DOCKER_USER" -p="$DOCKER_PASS";    
+  - docker push "$DOCKER_USER"/magicmirror:"$BuildEnv"_"$MagicMirror_Version";
+  - docker tag "$DOCKER_USER"/magicmirror:"$BuildEnv"_"$MagicMirror_Version" "$DOCKER_USER"/magicmirror:"$BuildEnv";
+  - docker push "$DOCKER_USER"/magicmirror:"$BuildEnv";
+  only:
+  - master
+  tags:
+  - docker
+
+build_debian:
+  stage: build
+  variables:
+    MyBuildEnv: "debian"
+  <<: *do_build
+
+build_rpi:
+  stage: build
+  variables:
+    MyBuildEnv: "rpi"
+  <<: *do_build
+
+after_script:
+- docker logout
