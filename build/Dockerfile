@@ -22,7 +22,7 @@ RUN set -e; \
     fi; \
     apt-get update; \
     apt-get upgrade -y; \
-    apt-get -qy install git curl libgtk-3-0 libx11-xcb-dev libxtst6 libxss1 libgconf-2-4 libnss3-dev libasound2 nano arp-scan; \
+    apt-get -qy install git curl libgtk-3-0 libx11-xcb-dev libxtst6 libxss1 libgconf-2-4 libnss3-dev libasound2 systemd-sysv nano arp-scan; \
     apt-get clean; \
     chmod +x /tmp/entrypoint.sh; \
     chown $myuser:$myuser /tmp/entrypoint.sh; \
