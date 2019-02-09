@@ -17,7 +17,7 @@ services:
       - /dev/vchiq
     environment:
       LD_LIBRARY_PATH: /opt/vc/lib
-      DISPLAY: unix$DISPLAY
+      DISPLAY: unix:0.0
     network_mode: host
     entrypoint: /opt/magic_mirror/entrypoint.sh "npm start"   
     restart: unless-stopped

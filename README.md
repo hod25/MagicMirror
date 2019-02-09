@@ -75,15 +75,13 @@ sudo pip install docker-compose
 @xset s off
 @xset -dpms
 @unclutter -idle 0.1 -pi
-@export DISPLAY=:0.0
-@xhost +local:root
+@xhost +local:
 ````
 	
 - uncomment the existing lines, otherwise you will see the pi desktop before MagicMirror has started
-- edit (here with nano) ```nano ~/.bashrc``` and insert the following lines (otherwise docker has no access on the pi display):
+- edit (here with nano) ```nano ~/.bashrc``` and insert the following line (otherwise docker has no access on the pi display):
 ````bash
-export DISPLAY=:0.0
-xhost +local:root
+xhost +local:
 ````
 - execute `sudo raspi-config` and navigate to "3 boot options" and choose "B2 Wait for Network at Boot". If not set, some modules will remaining in "load"-state because MagicMirror starts to early.
 
