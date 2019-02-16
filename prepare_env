@@ -15,3 +15,7 @@ if [ "$1" == "debian" ]; then
   cd run;
   cp docker-compose.$1 docker-compose.yml
 fi
+
+if [ "$2" == "slim" ]; then
+  sed -r -i "s|image:(.*)|image:\1-slim|" docker-compose.yml;
+fi

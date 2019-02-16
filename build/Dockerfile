@@ -9,8 +9,8 @@ WORKDIR /opt/magic_mirror
 # myuser is "node" with id=1000
 ENV myuser=node
 
-# copy startscript into container:
-COPY entrypoint.sh /tmp/
+# copy startscripts into container:
+COPY entrypoint.sh slim-entrypoint.sh /tmp/
 
 # arp-scan only needed for the module MMM-NetworkScanner, nano as editor
 # npm install --unsafe-perm --> without param the mirror remains black!
@@ -24,8 +24,8 @@ RUN set -e; \
     apt-get upgrade -y; \
     apt-get -qy install git curl libgtk-3-0 libx11-xcb-dev libxtst6 libxss1 libgconf-2-4 libnss3-dev libasound2 systemd-sysv nano arp-scan; \
     apt-get clean; \
-    chmod +x /tmp/entrypoint.sh; \
-    chown $myuser:$myuser /tmp/entrypoint.sh; \
+    chmod +x /tmp/*entrypoint.sh; \
+    chown $myuser:$myuser /tmp/*entrypoint.sh; \
     chown -R $myuser:$myuser .;
 
 USER $myuser
@@ -41,6 +41,6 @@ RUN set -e; \
     sed -i "s:ipWhitelist\: \[.*\],:ipWhitelist\: \[\],:" config/config.js; \
     cp -R modules /opt/magic_mirror/unmount_modules; \
     cp -R config /opt/magic_mirror/unmount_config; \
-    mv /tmp/entrypoint.sh .;
+    mv /tmp/*entrypoint.sh .;
 
 USER root
