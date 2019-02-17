@@ -10,8 +10,10 @@ if [ ! -f /opt/magic_mirror/config ]; then
   chown -R $myuser:$myuser /opt/magic_mirror/config/
 fi
 
-cd /opt/magic_mirror
+rm -rf /opt/magic_mirror/magicmirror/ && cd /opt/magic_mirror && git clone https://gitlab.com/khassel/magicmirror.git
 
-git clone https://gitlab.com/khassel/magicmirror.git
-
-node serveronly
+if [ "$BuildEnv"=="rpi" ]; then
+  su -c "cd /opt/magic_mirror && npm start || true" - node
+else  
+  su -c "cd /opt/magic_mirror && node serveronly" - node
+fi

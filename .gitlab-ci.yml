@@ -43,7 +43,13 @@ before_script:
   - docker tag "$DOCKER_USER"/magicmirror:"$BuildEnv"_"$MagicMirror_Version" "$DOCKER_USER"/magicmirror:"$BuildEnv";
   - docker push "$DOCKER_USER"/magicmirror:"$BuildEnv";
   - cd ..
-  - ./dist_linux/docker-slim build --http-probe --continue-after probe --include-path /bin --include-path /opt/magic_mirror --entrypoint /opt/magic_mirror/slim-entrypoint.sh --tag "$DOCKER_USER"/magicmirror:"$BuildEnv"-slim "$DOCKER_USER"/magicmirror:"$BuildEnv"
+  - |
+    SLIM_PARAMS="--http-probe --env BuildEnv=$BuildEnv --include-path /bin --include-path /opt/magic_mirror --entrypoint /opt/magic_mirror/slim-entrypoint.sh --tag $DOCKER_USER/magicmirror:$BuildEnv-slim $DOCKER_USER/magicmirror:$BuildEnv"
+    if [ "$BuildEnv" = "rpi" ]; then \
+      ./dist_linux/docker-slim build --continue-after timeout --env LD_LIBRARY_PATH=/opt/vc/lib --env DISPLAY=unix:0.0 --mount /tmp/.X11-unix:/tmp/.X11-unix --mount /opt/vc:/opt/vc/:ro --mount /run/systemd:/run/systemd --include-path /etc/fonts --include-path /usr/lib/arm-linux-gnueabihf --include-path /usr/local/lib $SLIM_PARAMS; \
+    else \
+      ./dist_linux/docker-slim build --continue-after probe $SLIM_PARAMS; \
+    fi;     
   - docker push "$DOCKER_USER"/magicmirror:"$BuildEnv"-slim;
   only:
   - master
