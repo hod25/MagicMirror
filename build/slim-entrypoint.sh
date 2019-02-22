@@ -14,6 +14,7 @@ rm -rf /opt/magic_mirror/magicmirror/ && cd /opt/magic_mirror && git clone https
 
 if [ "$BuildEnv"=="rpi" ]; then
   su -c "cd /opt/magic_mirror && npm start || true" - node
-else  
-  su -c "cd /opt/magic_mirror && node serveronly" - node
+  su -c "arp-scan localhost || true" - node  
 fi
+
+su -c "cd /opt/magic_mirror && node serveronly" - node
