@@ -98,6 +98,15 @@ cd ./docker-mm
 
 > The container is configured to restart automatically so after executing `docker-compose up -d` it will restart with every reboot of your pi.
 
+# Using slim-images (beta feature)
+
+[docker-slim](https://github.com/docker-slim/docker-slim) is a tool to minify your docker images.
+If you want to use the slim-images (built with docker-slim) instead of the normal images, you
+only need to change the `prepare_env` command from `./prepare_env debian` to `./prepare_env debian slim` and 
+`./prepare_env rpi` to `./prepare_env rpi slim` respectively.
+
+> This is a beta feature, so may the slim-image does not work as expected ...
+
 # Problems seeing the MagicMirror
 
 If you have problmes to access your MagicMirror, check the params `address` and `ipWhitelist` in your 
