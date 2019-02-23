@@ -8,5 +8,6 @@ services:
       args: 
         myimage: ${myimage}
         MagicMirror_Version: ${MagicMirror_Version}
+        BuildEnv: ${BuildEnv}
     container_name: mm
     image: karsten13/magicmirror:${BuildEnv}_${MagicMirror_Version}

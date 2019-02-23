@@ -14,8 +14,9 @@ COPY entrypoint.sh slim-entrypoint.sh /tmp/
 
 # arp-scan only needed for the module MMM-NetworkScanner, nano as editor
 # npm install --unsafe-perm --> without param the mirror remains black!
+ARG BuildEnv
 RUN set -e; \
-    if [ "$myuser" != "$(getent passwd | awk -F: '$3 == 1000 { print $1 }')" ]; then \
+    if [ "$BuildEnv" = "rpi" ]; then \
       echo "creating user node ..."; \
       groupadd --gid 1000 $myuser; \
       useradd --uid 1000 --gid $myuser --create-home --home-dir /home/$myuser $myuser; \
@@ -26,7 +27,14 @@ RUN set -e; \
     apt-get clean; \
     chmod +x /tmp/*entrypoint.sh; \
     chown $myuser:$myuser /tmp/*entrypoint.sh; \
-    chown -R $myuser:$myuser .;
+    chown -R $myuser:$myuser .; \
+    if [ "$BuildEnv" = "rpi" ]; then \
+      cd /root; \
+      curl -sL https://deb.nodesource.com/setup_11.x -o nodesource_setup.sh; \
+      bash nodesource_setup.sh; \
+      rm nodesource_setup.sh; \
+      apt-get -qy install nodejs; \
+    fi;
 
 USER $myuser
 
