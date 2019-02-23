@@ -46,7 +46,25 @@ before_script:
   - |
     SLIM_PARAMS="--http-probe --env BuildEnv=$BuildEnv --include-path /bin --include-path /opt/magic_mirror --entrypoint /opt/magic_mirror/slim-entrypoint.sh --tag $DOCKER_USER/magicmirror:$BuildEnv-slim $DOCKER_USER/magicmirror:$BuildEnv"
     if [ "$BuildEnv" = "rpi" ]; then \
-      ./dist_linux/docker-slim build --continue-after timeout --env LD_LIBRARY_PATH=/opt/vc/lib --env DISPLAY=unix:0.0 --mount /tmp/.X11-unix:/tmp/.X11-unix --mount /opt/vc:/opt/vc/:ro --mount /run/systemd:/run/systemd --include-path /usr/share/fonts --include-path /etc/fonts --include-path /lib/arm-linux-gnueabihf --include-path /usr/lib/arm-linux-gnueabihf --include-path /usr/local/lib $SLIM_PARAMS; \
+      ./dist_linux/docker-slim build \
+      --continue-after timeout \
+      --env DISPLAY=unix:0.0 \
+      --env LD_LIBRARY_PATH=/opt/vc/lib \
+      --mount /opt/vc:/opt/vc/:ro \
+      --mount /run/systemd:/run/systemd \
+      --mount /tmp/.X11-unix:/tmp/.X11-unix \
+      --include-path /etc \
+      --include-path /lib/arm-linux-gnueabihf \
+      --include-path /usr/bin \
+      --include-path /usr/lib/arm-linux-gnueabihf \
+      --include-path /usr/lib/node_modules/npm/node_modules \
+      --include-path /usr/lib/sudo \
+      --include-path /usr/local/lib \
+      --include-path /usr/share/fonts \
+      --include-path /usr/share/ieee-data \
+      --include-path /usr/share/arp-scan \
+      --include-path /var/lib/ieee-data \
+      $SLIM_PARAMS; \
     else \
       ./dist_linux/docker-slim build --continue-after probe $SLIM_PARAMS; \
     fi;     

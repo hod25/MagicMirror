@@ -34,6 +34,7 @@ RUN set -e; \
       bash nodesource_setup.sh; \
       rm nodesource_setup.sh; \
       apt-get -qy install nodejs; \
+      apt-get clean; \
     fi;
 
 USER $myuser
