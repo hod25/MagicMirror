@@ -55,15 +55,15 @@ before_script:
       --mount /tmp/.X11-unix:/tmp/.X11-unix \
       --include-path /etc \
       --include-path /lib/arm-linux-gnueabihf \
+      --include-path /lib/systemd \
+      --include-path /sbin \
       --include-path /usr/bin \
       --include-path /usr/lib/arm-linux-gnueabihf \
-      --include-path /usr/lib/node_modules/npm/node_modules \
+      --include-path /usr/lib/node_modules/npm \
       --include-path /usr/lib/sudo \
       --include-path /usr/local/lib \
       --include-path /usr/share/fonts \
-      --include-path /usr/share/ieee-data \
       --include-path /usr/share/arp-scan \
-      --include-path /var/lib/ieee-data \
       $SLIM_PARAMS; \
     else \
       ./dist_linux/docker-slim build --continue-after probe $SLIM_PARAMS; \
