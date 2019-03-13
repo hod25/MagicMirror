@@ -26,22 +26,17 @@ before_script:
   - ./prepare_env $MyBuildEnv
   # get variables from .env
   - export $(cat .env | grep -v ^# | xargs)
-  - echo "BuildEnv="$BuildEnv;
-  - echo "myimage="$myimage;
-  - echo "MagicMirror_Version="$MagicMirror_Version;
+  - echo "BuildEnv="$BuildEnv
+  - echo "myimage="$myimage
+  - echo "MagicMirror_Version="$MagicMirror_Version
   # build image
   - cd ./build
-  - |
-    if [ "$BuildEnv" = "rpi" ]; then \
-      # prepare qemu
-      docker run --rm --privileged multiarch/qemu-user-static:register --reset; \
-    fi; \
-    docker-compose build;
+  - docker-compose build
   # push image
-  - docker login -u="$DOCKER_USER" -p="$DOCKER_PASS";    
-  - docker push "$DOCKER_USER"/magicmirror:"$BuildEnv"_"$MagicMirror_Version";
-  - docker tag "$DOCKER_USER"/magicmirror:"$BuildEnv"_"$MagicMirror_Version" "$DOCKER_USER"/magicmirror:"$BuildEnv";
-  - docker push "$DOCKER_USER"/magicmirror:"$BuildEnv";
+  - docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
+  - docker push "$DOCKER_USER"/magicmirror:"$BuildEnv"_"$MagicMirror_Version"
+  - docker tag "$DOCKER_USER"/magicmirror:"$BuildEnv"_"$MagicMirror_Version" "$DOCKER_USER"/magicmirror:"$BuildEnv"
+  - docker push "$DOCKER_USER"/magicmirror:"$BuildEnv"
   - cd ..
   - |
     SLIM_PARAMS="--http-probe --env BuildEnv=$BuildEnv --include-path /bin --include-path /opt/magic_mirror --entrypoint /opt/magic_mirror/slim-entrypoint.sh --tag $DOCKER_USER/magicmirror:$BuildEnv-slim $DOCKER_USER/magicmirror:$BuildEnv"
@@ -68,7 +63,7 @@ before_script:
     else \
       ./dist_linux/docker-slim build --continue-after probe $SLIM_PARAMS; \
     fi;     
-  - docker push "$DOCKER_USER"/magicmirror:"$BuildEnv"-slim;
+  - docker push "$DOCKER_USER"/magicmirror:"$BuildEnv"-slim
   only:
   - master
   tags:
