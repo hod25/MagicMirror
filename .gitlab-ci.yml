@@ -16,7 +16,7 @@ before_script:
 - apk add --no-cache py-pip curl
 - pip install docker-compose
 - docker-compose version
-- curl -L -O https://github.com/docker-slim/docker-slim/releases/download/1.23/dist_linux.tar.gz
+- curl -L -O https://github.com/docker-slim/docker-slim/releases/latest/download/dist_linux.tar.gz
 - tar -zxvf dist_linux.tar.gz
 - ./dist_linux/docker-slim version
 
