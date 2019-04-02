@@ -23,7 +23,7 @@ before_script:
 - tar -zxvf dist_linux.tar.gz
 - ./dist_linux/docker-slim version
 
-.build: &do_build
+.build:
   script:
   - echo "MyBuildEnv="$MyBuildEnv
   - ./prepare_env $MyBuildEnv
@@ -76,13 +76,13 @@ build_debian:
   stage: build
   variables:
     MyBuildEnv: "debian"
-  <<: *do_build
+  extends: .build
 
 build_rpi:
   stage: build
   variables:
     MyBuildEnv: "rpi"
-  <<: *do_build
+  extends: .build
 
 after_script:
 - docker logout
