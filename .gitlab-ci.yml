@@ -1,6 +1,4 @@
-image:
-  name: docker/compose:1.24.0
-  entrypoint: ["/bin/sh", "-c"]
+image: karsten13/docker:stable
 
 variables:
   # When using dind, it's wise to use the overlayfs driver for
@@ -8,7 +6,6 @@ variables:
   DOCKER_DRIVER: overlay2
   GIT_DEPTH: "1"
   DOCKER_USER: "karsten13"
-  DOCKER_HOST: "tcp://docker:2375"
 
 services:
 - docker:dind
@@ -16,13 +13,7 @@ services:
 before_script:
 - docker info
 - docker-compose version
-# install curl
-- apk add --no-cache curl
-# install docker-slim
-#- curl -L -O https://github.com/docker-slim/docker-slim/releases/latest/download/dist_linux.tar.gz
-- curl -L -O https://github.com/docker-slim/docker-slim/releases/download/1.24.2/dist_linux.tar.gz
-- tar -zxvf dist_linux.tar.gz
-- ./dist_linux/docker-slim version
+- docker-slim version
 
 .build:
   script:
@@ -43,9 +34,9 @@ before_script:
   - docker push "$DOCKER_USER"/magicmirror:"$BuildEnv"
   - cd ..
   - |
-    SLIM_PARAMS="--http-probe --env BuildEnv=$BuildEnv --include-path /bin --include-path /opt/magic_mirror --entrypoint /opt/magic_mirror/slim-entrypoint.sh --tag $DOCKER_USER/magicmirror:$BuildEnv-slim $DOCKER_USER/magicmirror:$BuildEnv"
+    SLIM_PARAMS="--env BuildEnv=$BuildEnv --include-path /bin --include-path /opt/magic_mirror --entrypoint /opt/magic_mirror/slim-entrypoint.sh --tag $DOCKER_USER/magicmirror:$BuildEnv-slim $DOCKER_USER/magicmirror:$BuildEnv"
     if [ "$BuildEnv" = "rpi" ]; then \
-      ./dist_linux/docker-slim build \
+      docker-slim build \
       --continue-after timeout \
       --env DISPLAY=unix:0.0 \
       --env LD_LIBRARY_PATH=/opt/vc/lib \
@@ -65,7 +56,7 @@ before_script:
       --include-path /usr/share/arp-scan \
       $SLIM_PARAMS; \
     else \
-      ./dist_linux/docker-slim build --continue-after probe $SLIM_PARAMS; \
+      docker-slim build $SLIM_PARAMS; \
     fi;     
   - docker push "$DOCKER_USER"/magicmirror:"$BuildEnv"-slim
   only:
