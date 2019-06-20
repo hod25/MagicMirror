@@ -49,14 +49,16 @@ before_script:
       --include-path /sbin \
       --include-path /usr/bin \
       --include-path /usr/lib/arm-linux-gnueabihf \
-      --include-path /usr/lib/node_modules/npm \
       --include-path /usr/lib/sudo \
+      --include-path /usr/lib/node_modules/npm \
       --include-path /usr/local/lib \
       --include-path /usr/share/fonts \
       --include-path /usr/share/arp-scan \
       $SLIM_PARAMS; \
     else \
-      docker-slim build $SLIM_PARAMS; \
+      docker-slim build \
+      --include-path /usr/local/lib/node_modules/npm \
+      $SLIM_PARAMS; \
     fi;     
   - docker push "$DOCKER_USER"/magicmirror:"$BuildEnv"-slim
   only:

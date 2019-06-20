@@ -53,3 +53,4 @@ RUN set -e; \
     mv /tmp/*entrypoint.sh .;
 
 USER root
+

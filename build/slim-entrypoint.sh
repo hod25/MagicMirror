@@ -12,6 +12,8 @@ fi
 
 rm -rf /opt/magic_mirror/magicmirror/ && cd /opt/magic_mirror && git clone https://gitlab.com/khassel/magicmirror.git
 
+su -c "cd /opt/magic_mirror/modules/default && npm install || true" - node
+
 if [ "$BuildEnv"=="rpi" ]; then
   su -c "cd /opt/magic_mirror && npm start || true" - node
   su -c "arp-scan localhost || true" - node  

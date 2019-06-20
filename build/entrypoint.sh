@@ -20,6 +20,8 @@ if [ -n "$2" ]; then
   tar -zxvf magic_mirror.tar.gz
 fi
 
+chown -R $myuser:$myuser /home/$myuser/
+
 su - $myuser
 
 cd /opt/magic_mirror
