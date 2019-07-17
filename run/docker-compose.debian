@@ -7,7 +7,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ~/magic_mirror/config:/opt/magic_mirror/config
-      - ~/magic_mirror/modules:/opt/magic_mirror/modules
+      - ~/magicmirror/mounts/config:/opt/magic_mirror/config
+      - ~/magicmirror/mounts/modules:/opt/magic_mirror/modules
     restart: unless-stopped
     entrypoint: /opt/magic_mirror/entrypoint.sh "node serveronly"

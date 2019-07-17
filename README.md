@@ -1,67 +1,40 @@
 **MagicMirror²** is an open source modular smart mirror platform. For more info visit the [project website](https://github.com/MichMich/MagicMirror).
 
 # Why Docker?
+
+Using docker simplifies the setup by using the container instead of setting up the host with installing all the node.js stuff etc.
+Getting/Updating the container is done with one command.
+
 There are 2 usecases:
-- Starting the application in server only mode by manually running `node serveronly`. This will start the server, after which you can open the application in your browser of choice. This is e.g useful for testing. Using docker simplifies this usecase by using the container instead of setting up the host with installing the node.js stuff etc.
-- Using docker on the raspberry pi. The whole MagicMirror-stuff (including node.js, electron, ...) is already installed in the container, no need to install this stuff on your raspberry pi. Getting/Updating the container is done with one command.
+- Running the application in server only mode. 
+  
+  This will start the server, after which you can open the application in your browser of choice. 
+  This is e.g useful for testing or running the application somewhere online, so you can access it with a browser from everywhere. 
+  
+  
+- Using docker on the raspberry pi. 
 
-# Run MagicMirror² in server only mode
-You need a successful [Docker installation](https://docs.docker.com/engine/installation/) and docker-compose, which is not included in the docker linux installation. So if you are using linux you have to install it with:
-````bash
-sudo apt-get purge python-pip
-curl https://bootstrap.pypa.io/get-pip.py | sudo python
-sudo pip install docker-compose
-````
+# Installation prerequisites for server only mode (not running on raspberry pi)
 
-Open a shell in the parent directory of MagicMirror and run 
-````bash
-git clone --depth 1 -b master https://gitlab.com/khassel/magicmirror.git
-cd ./docker-mm
-./prepare_env debian
-````
-This will create a new subdirectory docker-mm beside the MagicMirror directory.
+You need a successful [Docker installation](https://docs.docker.com/engine/installation/) and [docker-compose](https://docs.docker.com/compose/install/), which is not included in the docker linux installation.
 
-Navigate to the docker-mm directory and open a shell in the subdirectory run. Then execute
-
-````bash
-docker-compose up -d
-````
-
-The container will start and opening a browser with http://localhost:8080 should show the MagicMirror.
-
-Executing
-````bash
-docker ps -a
-````
-will show all containers and 
-
-````bash
-docker-compose down
-````
-
-will stop and remove the MagicMirror container.
-
-# Run MagicMirror² on a raspberry pi
+# Installation prerequisites for running on a raspberry pi
 
 ### Requirements
 - raspberry pi version 2 or 3 with running raspian jessie
 - LAN or WLAN access
 - logged in as user pi (otherwise you have to substitute "pi" with your user in the following lines)
 
-### Setup for MagicMirror
-- create local directory: `mkdir -p ~/magic_mirror/config` and add your config.js file
-- create local directory: `mkdir -p ~/magic_mirror/modules` and add your 3rd party modules
-
 ### Setup Docker
 - get Docker: `curl -sSL get.docker.com | sh`
 - set Docker to auto-start: `sudo systemctl enable docker`
 - start the Docker daemon: `sudo systemctl start docker` (or reboot your pi)
-- add user pi to docker group: `sudo usermod -aG docker pi`
+- add user pi to docker group: `sudo usermod -aG docker pi` (you have to logout and login after this)
 
 ### Setup docker-compose
 ````bash
-sudo apt-get purge python-pip
-curl https://bootstrap.pypa.io/get-pip.py | sudo python
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py 
+sudo python3 get-pip.py
 sudo pip install docker-compose
 ````
 
@@ -85,18 +58,60 @@ xhost +local:
 ````
 - execute `sudo raspi-config` and navigate to "3 boot options" and choose "B2 Wait for Network at Boot". If not set, some modules will remaining in "load"-state because MagicMirror starts to early.
 
-### Setup docker-MagicMirror
+
+# Installation of this Repository
+
+Open a shell in your home directory and run
 ````bash
-git clone --depth 1 -b master https://gitlab.com/khassel/magicmirror.git
-cd ./docker-mm
-./prepare_env rpi
+git clone https://gitlab.com/khassel/magicmirror.git
 ````
 
-### Starting MagicMirror
-- goto `cd ~/docker-mm/run` and execute `docker-compose up -d`
-- in case you want to stop it `docker-compose down`
+Now cd into the new directory `magicmirror` and execute the following line, whereas you have to substitute `<<mode>>` with `debian` if installing for server-only mode or `rpi` if installing on a raspberry pi:
+````bash
+cd ./magicmirror
+./prepare_env <<mode>>
+````
+
+# Start MagicMirror²
+
+Navigate to `~/magicmirror/run` and execute
+
+````bash
+docker-compose up -d
+````
+
+The container will start and on the raspberry you should see the mirror on the desktop. In server-only mode opening a browser at http://localhost:8080 should show the MagicMirror.
 
 > The container is configured to restart automatically so after executing `docker-compose up -d` it will restart with every reboot of your pi.
+
+
+You can see the logs with
+
+````bash
+docker logs mm
+````
+
+Executing
+````bash
+docker ps -a
+````
+will show all containers and 
+
+````bash
+docker-compose down
+````
+
+will stop and remove the MagicMirror container.
+
+# Volume Mounts
+
+After the first start of the container you find 2 directories
+````bash
+~/magicmirror/mounts/config
+~/magicmirror/mounts/modules
+````
+
+In `config` you find the `config.js` and in `modules` all installed modules. You can change your config and add modules, for more information on that please visit the [project website](https://github.com/MichMich/MagicMirror).
 
 # Using slim-images (beta feature)
 
