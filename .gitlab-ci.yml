@@ -34,7 +34,7 @@ before_script:
   - docker push "$DOCKER_USER"/magicmirror:"$BuildEnv"
   - cd ..
   - |
-    SLIM_PARAMS="--env BuildEnv=$BuildEnv --include-path /bin --include-path /opt/magic_mirror --entrypoint /opt/magic_mirror/slim-entrypoint.sh --tag $DOCKER_USER/magicmirror:$BuildEnv-slim $DOCKER_USER/magicmirror:$BuildEnv"
+    SLIM_PARAMS="--env BuildEnv=$BuildEnv --http-probe=false --include-path /bin --include-path /opt/magic_mirror --entrypoint /opt/magic_mirror/slim-entrypoint.sh --tag $DOCKER_USER/magicmirror:$BuildEnv-slim $DOCKER_USER/magicmirror:$BuildEnv"
     if [ "$BuildEnv" = "rpi" ]; then \
       docker-slim build \
       --continue-after timeout \
