@@ -58,6 +58,7 @@ xhost +local:
 ````
 - execute `sudo raspi-config` and navigate to "3 boot options" and choose "B2 Wait for Network at Boot". If not set, some modules will remaining in "load"-state because MagicMirror starts to early.
 
+> Before next installation steps please reboot your pi 
 
 # Installation of this Repository
 
