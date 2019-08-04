@@ -26,4 +26,4 @@ su - $myuser
 
 cd /opt/magic_mirror
 
-$1
+exec $1
