@@ -9,15 +9,6 @@ services:
     volumes:
       - ~/magicmirror/mounts/config:/opt/magic_mirror/config
       - ~/magicmirror/mounts/modules:/opt/magic_mirror/modules
-      - /tmp/.X11-unix:/tmp/.X11-unix
       - /etc/localtime:/etc/localtime:ro
-      - /opt/vc:/opt/vc/:ro
-      - /run/systemd:/run/systemd
-    devices:
-      - /dev/vchiq
-    environment:
-      LD_LIBRARY_PATH: /opt/vc/lib
-      DISPLAY: unix:0.0
-    network_mode: host
-    entrypoint: /opt/magic_mirror/entrypoint.sh "npm start"   
     restart: unless-stopped
+    entrypoint: /opt/magic_mirror/entrypoint.sh "node serveronly"

@@ -4,16 +4,16 @@
 
 if [ "$1" == "rpi" ]; then
   sed -i "s:BuildEnv=.*:BuildEnv=$1:" .env;
-  sed -i "s:myimage=.*:myimage=balenalib\/armv7hf-debian\:stretch-run:" .env;
+  sed -i "s:myimage=.*:myimage=arm32v7\/node\:slim:" .env;
   cd run;
-  cp docker-compose.$1 docker-compose.yml
+  cp $1.yml docker-compose.yml
 fi
 
 if [ "$1" == "debian" ]; then  
   sed -i "s:BuildEnv=.*:BuildEnv=$1:" .env;  
   sed -i "s:myimage=.*:myimage=node\:slim:" .env;
   cd run;
-  cp docker-compose.$1 docker-compose.yml
+  cp $1.yml docker-compose.yml
 fi
 
 if [ "$2" == "slim" ]; then

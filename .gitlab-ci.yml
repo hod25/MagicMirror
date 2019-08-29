@@ -26,6 +26,12 @@ before_script:
   - echo "MagicMirror_Version="$MagicMirror_Version
   # build image
   - cd ./build
+  - |
+    if [ "$BuildEnv" = "rpi" ]; then \
+      cp /tmp/slim/qemu-arm-static .; \
+    else \
+      touch qemu-arm-static; \
+    fi;     
   - docker-compose build
   # push image
   - docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
