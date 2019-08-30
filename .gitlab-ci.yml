@@ -1,26 +1,32 @@
+stages:
+  - build
+  - manifest
+
 image: karsten13/docker:stable
 
 variables:
   # When using dind, it's wise to use the overlayfs driver for
   # improved performance.
   DOCKER_DRIVER: overlay2
-  GIT_DEPTH: "1"
-  DOCKER_USER: "karsten13"
+  GIT_DEPTH: 1
+  DOCKER_USER: karsten13
+  MagicMirror_Version: v2.8.0
 
 services:
 - docker:dind
 
 before_script:
 - docker info
-- docker-compose version
 - docker-slim version
+
+.whenrun:
+  only:
+  - master
+  tags:
+  - docker
 
 .build:
   script:
-  - echo "MyBuildEnv="$MyBuildEnv
-  - ./prepare_env $MyBuildEnv
-  # get variables from .env
-  - export $(cat .env | grep -v ^# | xargs)
   - echo "BuildEnv="$BuildEnv
   - echo "myimage="$myimage
   - echo "MagicMirror_Version="$MagicMirror_Version
@@ -32,7 +38,7 @@ before_script:
     else \
       touch qemu-arm-static; \
     fi;     
-  - docker-compose build
+  - docker build --build-arg BuildEnv=${BuildEnv} --build-arg MagicMirror_Version=${MagicMirror_Version} --build-arg myimage=${myimage} -t $DOCKER_USER/magicmirror:${BuildEnv}_${MagicMirror_Version} .
   # push image
   - docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
   - docker push "$DOCKER_USER"/magicmirror:"$BuildEnv"_"$MagicMirror_Version"
@@ -67,22 +73,33 @@ before_script:
       $SLIM_PARAMS; \
     fi;     
   - docker push "$DOCKER_USER"/magicmirror:"$BuildEnv"-slim
-  only:
-  - master
-  tags:
-  - docker
+  extends: .whenrun
 
 build_debian:
   stage: build
   variables:
-    MyBuildEnv: "debian"
+    BuildEnv: debian
+    myimage: node:slim
   extends: .build
 
 build_rpi:
   stage: build
   variables:
-    MyBuildEnv: "rpi"
+    BuildEnv: rpi
+    myimage: arm32v7/node:slim
   extends: .build
+
+manifest:
+  stage: manifest
+  script:
+  - docker pull $DOCKER_USER/magicmirror:rpi-slim
+  - docker pull $DOCKER_USER/magicmirror:debian-slim
+  - docker manifest create $DOCKER_USER/magicmirror:latest $DOCKER_USER/magicmirror:rpi-slim $DOCKER_USER/magicmirror:debian-slim
+  - docker manifest annotate --os linux --arch amd64 $DOCKER_USER/magicmirror:latest $DOCKER_USER/magicmirror:debian-slim
+  - docker manifest annotate --os linux --arch arm $DOCKER_USER/magicmirror:latest $DOCKER_USER/magicmirror:rpi-slim
+  - docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
+  - docker manifest push $DOCKER_USER/magicmirror:latest  
+  extends: .whenrun
 
 after_script:
 - docker logout

@@ -6,15 +6,15 @@ Using docker simplifies the setup by using the container instead of setting up t
 Getting/Updating the container is done with one command.
 
 There are 2 usecases:
-- Running the application in server only mode. 
+- Scenario 1: Running the application in server only mode. 
   
   This will start the server, after which you can open the application in your browser of choice. 
   This is e.g useful for testing or running the application somewhere online, so you can access it with a browser from everywhere. 
   
   
-- Using docker on the raspberry pi. 
+- Scenario 2: Using docker on the raspberry pi and starting the magicmirror on the screen of the pi.
 
-# Installation prerequisites for server only mode (not running on raspberry pi)
+# Installation prerequisites for server only mode with linux
 
 You need a successful [Docker installation](https://docs.docker.com/engine/installation/) and [docker-compose](https://docs.docker.com/compose/install/), which is not included in the docker linux installation.
 
@@ -37,6 +37,8 @@ curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 sudo python3 get-pip.py
 sudo pip install docker-compose
 ````
+
+# Installation prerequisites for running on a raspberry pi with Scenario 2
 
 ### Setup for graphical desktop
 - install unclutter: `sudo apt-get install -y unclutter`
@@ -67,10 +69,16 @@ Open a shell in your home directory and run
 git clone https://gitlab.com/khassel/magicmirror.git
 ````
 
-Now cd into the new directory `magicmirror` and execute the following line, whereas you have to substitute `<<mode>>` with `debian` if installing for server-only mode or `rpi` if installing on a raspberry pi:
+Now cd into the new directory `magicmirror/run` and copy the yml-file depending on the scenario, for scenario 1:
 ````bash
-cd ./magicmirror
-./prepare_env <<mode>>
+cd ./magicmirror/run
+cp serveronly.yml docker-compose.yml
+````
+
+For scenario 2:
+````bash
+cd ./magicmirror/run
+cp rpi.yml docker-compose.yml
 ````
 
 # Start MagicMirror²
@@ -81,7 +89,7 @@ Navigate to `~/magicmirror/run` and execute
 docker-compose up -d
 ````
 
-The container will start and on the raspberry you should see the mirror on the desktop. In server-only mode opening a browser at http://localhost:8080 should show the MagicMirror.
+The container will start and with scenario 2 the magicmirror should appear on the screen of your pi. In server only mode opening a browser at http://localhost:8080 should show the MagicMirror (scenario 1).
 
 > The container is configured to restart automatically so after executing `docker-compose up -d` it will restart with every reboot of your pi.
 
@@ -113,15 +121,6 @@ After the first start of the container you find 2 directories
 ````
 
 In `config` you find the `config.js` and in `modules` all installed modules. You can change your config and add modules, for more information on that please visit the [project website](https://github.com/MichMich/MagicMirror).
-
-# Using slim-images (beta feature)
-
-[docker-slim](https://github.com/docker-slim/docker-slim) is a tool to minify your docker images.
-If you want to use the slim-images (built with docker-slim) instead of the normal images, you
-only need to change the `prepare_env` command from `./prepare_env debian` to `./prepare_env debian slim` and 
-`./prepare_env rpi` to `./prepare_env rpi slim` respectively.
-
-> This is a beta feature, so may the slim-image does not work as expected ...
 
 # Problems seeing the MagicMirror
 
