@@ -10,7 +10,7 @@ variables:
   DOCKER_DRIVER: overlay2
   GIT_DEPTH: 1
   DOCKER_USER: karsten13
-  MagicMirror_Version: v2.8.0
+  MagicMirror_Version: v2.9.0
 
 services:
 - docker:dind
