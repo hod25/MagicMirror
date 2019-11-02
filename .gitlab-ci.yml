@@ -2,14 +2,13 @@ stages:
   - build
   - manifest
 
-image: karsten13/docker:stable
+image: ${DOCKER_USER}/docker:stable
 
 variables:
   # When using dind, it's wise to use the overlayfs driver for
   # improved performance.
   DOCKER_DRIVER: overlay2
   GIT_DEPTH: 1
-  DOCKER_USER: karsten13
   MagicMirror_Version: v2.9.0
 
 services:
@@ -38,7 +37,7 @@ before_script:
     else \
       touch qemu-arm-static; \
     fi;     
-  - docker build --build-arg BuildEnv=${BuildEnv} --build-arg MagicMirror_Version=${MagicMirror_Version} --build-arg myimage=${myimage} -t $DOCKER_USER/magicmirror:${BuildEnv}_${MagicMirror_Version} .
+  - docker build --build-arg MagicMirror_Version=${MagicMirror_Version} --build-arg myimage=${myimage} -t $DOCKER_USER/magicmirror:${BuildEnv}_${MagicMirror_Version} .
   # push image
   - docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
   - docker push "$DOCKER_USER"/magicmirror:"$BuildEnv"_"$MagicMirror_Version"
@@ -99,6 +98,7 @@ manifest:
   - docker manifest annotate --os linux --arch arm $DOCKER_USER/magicmirror:latest $DOCKER_USER/magicmirror:rpi-slim
   - docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
   - docker manifest push $DOCKER_USER/magicmirror:latest  
+  - update_docker_readme.sh magicmirror
   extends: .whenrun
 
 after_script:
