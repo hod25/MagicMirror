@@ -16,7 +16,6 @@ services:
 
 before_script:
 - docker info
-- docker-slim version
 
 .whenrun:
   only:
@@ -33,7 +32,7 @@ before_script:
   - cd ./build
   - |
     if [ "$BuildEnv" = "rpi" ]; then \
-      cp /tmp/slim/qemu-arm-static .; \
+      cp /tmp/qemu/qemu-arm-static .; \
     else \
       touch qemu-arm-static; \
     fi;     
@@ -47,7 +46,7 @@ before_script:
   - |
     SLIM_PARAMS="--env BuildEnv=$BuildEnv --http-probe=false --include-path /bin --include-path /opt/magic_mirror --entrypoint /opt/magic_mirror/slim-entrypoint.sh --tag $DOCKER_USER/magicmirror:$BuildEnv-slim $DOCKER_USER/magicmirror:$BuildEnv"
     if [ "$BuildEnv" = "rpi" ]; then \
-      docker-slim build \
+      docker run -e DOCKER_HOST=tcp://$(grep docker /etc/hosts | cut -f1):2375 dslim/docker-slim build \
       --continue-after timeout \
       --env DISPLAY=unix:0.0 \
       --env LD_LIBRARY_PATH=/opt/vc/lib \
@@ -67,7 +66,7 @@ before_script:
       --include-path /usr/share/arp-scan \
       $SLIM_PARAMS; \
     else \
-      docker-slim build \
+      docker run -e DOCKER_HOST=tcp://$(grep docker /etc/hosts | cut -f1):2375 dslim/docker-slim build \
       --include-path /usr/local/lib/node_modules/npm \
       $SLIM_PARAMS; \
     fi;     
