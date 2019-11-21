@@ -2,12 +2,12 @@
 
 if [ ! -f /opt/magic_mirror/modules/default/defaultmodules.js ]; then
   cp -Rn /opt/magic_mirror/unmount_modules/. /opt/magic_mirror/modules
-  chown -R $myuser:$myuser /opt/magic_mirror/modules/
+  chown -R node:node /opt/magic_mirror/modules/
 fi
 
 if [ ! -f /opt/magic_mirror/config/config.js ]; then
   cp -Rn /opt/magic_mirror/unmount_config/. /opt/magic_mirror/config
-  chown -R $myuser:$myuser /opt/magic_mirror/config/
+  chown -R node:node /opt/magic_mirror/config/
 fi
 
 if [ -n "$2" ]; then
@@ -20,9 +20,9 @@ if [ -n "$2" ]; then
   tar -zxvf magic_mirror.tar.gz
 fi
 
-chown -R $myuser:$myuser /home/$myuser/
+chown -R node:node /home/node/
 
-su - $myuser
+su - node
 
 cd /opt/magic_mirror
 
