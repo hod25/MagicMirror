@@ -31,9 +31,11 @@ RUN set -e; \
     cp config/config.js.sample config/config.js; \
     sed -i "s:address\: \"localhost\":address\: \"0.0.0.0\":" config/config.js; \
     sed -i "s:ipWhitelist\: \[.*\],:ipWhitelist\: \[\],:" config/config.js; \
-    cp -R modules /opt/magic_mirror/unmount_modules; \
-    cp -R config /opt/magic_mirror/unmount_config; \
+    mkdir mount_ori; \
+    mv modules mount_ori/; \
+    mv config mount_ori/; \
     mv /tmp/*entrypoint.sh .;
 
-USER root
+ENTRYPOINT ["./entrypoint.sh"]
 
+USER root

@@ -7,8 +7,8 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ~/magicmirror/mounts/config:/opt/magic_mirror/config
-      - ~/magicmirror/mounts/modules:/opt/magic_mirror/modules
+      - ../mounts/config:/opt/magic_mirror/config
+      - ../mounts/modules:/opt/magic_mirror/modules
       - /etc/localtime:/etc/localtime:ro
       - /tmp/.X11-unix:/tmp/.X11-unix
       - /opt/vc:/opt/vc/:ro
@@ -20,4 +20,6 @@ services:
       DISPLAY: unix:0.0
     network_mode: host
     restart: unless-stopped
-    entrypoint: /opt/magic_mirror/entrypoint.sh "npm start"   
+    command: 
+      - npm
+      - start
