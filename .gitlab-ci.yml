@@ -20,32 +20,37 @@ before_script:
 .whenrun:
   only:
   - master
+  - develop
   tags:
   - docker
 
 .build:
   script:
-  - echo "BuildEnv="$BuildEnv
-  - echo "myimage="$myimage
-  - echo "MagicMirror_Version="$MagicMirror_Version
-  # build image
+  - echo "BuildEnv="${BuildEnv}
+  - echo "myimage="${myimage}
+  - echo "MagicMirror_Version="${MagicMirror_Version}
+  - |
+    if [ ! "${CI_COMMIT_REF_NAME}" == "master" ]; then \
+      export BuildRef="_test"
+    fi;     
+    # build image
   - cd ./build
   - |
-    if [ "$BuildEnv" = "rpi" ]; then \
+    if [ "${BuildEnv}" = "rpi" ]; then \
       cp /tmp/qemu/qemu-arm-static .; \
     else \
       touch qemu-arm-static; \
     fi;     
-  - docker build --build-arg MagicMirror_Version=${MagicMirror_Version} --build-arg myimage=${myimage} -t $DOCKER_USER/magicmirror:${BuildEnv}_${MagicMirror_Version} .
+  - docker build --build-arg MagicMirror_Version=${MagicMirror_Version} --build-arg myimage=${myimage} -t $DOCKER_USER/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef} .
   # push image
-  - docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
-  - docker push "$DOCKER_USER"/magicmirror:"$BuildEnv"_"$MagicMirror_Version"
-  - docker tag "$DOCKER_USER"/magicmirror:"$BuildEnv"_"$MagicMirror_Version" "$DOCKER_USER"/magicmirror:"$BuildEnv"
-  - docker push "$DOCKER_USER"/magicmirror:"$BuildEnv"
+  - docker login -u=${DOCKER_USER} -p=${DOCKER_PASS}
+  - docker push ${DOCKER_USER}/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef}
+  - docker tag ${DOCKER_USER}/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef} ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}
+  - docker push ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}
   - cd ..
   - |
-    SLIM_PARAMS="--env BuildEnv=$BuildEnv --http-probe=false --include-path /bin --include-path /opt/magic_mirror --entrypoint /opt/magic_mirror/slim-entrypoint.sh --tag $DOCKER_USER/magicmirror:$BuildEnv-slim $DOCKER_USER/magicmirror:$BuildEnv"
-    if [ "$BuildEnv" = "rpi" ]; then \
+    SLIM_PARAMS="--env BuildEnv=$BuildEnv --http-probe=false --include-path /bin --include-path /opt/magic_mirror --entrypoint /opt/magic_mirror/slim-entrypoint.sh --tag ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}-slim ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}"
+    if [ "${BuildEnv}" = "rpi" ]; then \
       docker run -e DOCKER_HOST=tcp://$(grep docker /etc/hosts | cut -f1):2375 dslim/docker-slim build \
       --continue-after timeout \
       --env DISPLAY=unix:0.0 \
@@ -64,13 +69,13 @@ before_script:
       --include-path /usr/local/lib \
       --include-path /usr/share/fonts \
       --include-path /usr/share/arp-scan \
-      $SLIM_PARAMS; \
+      ${SLIM_PARAMS}; \
     else \
       docker run -e DOCKER_HOST=tcp://$(grep docker /etc/hosts | cut -f1):2375 dslim/docker-slim build \
       --include-path /usr/local/lib/node_modules/npm \
-      $SLIM_PARAMS; \
+      ${SLIM_PARAMS}; \
     fi;     
-  - docker push "$DOCKER_USER"/magicmirror:"$BuildEnv"-slim
+  - docker push ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}-slim
   extends: .whenrun
 
 build_debian:
@@ -90,15 +95,18 @@ build_rpi:
 manifest:
   stage: manifest
   script:
-  - docker pull $DOCKER_USER/magicmirror:rpi-slim
-  - docker pull $DOCKER_USER/magicmirror:debian-slim
-  - docker manifest create $DOCKER_USER/magicmirror:latest $DOCKER_USER/magicmirror:rpi-slim $DOCKER_USER/magicmirror:debian-slim
-  - docker manifest annotate --os linux --arch amd64 $DOCKER_USER/magicmirror:latest $DOCKER_USER/magicmirror:debian-slim
-  - docker manifest annotate --os linux --arch arm $DOCKER_USER/magicmirror:latest $DOCKER_USER/magicmirror:rpi-slim
-  - docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
-  - docker manifest push $DOCKER_USER/magicmirror:latest  
+  - docker pull ${DOCKER_USER}/magicmirror:rpi-slim
+  - docker pull ${DOCKER_USER}/magicmirror:debian-slim
+  - docker manifest create ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:rpi-slim ${DOCKER_USER}/magicmirror:debian-slim
+  - docker manifest annotate --os linux --arch amd64 ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:debian-slim
+  - docker manifest annotate --os linux --arch arm ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:rpi-slim
+  - docker login -u=${DOCKER_USER} -p=${DOCKER_PASS}
+  - docker manifest push ${DOCKER_USER}/magicmirror:latest  
   - update_docker_readme.sh magicmirror
-  extends: .whenrun
+  only:
+  - master
+  tags:
+  - docker
 
 after_script:
 - docker logout
