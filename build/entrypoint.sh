@@ -10,4 +10,8 @@ if [ ! -f /opt/magic_mirror/config/config.js ]; then
   chown -R node:node /opt/magic_mirror/config/
 fi
 
-exec su - node -c "cd /opt/magic_mirror && $1 $2"
+su - node
+
+cd /opt/magic_mirror
+
+exec $1 $2

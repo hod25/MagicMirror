@@ -18,6 +18,7 @@ RUN set -e; \
     apt-get clean; \
     chmod +x /tmp/*entrypoint.sh; \
     chown node:node /tmp/*entrypoint.sh; \
+    chown -R node:node /home/node/; \
     chown -R node:node .;
 
 USER node
