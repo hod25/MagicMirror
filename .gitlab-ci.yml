@@ -9,7 +9,7 @@ variables:
   # improved performance.
   DOCKER_DRIVER: overlay2
   GIT_DEPTH: 1
-  MagicMirror_Version: v2.9.0
+  MagicMirror_Version: v2.10.0
 
 services:
 - docker:dind
