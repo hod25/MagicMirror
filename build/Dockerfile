@@ -32,6 +32,7 @@ RUN set -e; \
     cp config/config.js.sample config/config.js; \
     sed -i "s:address\: \"localhost\":address\: \"0.0.0.0\":" config/config.js; \
     sed -i "s:ipWhitelist\: \[.*\],:ipWhitelist\: \[\],:" config/config.js; \
+    sed -i "s:xorg\=\$(pgrep Xorg):xorg=dummy:" run-start.sh; \
     mkdir mount_ori; \
     mv modules mount_ori/; \
     mv config mount_ori/; \
