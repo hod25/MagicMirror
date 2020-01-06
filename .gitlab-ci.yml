@@ -10,6 +10,9 @@ variables:
   DOCKER_DRIVER: overlay2
   GIT_DEPTH: 1
   MagicMirror_Version: v2.10.0
+  # only set if you want to override the provided values from the mm project
+  Spectron_Version: ^8.0.0
+  Electron_Version: ^6.1.7
 
 services:
 - docker:dind
@@ -30,6 +33,9 @@ before_script:
   - echo "myimage="${myimage}
   - echo "MagicMirror_Version="${MagicMirror_Version}
   - |
+    if [ -n "${Spectron_Version}" ]; then echo "Spectron_Version="${Spectron_Version}; fi
+    if [ -n "${Electron_Version}" ]; then echo "Electron_Version="${Electron_Version}; fi
+  - |
     if [ ! "${CI_COMMIT_REF_NAME}" == "master" ]; then \
       export BuildRef="_test"
     fi;     
@@ -41,41 +47,51 @@ before_script:
     else \
       touch qemu-arm-static; \
     fi;     
-  - docker build --build-arg MagicMirror_Version=${MagicMirror_Version} --build-arg myimage=${myimage} -t $DOCKER_USER/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef} .
-  # push image
+  - |
+    docker build \
+      --build-arg MagicMirror_Version=${MagicMirror_Version} \
+      --build-arg myimage=${myimage} \
+      --build-arg BuildEnv=${BuildEnv} \
+      --build-arg Spectron_Version=${Spectron_Version} \
+      --build-arg Electron_Version=${Electron_Version} \
+      -t $DOCKER_USER/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef} .
   - docker login -u=${DOCKER_USER} -p=${DOCKER_PASS}
   - docker push ${DOCKER_USER}/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef}
-  - docker tag ${DOCKER_USER}/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef} ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}
-  - docker push ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}
-  - cd ..
   - |
-    SLIM_PARAMS="--env BuildEnv=$BuildEnv --http-probe=false --include-path /bin --include-path /opt/magic_mirror --entrypoint /opt/magic_mirror/slim-entrypoint.sh --tag ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}-slim ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}"
-    if [ "${BuildEnv}" = "rpi" ]; then \
-      docker run -e DOCKER_HOST=tcp://$(grep docker /etc/hosts | cut -f1):2375 dslim/docker-slim build \
-      --continue-after timeout \
-      --env DISPLAY=unix:0.0 \
-      --env LD_LIBRARY_PATH=/opt/vc/lib \
-      --mount /opt/vc:/opt/vc/:ro \
-      --mount /run/systemd:/run/systemd \
-      --mount /tmp/.X11-unix:/tmp/.X11-unix \
-      --include-path /etc \
-      --include-path /lib/arm-linux-gnueabihf \
-      --include-path /lib/systemd \
-      --include-path /sbin \
-      --include-path /usr/bin \
-      --include-path /usr/lib/arm-linux-gnueabihf \
-      --include-path /usr/lib/sudo \
-      --include-path /usr/lib/node_modules/npm \
-      --include-path /usr/local/lib \
-      --include-path /usr/share/fonts \
-      --include-path /usr/share/arp-scan \
-      ${SLIM_PARAMS}; \
-    else \
-      docker run -e DOCKER_HOST=tcp://$(grep docker /etc/hosts | cut -f1):2375 dslim/docker-slim build \
-      --include-path /usr/local/lib/node_modules/npm \
-      ${SLIM_PARAMS}; \
-    fi;     
-  - docker push ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}-slim
+    if [ "${BuildEnv}" = "test" ]; then
+      docker run --rm --privileged --env StartEnv=test $DOCKER_USER/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef}
+    else
+      docker tag ${DOCKER_USER}/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef} ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}
+      docker push ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}
+      cd ..
+      SLIM_PARAMS="--env BuildEnv=$BuildEnv --env StartEnv=slim --http-probe=false --include-path /bin --include-path /opt/magic_mirror --tag ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}-slim ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}"
+      if [ "${BuildEnv}" = "rpi" ]; then
+        docker run -e DOCKER_HOST=tcp://$(grep docker /etc/hosts | cut -f1):2375 dslim/docker-slim build \
+        --continue-after timeout \
+        --env DISPLAY=unix:0.0 \
+        --env LD_LIBRARY_PATH=/opt/vc/lib \
+        --mount /opt/vc:/opt/vc/:ro \
+        --mount /run/systemd:/run/systemd \
+        --mount /tmp/.X11-unix:/tmp/.X11-unix \
+        --include-path /etc \
+        --include-path /lib/arm-linux-gnueabihf \
+        --include-path /lib/systemd \
+        --include-path /sbin \
+        --include-path /usr/bin \
+        --include-path /usr/lib/arm-linux-gnueabihf \
+        --include-path /usr/lib/sudo \
+        --include-path /usr/lib/node_modules/npm \
+        --include-path /usr/local/lib \
+        --include-path /usr/share/fonts \
+        --include-path /usr/share/arp-scan \
+        ${SLIM_PARAMS};
+      else
+        docker run -e DOCKER_HOST=tcp://$(grep docker /etc/hosts | cut -f1):2375 dslim/docker-slim build \
+        --include-path /usr/local/lib/node_modules/npm \
+        ${SLIM_PARAMS}; \
+      fi;     
+      docker push ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}-slim
+    fi;
   extends: .whenrun
 
 build_debian:
@@ -91,6 +107,14 @@ build_rpi:
     BuildEnv: rpi
     myimage: arm32v7/node:slim
   extends: .build
+
+build_test:
+  stage: build
+  variables:
+    BuildEnv: test
+    myimage: circleci/node:latest-browsers
+  extends: .build
+  allow_failure: true
 
 manifest:
   stage: manifest
