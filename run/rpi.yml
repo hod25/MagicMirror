@@ -18,6 +18,7 @@ services:
     environment:
       LD_LIBRARY_PATH: /opt/vc/lib
       DISPLAY: unix:0.0
+      TZ: Europe/Berlin
     network_mode: host
     restart: unless-stopped
     command: 
