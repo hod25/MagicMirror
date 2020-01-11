@@ -14,18 +14,13 @@ if [ ! -f /opt/magic_mirror/config/config.js ]; then
 fi
 
 if [ "$StartEnv" = "test" ]; then 
-  echo "installations for tests"
 
-  apt-get install -y xvfb
-  npm install -g grunt-cli
-  Xvfb :99 -screen 0 1024x768x16 &
-  su -c "cd /opt/magic_mirror && npm install" - node
-  
   echo "start tests"
-  su -c "export DISPLAY=:99" - node
-  su -c "cd /opt/magic_mirror && grunt" - node
-  su -c "cd /opt/magic_mirror && npm run test:unit" - node
-  su -c "cd /opt/magic_mirror && npm run test:e2e" - node
+  Xvfb :99 -screen 0 1024x768x16 &
+  export DISPLAY=:99
+  grunt
+  npm run test:unit
+  npm run test:e2e
 
 elif [ "$StartEnv" = "slim" ]; then 
   

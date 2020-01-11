@@ -97,12 +97,12 @@ build_debian:
     myimage: node:slim
   extends: .build
 
-build_rpi:
-  stage: build
-  variables:
-    BuildEnv: rpi
-    myimage: arm32v7/node:13.5-slim
-  extends: .build
+# build_rpi:
+  # stage: build
+  # variables:
+    # BuildEnv: rpi
+    # myimage: arm32v7/node:13.5-slim
+  # extends: .build
 
 manifest:
   stage: manifest
@@ -123,8 +123,9 @@ manifest:
 test:
   stage: test
   script:
-  - docker pull ${DOCKER_USER}/magicmirror:debian_${MagicMirror_Version}${BuildRef}
-  - docker run --rm --privileged --env StartEnv=test ${DOCKER_USER}/magicmirror:debian_${MagicMirror_Version}${BuildRef}
+  - cd test
+  - docker build --build-arg myimage=${DOCKER_USER}/magicmirror:debian_${MagicMirror_Version}${BuildRef} -t $DOCKER_USER/magicmirror:mm_tests .
+  - docker run --rm --privileged ${DOCKER_USER}/magicmirror:mm_tests
   allow_failure: true
   extends: .whenrun
 
