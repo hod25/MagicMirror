@@ -1,9 +1,19 @@
 version: '3'
 
 services:
+  volumepermissions:
+    container_name: alpine
+    image: alpine:latest
+    volumes:
+      - ../mounts/config:/opt/magic_mirror/config
+      - ../mounts/modules:/opt/magic_mirror/modules
+    entrypoint: "chown -R 1000:1000 /opt/magic_mirror/modules/ && chown -R 1000:1000 /opt/magic_mirror/config/"
+
   magicmirror:
     container_name: mm
     image: karsten13/magicmirror:latest
+    depends_on:
+      - volumepermissions
     ports:
       - "8080:8080"
     volumes:

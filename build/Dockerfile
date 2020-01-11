@@ -47,5 +47,3 @@ RUN set -e; \
     mv /tmp/*entrypoint.sh .;
 
 ENTRYPOINT ["./entrypoint.sh"]
-
-USER root

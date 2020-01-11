@@ -1,6 +1,8 @@
 ARG myimage
 FROM $myimage
 
+USER root 
+
 RUN apt-get install -y xvfb && npm install -g grunt-cli
 
 USER node

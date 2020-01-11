@@ -25,22 +25,26 @@ if [ "$StartEnv" = "test" ]; then
 elif [ "$StartEnv" = "slim" ]; then 
   
   echo "start slim entrypoint"
-  rm -rf /opt/magic_mirror/magicmirror/ && cd /opt/magic_mirror && git clone https://gitlab.com/khassel/magicmirror.git
 
-  su -c "cd /opt/magic_mirror/modules/default && npm install || true" - node
+  rm -rf /opt/magic_mirror/magicmirror/ 
+  cd /opt/magic_mirror 
+  git clone https://gitlab.com/khassel/magicmirror.git
+ 
+  cd /opt/magic_mirror/modules/default
+  npm install || true
+
+  cd /opt/magic_mirror
 
   if [ "$BuildEnv" = "rpi" ]; then
-    su -c "cd /opt/magic_mirror && npm start || true" - node
-    su -c "arp-scan localhost || true" - node
+    npm start || true
+    arp-scan localhost || true
   fi
 
-  su -c "cd /opt/magic_mirror && node serveronly" - node
+  node serveronly
+
 else
 
   echo "start magicmirror"
-  su - node
-
-  cd /opt/magic_mirror
 
   exec $1 $2
 fi

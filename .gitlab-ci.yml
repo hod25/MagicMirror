@@ -97,12 +97,12 @@ build_debian:
     myimage: node:slim
   extends: .build
 
-# build_rpi:
-  # stage: build
-  # variables:
-    # BuildEnv: rpi
-    # myimage: arm32v7/node:13.5-slim
-  # extends: .build
+build_rpi:
+  stage: build
+  variables:
+    BuildEnv: rpi
+    myimage: arm32v7/node:13.5-slim
+  extends: .build
 
 manifest:
   stage: manifest
