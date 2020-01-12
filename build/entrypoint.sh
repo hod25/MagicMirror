@@ -18,6 +18,17 @@ if [ "$StartEnv" = "test" ]; then
   echo "start tests"
   Xvfb :99 -screen 0 1024x768x16 &
   export DISPLAY=:99
+  
+  echo weather_test_timeout=$weather_test_timeout
+  
+  # adjust test timeouts
+  sed -i "s:test.timeout(10000):test.timeout(30000):g" tests/e2e/global-setup.js
+  cat tests/e2e/global-setup.js
+  if [ -n "${weather_test_timeout}" ]; then 
+    sed -i "s:10000:${weather_test_timeout}:g" tests/e2e/modules/weather_spec.js
+  fi
+  cat tests/e2e/modules/weather_spec.js
+  
   grunt
   npm run test:unit
   npm run test:e2e
