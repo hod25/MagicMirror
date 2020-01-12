@@ -89,7 +89,7 @@ build_rpi:
   stage: build
   variables:
     BuildEnv: rpi
-    myimage: arm32v7/node:slim
+    myimage: arm32v7/node:13.5-slim
   extends: .build
 
 manifest:
