@@ -17,7 +17,9 @@ RUN set -e; \
     apt-get update; \
     apt-get upgrade -y --allow-unauthenticated; \
     apt-get -qy --allow-unauthenticated install git curl libgtk-3-0 libx11-xcb-dev libxtst6 libxss1 libgconf-2-4 libnss3-dev libasound2 systemd-sysv nano arp-scan sudo; \
-    apt-get clean; \    
+    apt-get clean; \
+    usermod -a -G video node; \
+    echo "node ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers; \
     chmod +x /tmp/entrypoint.sh; \
     chown node:node /tmp/entrypoint.sh; \
     chown -R node:node /home/node/; \
