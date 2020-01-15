@@ -7,7 +7,8 @@ services:
     volumes:
       - ../mounts/config:/opt/magic_mirror/config
       - ../mounts/modules:/opt/magic_mirror/modules
-    entrypoint: "chown -R 1000:1000 /opt/magic_mirror/modules/ && chown -R 1000:1000 /opt/magic_mirror/config/"
+      - ../mounts:/opt/magic_mirror
+    entrypoint: "chown -R 1000:1000 /opt/magic_mirror"
 
   magicmirror:
     container_name: mm
