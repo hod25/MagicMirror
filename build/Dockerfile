@@ -36,7 +36,11 @@ RUN set -e; \
     if [ -n "${Spectron_Version}" ]; then sed -i "s|\"spectron\": \".*\"|\"spectron\": \"${Spectron_Version}\"|" package.json; fi; \
     if [ -n "${Electron_Version}" ]; then sed -i "s|\"electron\": \".*\"|\"electron\": \"${Electron_Version}\"|" package.json; fi; \
     cat package.json; \
-    npm install --only=production; \
+    if [ "$(arch)" = "armv7l" ]; then \
+      npm install --only=production --arch=$(arch); \
+    else \
+      npm install --only=production; \
+    fi; \
     npm cache clean -f; \
     cp config/config.js.sample config/config.js; \
     sed -i "s:address\: \"localhost\":address\: \"0.0.0.0\":" config/config.js; \

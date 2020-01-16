@@ -12,8 +12,8 @@ variables:
   GIT_DEPTH: 1
   MagicMirror_Version: v2.10.0
   # only set if you want to override the provided values from the mm project
-  Spectron_Version: ^8.0.0
-  Electron_Version: ^6.1.7
+  Spectron_Version: ^9.0.0
+  Electron_Version: ^7.1.9
 
 services:
 - docker:dind
@@ -107,14 +107,11 @@ manifest:
   - docker
 
 test:
-  variables:
-    weather_test_timeout: 30000
   stage: test
   script:
   - cd test
   - docker build --build-arg myimage=${DOCKER_USER}/magicmirror:debian_${MagicMirror_Version}${BuildRef} -t $DOCKER_USER/magicmirror:mm_tests .
-  - docker run --rm -e weather_test_timeout=${weather_test_timeout} --privileged ${DOCKER_USER}/magicmirror:mm_tests
-  allow_failure: true
+  - docker run --rm --privileged ${DOCKER_USER}/magicmirror:mm_tests
   extends: .whenrun
 
 after_script:
