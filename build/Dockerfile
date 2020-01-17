@@ -30,11 +30,17 @@ USER node
 ARG MagicMirror_Version
 ARG Spectron_Version
 ARG Electron_Version
+ARG UseLatestDependencies
 RUN set -e; \
     node -v; \
     git clone --depth 1 -b ${MagicMirror_Version} --single-branch https://github.com/MichMich/MagicMirror.git .; \
-    if [ -n "${Spectron_Version}" ]; then sed -i "s|\"spectron\": \".*\"|\"spectron\": \"${Spectron_Version}\"|" package.json; fi; \
-    if [ -n "${Electron_Version}" ]; then sed -i "s|\"electron\": \".*\"|\"electron\": \"${Electron_Version}\"|" package.json; fi; \
+    if [ $UseLatestDependencies ]; then \
+      sed -r -i "s|\"\^[0-9]+\.[0-9]+\.[0-9]+\"|\"latest\"|g" package.json; \
+      sed -i "s|\"jsdom\": \".*\"|\"jsdom\": \"\^11\.12\.0\"|" package.json; \
+    else \
+      if [ -n "${Spectron_Version}" ]; then sed -i "s|\"spectron\": \".*\"|\"spectron\": \"${Spectron_Version}\"|" package.json; fi; \
+      if [ -n "${Electron_Version}" ]; then sed -i "s|\"electron\": \".*\"|\"electron\": \"${Electron_Version}\"|" package.json; fi; \
+    fi; \  
     cat package.json; \
     if [ "$(arch)" = "armv7l" ]; then \
       npm install --only=production --arch=$(arch); \

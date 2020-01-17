@@ -11,9 +11,11 @@ variables:
   DOCKER_DRIVER: overlay2
   GIT_DEPTH: 1
   MagicMirror_Version: v2.10.0
-  # only set if you want to override the provided values from the mm project
-  Spectron_Version: ^9.0.0
-  Electron_Version: ^7.1.9
+  # only set if you want to override the provided values from the mm project:
+  # Spectron_Version: ^9.0.0
+  # Electron_Version: ^7.1.9
+  # update all dependencies to latest (except jsdom must stay on 11.12.0):
+  UseLatestDependencies: "true"
 
 services:
 - docker:dind
@@ -52,6 +54,7 @@ before_script:
     docker build \
       --build-arg MagicMirror_Version=${MagicMirror_Version} \
       --build-arg myimage=${myimage} \
+      --build-arg UseLatestDependencies=${UseLatestDependencies} \
       --build-arg Spectron_Version=${Spectron_Version} \
       --build-arg Electron_Version=${Electron_Version} \
       -t $DOCKER_USER/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef} .
