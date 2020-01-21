@@ -3,7 +3,7 @@ FROM $myimage
 
 USER root 
 
-RUN apt-get install -y xvfb && npm install -g grunt-cli
+RUN apt-get update && apt-get install -y xvfb && npm install -g grunt-cli
 
 USER node
 

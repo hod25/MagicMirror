@@ -18,6 +18,7 @@ RUN set -e; \
     apt-get upgrade -y --allow-unauthenticated; \
     apt-get -qy --allow-unauthenticated install git curl libgtk-3-0 libx11-xcb-dev libxtst6 libxss1 libgconf-2-4 libnss3-dev libasound2 systemd-sysv nano arp-scan sudo; \
     apt-get clean; \
+    rm -rf /var/lib/apt/lists/*; \
     usermod -a -G video node; \
     echo "node ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers; \
     chmod +x /tmp/entrypoint.sh; \
@@ -51,6 +52,7 @@ RUN set -e; \
       npm install --only=production; \
     fi; \
     npm cache clean -f; \
+    rm -rf /home/node/.cache; \
     cp config/config.js.sample config/config.js; \
     sed -i "s:address\: \"localhost\":address\: \"0.0.0.0\":" config/config.js; \
     sed -i "s:ipWhitelist\: \[.*\],:ipWhitelist\: \[\],:" config/config.js; \
