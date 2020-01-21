@@ -65,27 +65,6 @@ before_script:
   - docker push ${DOCKER_USER}/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef}
   - docker tag ${DOCKER_USER}/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef} ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}
   - docker push ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}
-  - cd ..
-  - |
-    if [ "${BuildEnv}" = "rpi" ]; then \
-      SLIM_PARAMS="--env DISPLAY=unix:0.0 --env LD_LIBRARY_PATH=/opt/vc/lib --mount /opt/vc:/opt/vc/:ro --mount /run/systemd:/run/systemd --mount /tmp/.X11-unix:/tmp/.X11-unix --include-path /usr/share/arp-scan --include-path /lib/arm-linux-gnueabihf"; \
-    fi; \
-    docker run -e DOCKER_HOST=tcp://$(grep docker /etc/hosts | cut -f1):2375 dslim/docker-slim build \
-    --continue-after timeout \
-    --http-probe=false \
-    --env BuildEnv=$BuildEnv \
-    --env StartEnv=slim \
-    --show-clogs \
-    --include-path /usr/local/lib/node_modules/npm \
-    --include-path /bin \
-    --include-path /opt/magic_mirror \
-    --include-path /home/node \
-    --include-path /usr/lib/sudo \
-    --include-path /sbin \
-    --include-path /lib/systemd \
-    ${SLIM_PARAMS} --tag ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}-slim \
-    ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}
-    docker push ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}-slim
   extends: .whenrun
 
 build_debian:
@@ -105,11 +84,11 @@ build_rpi:
 manifest:
   stage: manifest
   script:
-  - docker pull ${DOCKER_USER}/magicmirror:rpi-slim
-  - docker pull ${DOCKER_USER}/magicmirror:debian-slim
-  - docker manifest create ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:rpi-slim ${DOCKER_USER}/magicmirror:debian-slim
-  - docker manifest annotate --os linux --arch amd64 ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:debian-slim
-  - docker manifest annotate --os linux --arch arm ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:rpi-slim
+  - docker pull ${DOCKER_USER}/magicmirror:rpi
+  - docker pull ${DOCKER_USER}/magicmirror:debian
+  - docker manifest create ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:rpi ${DOCKER_USER}/magicmirror:debian
+  - docker manifest annotate --os linux --arch amd64 ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:debian
+  - docker manifest annotate --os linux --arch arm ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:rpi
   - docker login -u=${DOCKER_USER} -p=${DOCKER_PASS}
   - docker manifest push ${DOCKER_USER}/magicmirror:latest  
   - update_docker_readme.sh magicmirror

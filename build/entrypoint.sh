@@ -28,37 +28,6 @@ if [ "$StartEnv" = "test" ]; then
   npm run test:unit
   npm run test:e2e
 
-elif [ "$StartEnv" = "slim" ]; then 
-  
-  echo "start slim entrypoint"
-
-  rm -rf /opt/magic_mirror/magicmirror/
-  cd /opt/magic_mirror
-
-  echo git clone
-  git clone https://gitlab.com/khassel/magicmirror.git
-
-  echo npm install
-  cd /opt/magic_mirror/vendor
-  npm install || true
-
-  cd /opt/magic_mirror
-
-  if [ "$BuildEnv" = "rpi" ]; then
-    echo arp-scan
-    sudo arp-scan localhost &
-    echo npm start
-    npm start &
-
-  else
-
-    echo node serveronly
-    node serveronly &
-  fi
-
-  sudo chown -R node:node /home/node
-  sudo chown -R node:node /opt/magic_mirror
-  
 else
 
   echo "start magicmirror"
