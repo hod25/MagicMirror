@@ -11,11 +11,6 @@ variables:
   DOCKER_DRIVER: overlay2
   GIT_DEPTH: 1
   MagicMirror_Version: v2.10.0
-  # only set if you want to override the provided values from the mm project:
-  # Spectron_Version: ^9.0.0
-  # Electron_Version: ^7.1.9
-  # update all dependencies to latest (except jsdom must stay on 11.12.0):
-  UseLatestDependencies: "true"
 
 services:
 - docker:dind
@@ -23,8 +18,16 @@ services:
 before_script:
 - docker info
 - |
-  if [ ! "${CI_COMMIT_REF_NAME}" == "master" ]; then \
-    export BuildRef="_test"
+  if [ "${CI_COMMIT_REF_NAME}" == "master" ]; then \
+    echo "branch=master"; \
+  # only set if you want to override the provided values from the mm project:
+  # export Spectron_Version="^9.0.0" \
+  # export Electron_Version="^7.1.9" \
+  else \
+    echo "branch<>master"; \
+    export BuildRef="_test"; \
+    # update all dependencies to latest (except jsdom must stay on 11.12.0):
+    export UseLatestDependencies="true"; \
   fi;     
 
 .whenrun:
@@ -64,19 +67,25 @@ before_script:
   - docker push ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}
   - cd ..
   - |
-    if [ "${BuildEnv}" = "debian" ]; then \
-      docker run -e DOCKER_HOST=tcp://$(grep docker /etc/hosts | cut -f1):2375 dslim/docker-slim build \
-      --include-path /usr/local/lib/node_modules/npm \
-      --env BuildEnv=$BuildEnv \
-      --show-clogs \
-      --env StartEnv=slim \
-      --http-probe=false \
-      --include-path /bin \
-      --include-path /opt/magic_mirror \
-      --tag ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}-slim \
-      ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}
-      docker push ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}-slim
-    fi;     
+    if [ "${BuildEnv}" = "rpi" ]; then \
+      SLIM_PARAMS="--env DISPLAY=unix:0.0 --env LD_LIBRARY_PATH=/opt/vc/lib --mount /opt/vc:/opt/vc/:ro --mount /run/systemd:/run/systemd --mount /tmp/.X11-unix:/tmp/.X11-unix --include-path /usr/share/arp-scan --include-path /lib/arm-linux-gnueabihf"; \
+    fi; \
+    docker run -e DOCKER_HOST=tcp://$(grep docker /etc/hosts | cut -f1):2375 dslim/docker-slim build \
+    --continue-after timeout \
+    --http-probe=false \
+    --env BuildEnv=$BuildEnv \
+    --env StartEnv=slim \
+    --show-clogs \
+    --include-path /usr/local/lib/node_modules/npm \
+    --include-path /bin \
+    --include-path /opt/magic_mirror \
+    --include-path /home/node \
+    --include-path /usr/lib/sudo \
+    --include-path /sbin \
+    --include-path /lib/systemd \
+    ${SLIM_PARAMS} --tag ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}-slim \
+    ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}
+    docker push ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}-slim
   extends: .whenrun
 
 build_debian:
@@ -96,11 +105,11 @@ build_rpi:
 manifest:
   stage: manifest
   script:
-  - docker pull ${DOCKER_USER}/magicmirror:rpi
+  - docker pull ${DOCKER_USER}/magicmirror:rpi-slim
   - docker pull ${DOCKER_USER}/magicmirror:debian-slim
-  - docker manifest create ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:rpi ${DOCKER_USER}/magicmirror:debian-slim
+  - docker manifest create ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:rpi-slim ${DOCKER_USER}/magicmirror:debian-slim
   - docker manifest annotate --os linux --arch amd64 ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:debian-slim
-  - docker manifest annotate --os linux --arch arm ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:rpi
+  - docker manifest annotate --os linux --arch arm ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:rpi-slim
   - docker login -u=${DOCKER_USER} -p=${DOCKER_PASS}
   - docker manifest push ${DOCKER_USER}/magicmirror:latest  
   - update_docker_readme.sh magicmirror

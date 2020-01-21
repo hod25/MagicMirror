@@ -48,17 +48,17 @@ elif [ "$StartEnv" = "slim" ]; then
     echo arp-scan
     sudo arp-scan localhost &
     echo npm start
-    npm start || true
+    npm start &
 
   else
 
     echo node serveronly
-    node serveronly || true
+    node serveronly &
   fi
 
   sudo chown -R node:node /home/node
   sudo chown -R node:node /opt/magic_mirror
-
+  
 else
 
   echo "start magicmirror"

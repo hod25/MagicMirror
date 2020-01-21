@@ -42,9 +42,12 @@ RUN set -e; \
       if [ -n "${Electron_Version}" ]; then sed -i "s|\"electron\": \".*\"|\"electron\": \"${Electron_Version}\"|" package.json; fi; \
     fi; \  
     cat package.json; \
+    echo arch=$(arch); \
     if [ "$(arch)" = "armv7l" ]; then \
+      echo "install rpi"; \
       npm install --only=production --arch=$(arch); \
     else \
+      echo "install debian"; \
       npm install --only=production; \
     fi; \
     npm cache clean -f; \
