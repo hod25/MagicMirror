@@ -27,6 +27,7 @@ RUN set -e; \
     chown -R node:node .;
 
 USER node
+ENV ELECTRON_DISABLE_SANDBOX=1
 
 ARG MagicMirror_Version
 ARG Spectron_Version
@@ -57,7 +58,6 @@ RUN set -e; \
     sed -i "s:address\: \"localhost\":address\: \"0.0.0.0\":" config/config.js; \
     sed -i "s:ipWhitelist\: \[.*\],:ipWhitelist\: \[\],:" config/config.js; \
     sed -i "s:xorg\=\$(pgrep Xorg):xorg=dummy:" run-start.sh; \
-    sed -i "s:electron js/electron.js \$1:electron js/electron.js \$1 --no-sandbox:" run-start.sh; \
     mkdir mount_ori; \
     mv modules mount_ori/; \
     mv config mount_ori/; \
