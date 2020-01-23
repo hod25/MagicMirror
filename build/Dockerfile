@@ -6,17 +6,23 @@ EXPOSE 8080
 
 USER root
 
+ENV ELECTRON_DISABLE_SANDBOX=1 \
+    DEBIAN_FRONTEND=noninteractive
+
 WORKDIR /opt/magic_mirror
 
 # copy startscripts into container:
 COPY entrypoint.sh /tmp/
 COPY qemu-arm-static /usr/bin
 
-# arp-scan and sudo only needed for the module MMM-NetworkScanner, nano as editor
+# systemd-sysv, arp-scan and sudo needed for the module MMM-NetworkScanner
+# sudo needed for the module MMM-Remote-Control
+# sudo needed for cp in entrypoint
 RUN set -e; \
     apt-get update; \
     apt-get upgrade -y --allow-unauthenticated; \
-    apt-get -qy --allow-unauthenticated install git curl libgtk-3-0 libx11-xcb-dev libxtst6 libxss1 libgconf-2-4 libnss3-dev libasound2 systemd-sysv nano arp-scan sudo; \
+    apt-get -qy --allow-unauthenticated install git libgtk-3-0 libx11-xcb-dev libnss3-dev libxss1 libasound2 nano \
+      systemd-sysv arp-scan sudo; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*; \
     usermod -a -G video node; \
@@ -27,7 +33,6 @@ RUN set -e; \
     chown -R node:node .;
 
 USER node
-ENV ELECTRON_DISABLE_SANDBOX=1
 
 ARG MagicMirror_Version
 ARG Spectron_Version

@@ -27,14 +27,12 @@ export MagicMirror_Version=v2.10.0
 export myimage=arm32v7/node:13.5-slim
 export DOCKER_USER=karsten13
 export BuildEnv=rpi
-export Spectron_Version=^8.0.0
-export Electron_Version=^6.1.7
+export UseLatestDependencies=true
 docker build \
   --build-arg MagicMirror_Version=${MagicMirror_Version} \
   --build-arg myimage=${myimage} \
-  --build-arg Spectron_Version=${Spectron_Version} \
-  --build-arg Electron_Version=${Electron_Version} \
-  -t $DOCKER_USER/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef} .
+  --build-arg UseLatestDependencies=${UseLatestDependencies} \
+  -t $DOCKER_USER/magicmirror:local .
 
 
 
