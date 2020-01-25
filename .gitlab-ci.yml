@@ -101,6 +101,7 @@ test:
   artifacts:
     paths:
     - package-lock.json
+  allow_failure: true
   extends: .whenrun
 
 after_script:
