@@ -1,38 +1,25 @@
-
 export MagicMirror_Version=v2.10.0
-export myimage=circleci/node:latest-browsers
+export baseimage=node:slim
 export DOCKER_USER=karsten13
 export BuildEnv=debian
-docker build --build-arg MagicMirror_Version=${MagicMirror_Version} --build-arg myimage=${myimage} -t $DOCKER_USER/magicmirror:${BuildEnv}_${MagicMirror_Version} .
-
-
-export MagicMirror_Version=v2.10.0
-export myimage=node:slim
-export DOCKER_USER=karsten13
-export BuildEnv=debian
-export Spectron_Version=^8.0.0
-export Electron_Version=^6.1.7
 docker build \
       --build-arg MagicMirror_Version=${MagicMirror_Version} \
-      --build-arg myimage=${myimage} \
-      --build-arg BuildEnv=${BuildEnv} \
-      --build-arg Spectron_Version=${Spectron_Version} \
-      --build-arg Electron_Version=${Electron_Version} \
+      --build-arg baseimage=${baseimage} \
+      --build-arg BuildRef=${BuildRef} \
       -t $DOCKER_USER/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef} .
 
 
 
 
 export MagicMirror_Version=v2.10.0
-export myimage=arm32v7/node:13.5-slim
+export baseimage=arm32v7/node:13.5-slim
 export DOCKER_USER=karsten13
 export BuildEnv=rpi
-export UseLatestDependencies=true
 docker build \
-  --build-arg MagicMirror_Version=${MagicMirror_Version} \
-  --build-arg myimage=${myimage} \
-  --build-arg UseLatestDependencies=${UseLatestDependencies} \
-  -t $DOCKER_USER/magicmirror:local .
+      --build-arg MagicMirror_Version=${MagicMirror_Version} \
+      --build-arg baseimage=${baseimage} \
+      --build-arg BuildRef=${BuildRef} \
+      -t $DOCKER_USER/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef} .
 
 
 

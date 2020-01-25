@@ -1,5 +1,5 @@
-ARG myimage
-FROM $myimage
+ARG baseimage
+FROM $baseimage
 MAINTAINER Karsten Hassel
 
 EXPOSE 8080
@@ -34,19 +34,16 @@ RUN set -e; \
 
 USER node
 
+ARG BuildRef
 ARG MagicMirror_Version
-ARG Spectron_Version
-ARG Electron_Version
-ARG UseLatestDependencies
 RUN set -e; \
     node -v; \
     git clone --depth 1 -b ${MagicMirror_Version} --single-branch https://github.com/MichMich/MagicMirror.git .; \
-    if [ $UseLatestDependencies ]; then \
-      sed -r -i "s|\"\^[0-9]+\.[0-9]+\.[0-9]+\"|\"latest\"|g" package.json; \
-      sed -i "s|\"jsdom\": \".*\"|\"jsdom\": \"\^11\.12\.0\"|" package.json; \
-    else \
-      if [ -n "${Spectron_Version}" ]; then sed -i "s|\"spectron\": \".*\"|\"spectron\": \"${Spectron_Version}\"|" package.json; fi; \
-      if [ -n "${Electron_Version}" ]; then sed -i "s|\"electron\": \".*\"|\"electron\": \"${Electron_Version}\"|" package.json; fi; \
+    if [ "$BuildRef" = "_test" ]; then \
+      # in test-images, update these dependencies:
+      sed -i "s|\"spectron\": \".*\"|\"spectron\": \"\^9\.0\.0\"|" package.json; \
+      sed -i "s|\"electron\": \".*\"|\"electron\": \"\^7\.1\.9\"|" package.json; \
+      sed -i "s|\"mocha\": \".*\"|\"mocha\": \"\^7\.0\.0\"|" package.json; \
     fi; \  
     cat package.json; \
     echo arch=$(arch); \

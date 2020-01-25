@@ -20,14 +20,9 @@ before_script:
 - |
   if [ "${CI_COMMIT_REF_NAME}" == "master" ]; then \
     echo "branch=master"; \
-  # only set if you want to override the provided values from the mm project:
-  # export Spectron_Version="^9.0.0" \
-  # export Electron_Version="^7.1.9" \
   else \
     echo "branch<>master"; \
     export BuildRef="_test"; \
-    # update all dependencies to latest (except jsdom must stay on 11.12.0):
-    export UseLatestDependencies="true"; \
   fi;     
 
 .whenrun:
@@ -40,12 +35,8 @@ before_script:
 .build:
   script:
   - echo "BuildEnv="${BuildEnv}
-  - echo "myimage="${myimage}
+  - echo "baseimage="${baseimage}
   - echo "MagicMirror_Version="${MagicMirror_Version}
-  - |
-    if [ -n "${Spectron_Version}" ]; then echo "Spectron_Version="${Spectron_Version}; fi
-    if [ -n "${Electron_Version}" ]; then echo "Electron_Version="${Electron_Version}; fi
-    # build image
   - cd ./build
   - |
     if [ "${BuildEnv}" = "rpi" ]; then \
@@ -56,10 +47,8 @@ before_script:
   - |
     docker build \
       --build-arg MagicMirror_Version=${MagicMirror_Version} \
-      --build-arg myimage=${myimage} \
-      --build-arg UseLatestDependencies=${UseLatestDependencies} \
-      --build-arg Spectron_Version=${Spectron_Version} \
-      --build-arg Electron_Version=${Electron_Version} \
+      --build-arg baseimage=${baseimage} \
+      --build-arg BuildRef=${BuildRef} \
       -t $DOCKER_USER/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef} .
   - docker login -u=${DOCKER_USER} -p=${DOCKER_PASS}
   - docker push ${DOCKER_USER}/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef}
@@ -71,14 +60,14 @@ build_debian:
   stage: build
   variables:
     BuildEnv: debian
-    myimage: node:slim
+    baseimage: node:slim
   extends: .build
 
 build_rpi:
   stage: build
   variables:
     BuildEnv: rpi
-    myimage: arm32v7/node:13.5-slim
+    baseimage: arm32v7/node:13.5-slim
   extends: .build
 
 manifest:
@@ -101,7 +90,7 @@ test:
   stage: test
   script:
   - cd test
-  - docker build --build-arg myimage=${DOCKER_USER}/magicmirror:debian_${MagicMirror_Version}${BuildRef} -t $DOCKER_USER/magicmirror:mm_tests .
+  - docker build --build-arg baseimage=${DOCKER_USER}/magicmirror:debian_${MagicMirror_Version}${BuildRef} -t $DOCKER_USER/magicmirror:mm_tests .
   - docker run --rm --privileged ${DOCKER_USER}/magicmirror:mm_tests
   extends: .whenrun
 

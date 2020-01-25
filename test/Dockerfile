@@ -1,5 +1,5 @@
-ARG myimage
-FROM $myimage
+ARG baseimage
+FROM $baseimage
 
 USER root 
 
