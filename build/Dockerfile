@@ -6,8 +6,7 @@ EXPOSE 8080
 
 USER root
 
-ENV ELECTRON_DISABLE_SANDBOX=1 \
-    DEBIAN_FRONTEND=noninteractive
+ENV ELECTRON_DISABLE_SANDBOX=1
 
 WORKDIR /opt/magic_mirror
 
@@ -21,7 +20,7 @@ COPY qemu-arm-static /usr/bin
 RUN set -e; \
     apt-get update; \
     apt-get upgrade -y --allow-unauthenticated; \
-    apt-get -qy --allow-unauthenticated install git libgtk-3-0 libx11-xcb-dev libnss3-dev libxss1 libasound2 nano \
+    DEBIAN_FRONTEND=noninteractive apt-get -qy --allow-unauthenticated install git libgtk-3-0 libx11-xcb-dev libnss3-dev libxss1 libasound2 nano \
       systemd-sysv arp-scan sudo; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*; \

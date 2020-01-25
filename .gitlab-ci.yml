@@ -50,10 +50,15 @@ before_script:
       --build-arg baseimage=${baseimage} \
       --build-arg BuildRef=${BuildRef} \
       -t $DOCKER_USER/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef} .
+  - cd ..
+  - docker run --rm --entrypoint cat ${DOCKER_USER}/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef} package-lock.json > package-lock.json
   - docker login -u=${DOCKER_USER} -p=${DOCKER_PASS}
   - docker push ${DOCKER_USER}/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef}
   - docker tag ${DOCKER_USER}/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef} ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}
   - docker push ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}
+  artifacts:
+    paths:
+    - package-lock.json
   extends: .whenrun
 
 build_debian:
@@ -91,7 +96,11 @@ test:
   script:
   - cd test
   - docker build --build-arg baseimage=${DOCKER_USER}/magicmirror:debian_${MagicMirror_Version}${BuildRef} -t $DOCKER_USER/magicmirror:mm_tests .
+  - docker run --rm --entrypoint cat ${DOCKER_USER}/magicmirror:mm_tests package-lock.json > package-lock.json
   - docker run --rm --privileged ${DOCKER_USER}/magicmirror:mm_tests
+  artifacts:
+    paths:
+    - package-lock.json
   extends: .whenrun
 
 after_script:
