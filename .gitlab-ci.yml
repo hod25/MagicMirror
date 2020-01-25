@@ -1,6 +1,7 @@
 stages:
   - build
   - manifest
+  - test
 
 image: ${DOCKER_USER}/docker:stable
 
@@ -16,6 +17,13 @@ services:
 
 before_script:
 - docker info
+- |
+  if [ "${CI_COMMIT_REF_NAME}" == "master" ]; then \
+    echo "branch=master"; \
+  else \
+    echo "branch<>master"; \
+    export BuildRef="_test"; \
+  fi;     
 
 .whenrun:
   only:
@@ -27,13 +35,8 @@ before_script:
 .build:
   script:
   - echo "BuildEnv="${BuildEnv}
-  - echo "myimage="${myimage}
+  - echo "baseimage="${baseimage}
   - echo "MagicMirror_Version="${MagicMirror_Version}
-  - |
-    if [ ! "${CI_COMMIT_REF_NAME}" == "master" ]; then \
-      export BuildRef="_test"
-    fi;     
-    # build image
   - cd ./build
   - |
     if [ "${BuildEnv}" = "rpi" ]; then \
@@ -41,65 +44,45 @@ before_script:
     else \
       touch qemu-arm-static; \
     fi;     
-  - docker build --build-arg MagicMirror_Version=${MagicMirror_Version} --build-arg myimage=${myimage} -t $DOCKER_USER/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef} .
-  # push image
+  - |
+    docker build \
+      --build-arg MagicMirror_Version=${MagicMirror_Version} \
+      --build-arg baseimage=${baseimage} \
+      --build-arg BuildRef=${BuildRef} \
+      -t $DOCKER_USER/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef} .
+  - cd ..
+  - docker run --rm --entrypoint cat ${DOCKER_USER}/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef} package-lock.json > package-lock.json
   - docker login -u=${DOCKER_USER} -p=${DOCKER_PASS}
   - docker push ${DOCKER_USER}/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef}
   - docker tag ${DOCKER_USER}/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef} ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}
   - docker push ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}
-  - cd ..
-  - |
-    SLIM_PARAMS="--env BuildEnv=$BuildEnv --http-probe=false --include-path /bin --include-path /opt/magic_mirror --entrypoint /opt/magic_mirror/slim-entrypoint.sh --tag ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}-slim ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}"
-    if [ "${BuildEnv}" = "rpi" ]; then \
-      docker run -e DOCKER_HOST=tcp://$(grep docker /etc/hosts | cut -f1):2375 dslim/docker-slim build \
-      --continue-after timeout \
-      --env DISPLAY=unix:0.0 \
-      --env LD_LIBRARY_PATH=/opt/vc/lib \
-      --mount /opt/vc:/opt/vc/:ro \
-      --mount /run/systemd:/run/systemd \
-      --mount /tmp/.X11-unix:/tmp/.X11-unix \
-      --include-path /etc \
-      --include-path /lib/arm-linux-gnueabihf \
-      --include-path /lib/systemd \
-      --include-path /sbin \
-      --include-path /usr/bin \
-      --include-path /usr/lib/arm-linux-gnueabihf \
-      --include-path /usr/lib/sudo \
-      --include-path /usr/lib/node_modules/npm \
-      --include-path /usr/local/lib \
-      --include-path /usr/share/fonts \
-      --include-path /usr/share/arp-scan \
-      ${SLIM_PARAMS}; \
-    else \
-      docker run -e DOCKER_HOST=tcp://$(grep docker /etc/hosts | cut -f1):2375 dslim/docker-slim build \
-      --include-path /usr/local/lib/node_modules/npm \
-      ${SLIM_PARAMS}; \
-    fi;     
-  - docker push ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}-slim
+  artifacts:
+    paths:
+    - package-lock.json
   extends: .whenrun
 
 build_debian:
   stage: build
   variables:
     BuildEnv: debian
-    myimage: node:slim
+    baseimage: node:slim
   extends: .build
 
 build_rpi:
   stage: build
   variables:
     BuildEnv: rpi
-    myimage: arm32v7/node:13.5-slim
+    baseimage: arm32v7/node:13.5-slim
   extends: .build
 
 manifest:
   stage: manifest
   script:
-  - docker pull ${DOCKER_USER}/magicmirror:rpi-slim
-  - docker pull ${DOCKER_USER}/magicmirror:debian-slim
-  - docker manifest create ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:rpi-slim ${DOCKER_USER}/magicmirror:debian-slim
-  - docker manifest annotate --os linux --arch amd64 ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:debian-slim
-  - docker manifest annotate --os linux --arch arm ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:rpi-slim
+  - docker pull ${DOCKER_USER}/magicmirror:rpi
+  - docker pull ${DOCKER_USER}/magicmirror:debian
+  - docker manifest create ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:rpi ${DOCKER_USER}/magicmirror:debian
+  - docker manifest annotate --os linux --arch amd64 ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:debian
+  - docker manifest annotate --os linux --arch arm ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:rpi
   - docker login -u=${DOCKER_USER} -p=${DOCKER_PASS}
   - docker manifest push ${DOCKER_USER}/magicmirror:latest  
   - update_docker_readme.sh magicmirror
@@ -107,6 +90,18 @@ manifest:
   - master
   tags:
   - docker
+
+test:
+  stage: test
+  script:
+  - cd test
+  - docker build --build-arg baseimage=${DOCKER_USER}/magicmirror:debian_${MagicMirror_Version}${BuildRef} -t $DOCKER_USER/magicmirror:mm_tests .
+  - docker run --rm --entrypoint cat ${DOCKER_USER}/magicmirror:mm_tests package-lock.json > package-lock.json
+  - docker run --rm --privileged ${DOCKER_USER}/magicmirror:mm_tests
+  artifacts:
+    paths:
+    - package-lock.json
+  extends: .whenrun
 
 after_script:
 - docker logout
