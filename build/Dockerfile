@@ -43,6 +43,9 @@ RUN set -e; \
       sed -i "s|\"spectron\": \".*\"|\"spectron\": \"\^9\.0\.0\"|" package.json; \
       sed -i "s|\"electron\": \".*\"|\"electron\": \"\^7\.1\.9\"|" package.json; \
       sed -i "s|\"mocha\": \".*\"|\"mocha\": \"\^7\.0\.0\"|" package.json; \
+    else \
+      # current electron version 3.x needs spectron 5.x to run tests:
+      sed -i "s|\"spectron\": \".*\"|\"spectron\": \"\^5\.0\.0\"|" package.json; \
     fi; \  
     cat package.json; \
     echo arch=$(arch); \
