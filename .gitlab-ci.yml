@@ -1,6 +1,6 @@
 stages:
   - build
-  - manifest
+#  - manifest
   - test
 
 image: ${DOCKER_USER}/docker:stable
@@ -14,6 +14,8 @@ variables:
 
 services:
 - docker:dind
+#- name: docker:dind
+#  command: ["--experimental"]
 
 before_script:
 - docker info
@@ -32,70 +34,45 @@ before_script:
   tags:
   - docker
 
-.build:
+build:
+  stage: build
   script:
-  - echo "BuildEnv="${BuildEnv}
-  - echo "baseimage="${baseimage}
   - echo "MagicMirror_Version="${MagicMirror_Version}
   - cd ./build
-  - |
-    if [ "${BuildEnv}" = "rpi" ]; then \
-      cp /tmp/qemu/qemu-arm-static .; \
-    else \
-      touch qemu-arm-static; \
-    fi;     
-  - |
-    docker build \
-      --build-arg MagicMirror_Version=${MagicMirror_Version} \
-      --build-arg baseimage=${baseimage} \
-      --build-arg BuildRef=${BuildRef} \
-      -t $DOCKER_USER/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef} .
-  - cd ..
-  - docker run --rm --entrypoint cat ${DOCKER_USER}/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef} package-lock.json > package-lock.json
+  - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
   - docker login -u=${DOCKER_USER} -p=${DOCKER_PASS}
-  - docker push ${DOCKER_USER}/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef}
-  - docker tag ${DOCKER_USER}/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef} ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}
-  - docker push ${DOCKER_USER}/magicmirror:${BuildEnv}${BuildRef}
-  artifacts:
-    paths:
-    - package-lock.json
+  - docker buildx create --name xbuilder --use
+  - docker buildx ls
+  - docker buildx build --progress "plain" --platform "linux/amd64,linux/arm/v7" --build-arg "MagicMirror_Version=${MagicMirror_Version}" --build-arg "BuildRef=${BuildRef}" --push -t $DOCKER_USER/magicmirror:${MagicMirror_Version}${BuildRef} .
+  - docker buildx build --progress "plain" --platform "linux/amd64,linux/arm/v7" --build-arg "MagicMirror_Version=${MagicMirror_Version}" --build-arg "BuildRef=${BuildRef}" --push -t $DOCKER_USER/magicmirror:latest${BuildRef} .
+#  - cd ..
+#  - docker run --rm --entrypoint cat ${DOCKER_USER}/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef} package-lock.json > package-lock.json
+  # artifacts:
+    # paths:
+    # - package-lock.json
   extends: .whenrun
 
-build_debian:
-  stage: build
-  variables:
-    BuildEnv: debian
-    baseimage: node:slim
-  extends: .build
-
-build_rpi:
-  stage: build
-  variables:
-    BuildEnv: rpi
-    baseimage: arm32v7/node:13.5-slim
-  extends: .build
-
-manifest:
-  stage: manifest
-  script:
-  - docker pull ${DOCKER_USER}/magicmirror:rpi
-  - docker pull ${DOCKER_USER}/magicmirror:debian
-  - docker manifest create ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:rpi ${DOCKER_USER}/magicmirror:debian
-  - docker manifest annotate --os linux --arch amd64 ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:debian
-  - docker manifest annotate --os linux --arch arm ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:rpi
-  - docker login -u=${DOCKER_USER} -p=${DOCKER_PASS}
-  - docker manifest push ${DOCKER_USER}/magicmirror:latest  
-  - update_docker_readme.sh magicmirror
-  only:
-  - master
-  tags:
-  - docker
+# manifest:
+  # stage: manifest
+  # script:
+  # - docker pull ${DOCKER_USER}/magicmirror:rpi
+  # - docker pull ${DOCKER_USER}/magicmirror:debian
+  # - docker manifest create ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:rpi ${DOCKER_USER}/magicmirror:debian
+  # - docker manifest annotate --os linux --arch amd64 ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:debian
+  # - docker manifest annotate --os linux --arch arm ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:rpi
+  # - docker login -u=${DOCKER_USER} -p=${DOCKER_PASS}
+  # - docker manifest push ${DOCKER_USER}/magicmirror:latest  
+  # - update_docker_readme.sh magicmirror
+  # only:
+  # - master
+  # tags:
+  # - docker
 
 test:
   stage: test
   script:
   - cd test
-  - docker build --build-arg baseimage=${DOCKER_USER}/magicmirror:debian_${MagicMirror_Version}${BuildRef} -t $DOCKER_USER/magicmirror:mm_tests .
+  - docker build --build-arg baseimage=${DOCKER_USER}/magicmirror:${MagicMirror_Version}${BuildRef} -t $DOCKER_USER/magicmirror:mm_tests .
   - docker run --rm --entrypoint cat ${DOCKER_USER}/magicmirror:mm_tests package-lock.json > package-lock.json
   - docker run --rm --privileged ${DOCKER_USER}/magicmirror:mm_tests
   artifacts:

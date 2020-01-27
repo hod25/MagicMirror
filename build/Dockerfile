@@ -1,5 +1,4 @@
-ARG baseimage
-FROM $baseimage
+FROM node:13.5-slim
 MAINTAINER Karsten Hassel
 
 EXPOSE 8080
@@ -12,7 +11,6 @@ WORKDIR /opt/magic_mirror
 
 # copy startscripts into container:
 COPY entrypoint.sh /tmp/
-COPY qemu-arm-static /usr/bin
 
 # systemd-sysv, arp-scan and sudo needed for the module MMM-NetworkScanner
 # sudo needed for the module MMM-Remote-Control
