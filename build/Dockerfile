@@ -1,4 +1,4 @@
-FROM node:13.5-slim
+FROM node:slim
 MAINTAINER Karsten Hassel
 
 EXPOSE 8080
@@ -19,6 +19,7 @@ RUN set -e; \
     apt-get update; \
     apt-get upgrade -y --allow-unauthenticated; \
     DEBIAN_FRONTEND=noninteractive apt-get -qy --allow-unauthenticated install git libgtk-3-0 libx11-xcb-dev libnss3-dev libxss1 libasound2 nano \
+      libatomic1 \
       systemd-sysv arp-scan sudo; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*; \
@@ -63,6 +64,7 @@ RUN set -e; \
     mkdir mount_ori; \
     mv modules mount_ori/; \
     mv config mount_ori/; \
-    mv /tmp/*entrypoint.sh .;
+    mv /tmp/*entrypoint.sh .; \
+    find . -name "*.md" -delete; 
 
 ENTRYPOINT ["./entrypoint.sh"]

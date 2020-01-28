@@ -1,6 +1,5 @@
 stages:
   - build
-#  - manifest
   - test
 
 image: ${DOCKER_USER}/docker:stable
@@ -14,8 +13,6 @@ variables:
 
 services:
 - docker:dind
-#- name: docker:dind
-#  command: ["--experimental"]
 
 before_script:
 - docker info
@@ -45,34 +42,14 @@ build:
   - docker buildx ls
   - docker buildx build --progress "plain" --platform "linux/amd64,linux/arm/v7" --build-arg "MagicMirror_Version=${MagicMirror_Version}" --build-arg "BuildRef=${BuildRef}" --push -t $DOCKER_USER/magicmirror:${MagicMirror_Version}${BuildRef} .
   - docker buildx build --progress "plain" --platform "linux/amd64,linux/arm/v7" --build-arg "MagicMirror_Version=${MagicMirror_Version}" --build-arg "BuildRef=${BuildRef}" --push -t $DOCKER_USER/magicmirror:latest${BuildRef} .
-#  - cd ..
-#  - docker run --rm --entrypoint cat ${DOCKER_USER}/magicmirror:${BuildEnv}_${MagicMirror_Version}${BuildRef} package-lock.json > package-lock.json
-  # artifacts:
-    # paths:
-    # - package-lock.json
   extends: .whenrun
-
-# manifest:
-  # stage: manifest
-  # script:
-  # - docker pull ${DOCKER_USER}/magicmirror:rpi
-  # - docker pull ${DOCKER_USER}/magicmirror:debian
-  # - docker manifest create ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:rpi ${DOCKER_USER}/magicmirror:debian
-  # - docker manifest annotate --os linux --arch amd64 ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:debian
-  # - docker manifest annotate --os linux --arch arm ${DOCKER_USER}/magicmirror:latest ${DOCKER_USER}/magicmirror:rpi
-  # - docker login -u=${DOCKER_USER} -p=${DOCKER_PASS}
-  # - docker manifest push ${DOCKER_USER}/magicmirror:latest  
-  # - update_docker_readme.sh magicmirror
-  # only:
-  # - master
-  # tags:
-  # - docker
 
 test:
   stage: test
   script:
   - cd test
   - docker build --build-arg baseimage=${DOCKER_USER}/magicmirror:${MagicMirror_Version}${BuildRef} -t $DOCKER_USER/magicmirror:mm_tests .
+  - cd ..
   - docker run --rm --entrypoint cat ${DOCKER_USER}/magicmirror:mm_tests package-lock.json > package-lock.json
   - docker run --rm --privileged ${DOCKER_USER}/magicmirror:mm_tests
   artifacts:
