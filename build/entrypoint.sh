@@ -32,5 +32,5 @@ else
 
   echo "start magicmirror"
 
-  exec $1 $2
+  exec "$@"
 fi
