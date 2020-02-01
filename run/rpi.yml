@@ -23,4 +23,5 @@ services:
     restart: unless-stopped
     command: 
       - npm
+      - run
       - start

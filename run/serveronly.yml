@@ -14,5 +14,6 @@ services:
       TZ: Europe/Berlin
     restart: unless-stopped
     command: 
-      - node
-      - serveronly
+      - npm
+      - run
+      - server
