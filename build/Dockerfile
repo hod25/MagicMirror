@@ -37,12 +37,7 @@ ARG MagicMirror_Version
 RUN set -e; \
     node -v; \
     git clone --depth 1 -b ${MagicMirror_Version} --single-branch https://github.com/MichMich/MagicMirror.git .; \
-    if [ "$BuildRef" = "_test" ]; then \
-      # in test-images, update these dependencies:
-      sed -i "s|\"spectron\": \".*\"|\"spectron\": \"\^9\.0\.0\"|" package.json; \
-      sed -i "s|\"electron\": \".*\"|\"electron\": \"\^7\.1\.9\"|" package.json; \
-      sed -i "s|\"mocha\": \".*\"|\"mocha\": \"\^7\.0\.0\"|" package.json; \
-    else \
+    if [ ! "$BuildRef" = "_test" ]; then \
       # current electron version 3.x needs spectron 5.x to run tests:
       sed -i "s|\"spectron\": \".*\"|\"spectron\": \"\^5\.0\.0\"|" package.json; \
     fi; \  
@@ -60,7 +55,7 @@ RUN set -e; \
     cp config/config.js.sample config/config.js; \
     sed -i "s:address\: \"localhost\":address\: \"0.0.0.0\":" config/config.js; \
     sed -i "s:ipWhitelist\: \[.*\],:ipWhitelist\: \[\],:" config/config.js; \
-    sed -i "s:xorg\=\$(pgrep Xorg):xorg=dummy:" run-start.sh; \
+    [ -f run-start.sh ] && sed -i "s:xorg\=\$(pgrep Xorg):xorg=dummy:" run-start.sh; \
     mkdir mount_ori; \
     mv modules mount_ori/; \
     mv config mount_ori/; \

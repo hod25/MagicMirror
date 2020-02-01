@@ -22,6 +22,7 @@ before_script:
   else \
     echo "branch<>master"; \
     export BuildRef="_test"; \
+    export MagicMirror_Version="develop"; \
   fi;     
 
 .whenrun:
