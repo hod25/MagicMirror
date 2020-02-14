@@ -1,4 +1,4 @@
-FROM node:slim
+FROM node:buster-slim
 MAINTAINER Karsten Hassel
 
 EXPOSE 8080
@@ -20,7 +20,7 @@ RUN set -e; \
     apt-get upgrade -y --allow-unauthenticated; \
     DEBIAN_FRONTEND=noninteractive apt-get -qy --allow-unauthenticated install git libgtk-3-0 libx11-xcb-dev libnss3-dev libxss1 libasound2 nano \
       libatomic1 \
-      systemd-sysv arp-scan sudo; \
+      procps arp-scan sudo; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*; \
     usermod -a -G video node; \
