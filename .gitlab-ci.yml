@@ -2,28 +2,8 @@ stages:
   - build
   - test
 
-image: ${DOCKER_USER}/docker:stable
-
 variables:
-  # When using dind, it's wise to use the overlayfs driver for
-  # improved performance.
-  DOCKER_DRIVER: overlay2
-  GIT_DEPTH: 1
-  MagicMirror_Version: v2.10.0
-
-services:
-- docker:dind
-
-before_script:
-- docker info
-- |
-  if [ "${CI_COMMIT_REF_NAME}" == "master" ]; then \
-    echo "branch=master"; \
-  else \
-    echo "branch<>master"; \
-    export BuildRef="_test"; \
-    export MagicMirror_Version="develop"; \
-  fi;     
+  MagicMirror_Version: v2.10.1
 
 .whenrun:
   only:
@@ -34,30 +14,56 @@ before_script:
 
 build:
   stage: build
+  variables:
+    # When using dind, it's wise to use the overlayfs driver for improved performance.
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: "/certs"
+    GIT_DEPTH: 1
+  image: ${DOCKER_USER}/docker:stable
+  services:
+  - docker:dind
   script:
-  - echo "MagicMirror_Version="${MagicMirror_Version}
+  - docker info
+  - |
+    if [ "${CI_COMMIT_REF_NAME}" == "master" ]; then \
+      echo "branch=master"; \
+      export BuildRef=${MagicMirror_Version}; \
+    else \
+      echo "branch<>master"; \
+      export BuildRef=${CI_COMMIT_REF_NAME}; \
+    fi;     
+  - echo "BuildRef="${BuildRef}
   - cd ./build
   - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
   - docker login -u=${DOCKER_USER} -p=${DOCKER_PASS}
-  - docker buildx create --name xbuilder --use
+  - docker context create xbuilder-context
+  - docker buildx create xbuilder-context --name xbuilder --use
   - docker buildx ls
-  - docker buildx build --progress "plain" --platform "linux/amd64,linux/arm/v7" --build-arg "MagicMirror_Version=${MagicMirror_Version}" --build-arg "BuildRef=${BuildRef}" --push -t $DOCKER_USER/magicmirror:${MagicMirror_Version}${BuildRef} .
-  - docker buildx build --progress "plain" --platform "linux/amd64,linux/arm/v7" --build-arg "MagicMirror_Version=${MagicMirror_Version}" --build-arg "BuildRef=${BuildRef}" --push -t $DOCKER_USER/magicmirror:latest${BuildRef} .
+  - docker buildx build --progress "plain" --platform "linux/amd64,linux/arm/v7" --build-arg "BuildRef=${BuildRef}" --push -t $DOCKER_USER/magicmirror:${BuildRef} .
+  - |
+    if [ "${CI_COMMIT_REF_NAME}" == "master" ]; then \
+      docker buildx build --progress "plain" --platform "linux/amd64,linux/arm/v7" --build-arg "BuildRef=${BuildRef}" --push -t $DOCKER_USER/magicmirror:latest .; \
+    fi;     
+  - docker logout
   extends: .whenrun
 
 test:
   stage: test
+  variables:
+    GIT_STRATEGY: none
+  image: 
+    name: ${DOCKER_USER}/magicmirror:${CI_COMMIT_REF_NAME}
+    entrypoint: [""]
   script:
-  - cd test
-  - docker build --build-arg baseimage=${DOCKER_USER}/magicmirror:${MagicMirror_Version}${BuildRef} -t $DOCKER_USER/magicmirror:mm_tests .
-  - cd ..
-  - docker run --rm --entrypoint cat ${DOCKER_USER}/magicmirror:mm_tests package-lock.json > package-lock.json
-  - docker run --rm --privileged ${DOCKER_USER}/magicmirror:mm_tests
+  - sudo apt-get update
+  - sudo apt-get install -y xvfb
+  - sudo npm install -g grunt-cli
+  - cd /opt/magic_mirror
+  - npm install
+  - cp -v package-lock.json ${CI_PROJECT_DIR}
+  - StartEnv=test ./entrypoint.sh
   artifacts:
     paths:
     - package-lock.json
   allow_failure: true
   extends: .whenrun
-
-after_script:
-- docker logout
