@@ -47,8 +47,8 @@ sudo pip install docker-compose
 
 ### Setup for graphical desktop
 - install unclutter: `sudo apt-get install -y unclutter`
-- edit (here with nano) `nano /home/pi/.config/lxsession/LXDE-pi/autostart` and insert the following lines for disabling screensaver and mouse cursor:
-> Hint: With Debian Stretch 9 you must edit `sudo nano /etc/xdg/lxsession/LXDE-pi/autostart`.
+- edit (here with nano) `sudo nano /etc/xdg/lxsession/LXDE-pi/autostart` and insert the following lines for disabling screensaver and mouse cursor:
+> Hint: With older debian versions you must edit this file instead `nano /home/pi/.config/lxsession/LXDE-pi/autostart`.
 
 ````bash
 @xset s noblank

@@ -44,6 +44,8 @@ build:
     if [ "${CI_COMMIT_REF_NAME}" == "master" ]; then \
       docker buildx build --progress "plain" --platform "linux/amd64,linux/arm/v7" --build-arg "BuildRef=${BuildRef}" --push -t $DOCKER_USER/magicmirror:${BuildRef} .; \
       docker buildx build --progress "plain" --platform "linux/amd64,linux/arm/v7" --build-arg "BuildRef=${BuildRef}" --push -t $DOCKER_USER/magicmirror:latest .; \
+      cd ..; \
+      update_docker_readme.sh magicmirror; \
     fi;     
   - docker logout
   extends: .whenrun
