@@ -70,6 +70,3 @@ test:
     - package-lock.json
   allow_failure: true
   extends: .whenrun
-  # temporary override "only" because testing on master always fails, waiting for release 2.11
-  only:
-  - develop
