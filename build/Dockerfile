@@ -1,4 +1,4 @@
-FROM node:slim
+FROM node:buster-slim
 MAINTAINER Karsten Hassel
 
 EXPOSE 8080
@@ -19,8 +19,7 @@ RUN set -e; \
     apt-get update; \
     apt-get upgrade -y --allow-unauthenticated; \
     DEBIAN_FRONTEND=noninteractive apt-get -qy --allow-unauthenticated install git libgtk-3-0 libx11-xcb-dev libnss3-dev libxss1 libasound2 nano \
-      libatomic1 \
-      systemd-sysv arp-scan sudo; \
+      procps arp-scan sudo; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*; \
     usermod -a -G video node; \
@@ -32,15 +31,11 @@ RUN set -e; \
 
 USER node
 
+# --arch param needed for electron 7.x, no side effects for older versions
 ARG BuildRef
-ARG MagicMirror_Version
 RUN set -e; \
     node -v; \
-    git clone --depth 1 -b ${MagicMirror_Version} --single-branch https://github.com/MichMich/MagicMirror.git .; \
-    if [ ! "$BuildRef" = "_test" ]; then \
-      # current electron version 3.x needs spectron 5.x to run tests:
-      sed -i "s|\"spectron\": \".*\"|\"spectron\": \"\^5\.0\.0\"|" package.json; \
-    fi; \  
+    git clone --depth 1 -b ${BuildRef} --single-branch https://github.com/MichMich/MagicMirror.git .; \
     cat package.json; \
     echo arch=$(arch); \
     if [ "$(arch)" = "armv7l" ]; then \
@@ -52,9 +47,8 @@ RUN set -e; \
     fi; \
     npm cache clean -f; \
     rm -rf /home/node/.cache; \
-    cp config/config.js.sample config/config.js; \
-    sed -i "s:address\: \"localhost\":address\: \"0.0.0.0\":" config/config.js; \
-    sed -i "s:ipWhitelist\: \[.*\],:ipWhitelist\: \[\],:" config/config.js; \
+    sed -i "s:address\: \"localhost\":address\: \"0.0.0.0\":" config/config.js.sample; \
+    sed -i "s:ipWhitelist\: \[.*\],:ipWhitelist\: \[\],:" config/config.js.sample; \
     [ -f run-start.sh ] && sed -i "s:xorg\=\$(pgrep Xorg):xorg=dummy:" run-start.sh; \
     mkdir mount_ori; \
     mv modules mount_ori/; \

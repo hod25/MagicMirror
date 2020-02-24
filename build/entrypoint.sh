@@ -1,14 +1,14 @@
 #!/bin/sh
 
-mkdir -p /opt/magic_mirror/modules
+rm -rf /opt/magic_mirror/modules/default
+
+mkdir -p /opt/magic_mirror/modules/default
 mkdir -p /opt/magic_mirror/config
 
-if [ ! -f /opt/magic_mirror/modules/default/defaultmodules.js ]; then
-  cp -rn /opt/magic_mirror/mount_ori/modules/. /opt/magic_mirror/modules
-fi
+cp -r /opt/magic_mirror/mount_ori/modules/default/. /opt/magic_mirror/modules/default/
 
 if [ ! -f /opt/magic_mirror/config/config.js ]; then
-  cp -rn /opt/magic_mirror/mount_ori/config/. /opt/magic_mirror/config
+  cp /opt/magic_mirror/mount_ori/config/config.js.sample /opt/magic_mirror/config/config.js
 fi
 
 sudo chown -R node:node /opt/magic_mirror/modules

@@ -14,6 +14,11 @@ There are 2 usecases:
   
 - Scenario 2: Using docker on the raspberry pi and starting the magicmirror on the screen of the pi.
 
+# Debian Buster
+
+> This image uses `debian:buster-slim` as base image. After upgrading from `stretch` to `bustor` there is no longer a simple solution to shutdown/restart the host from inside the container.
+  As workaround you can use my [mmm-remote-docker module](https://gitlab.com/khassel/mmm-remote-docker).
+
 # Installation prerequisites for server only mode with linux
 
 You need a successful [Docker installation](https://docs.docker.com/engine/installation/) and [docker-compose](https://docs.docker.com/compose/install/), which is not included in the docker linux installation.
@@ -42,8 +47,8 @@ sudo pip install docker-compose
 
 ### Setup for graphical desktop
 - install unclutter: `sudo apt-get install -y unclutter`
-- edit (here with nano) `nano /home/pi/.config/lxsession/LXDE-pi/autostart` and insert the following lines for disabling screensaver and mouse cursor:
-> Hint: With Debian Stretch 9 you must edit `sudo nano /etc/xdg/lxsession/LXDE-pi/autostart`.
+- edit (here with nano) `sudo nano /etc/xdg/lxsession/LXDE-pi/autostart` and insert the following lines for disabling screensaver and mouse cursor:
+> Hint: With older debian versions you must edit this file instead `nano /home/pi/.config/lxsession/LXDE-pi/autostart`.
 
 ````bash
 @xset s noblank

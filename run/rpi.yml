@@ -12,7 +12,6 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /tmp/.X11-unix:/tmp/.X11-unix
       - /opt/vc:/opt/vc/:ro
-      - /run/systemd:/run/systemd
     devices:
       - /dev/vchiq
     environment:
