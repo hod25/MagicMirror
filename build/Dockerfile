@@ -31,15 +31,11 @@ RUN set -e; \
 
 USER node
 
+# --arch param needed for electron 7.x, no side effects for older versions
 ARG BuildRef
 RUN set -e; \
     node -v; \
     git clone --depth 1 -b ${BuildRef} --single-branch https://github.com/MichMich/MagicMirror.git .; \
-    electron_v=$(cat package.json | grep '\"electron\"\:' | sed -r 's|\"electron\"\:(.*)|\1|' | xargs); \
-    if [ ! "$(echo $electron_v | grep -E '(\^3\..*)')" = "" ]; then \
-      # current electron version 3.x needs spectron 5.x to run tests:
-      sed -i "s|\"spectron\": \".*\"|\"spectron\": \"\^5\.0\.0\"|" package.json; \
-    fi; \  
     cat package.json; \
     echo arch=$(arch); \
     if [ "$(arch)" = "armv7l" ]; then \
