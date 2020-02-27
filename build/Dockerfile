@@ -12,7 +12,7 @@ WORKDIR /opt/magic_mirror
 # copy startscripts into container:
 COPY entrypoint.sh /tmp/
 
-# systemd-sysv, arp-scan and sudo needed for the module MMM-NetworkScanner
+# procps, arp-scan and sudo needed for the module MMM-NetworkScanner
 # sudo needed for the module MMM-Remote-Control
 # sudo needed for cp in entrypoint
 RUN set -e; \
