@@ -19,12 +19,14 @@ build:
     DOCKER_DRIVER: overlay2
     DOCKER_TLS_CERTDIR: "/certs"
     GIT_DEPTH: 1
+    Platforms: "linux/amd64,linux/arm/v7"
   image: ${DOCKER_USER}/docker:stable
   services:
   - docker:dind
   script:
   - docker info
   - |
+    CACHE_TAG=${DOCKER_USER}/magicmirror:cache-${CI_COMMIT_REF_NAME}
     if [ "${CI_COMMIT_REF_NAME}" == "master" ]; then \
       echo "branch=master"; \
       export BuildRef=${MagicMirror_Version}; \
@@ -39,11 +41,12 @@ build:
   - docker context create xbuilder-context
   - docker buildx create xbuilder-context --name xbuilder --use
   - docker buildx ls
-  - docker buildx build --progress "plain" --platform "linux/amd64,linux/arm/v7" --build-arg "BuildRef=${BuildRef}" --push -t $DOCKER_USER/magicmirror:${CI_COMMIT_REF_NAME} .
+  - buildparams="--progress "plain" --platform "${Platforms}" --build-arg "BuildRef=${BuildRef}" --cache-from=type=registry,ref=${CACHE_TAG} --cache-to=type=registry,ref=${CACHE_TAG},mode=max --push"
+  - docker buildx build ${buildparams} -t ${DOCKER_USER}/magicmirror:${CI_COMMIT_REF_NAME} .
   - |
     if [ "${CI_COMMIT_REF_NAME}" == "master" ]; then \
-      docker buildx build --progress "plain" --platform "linux/amd64,linux/arm/v7" --build-arg "BuildRef=${BuildRef}" --push -t $DOCKER_USER/magicmirror:${BuildRef} .; \
-      docker buildx build --progress "plain" --platform "linux/amd64,linux/arm/v7" --build-arg "BuildRef=${BuildRef}" --push -t $DOCKER_USER/magicmirror:latest .; \
+      docker buildx build ${buildparams} -t ${DOCKER_USER}/magicmirror:${BuildRef} .; \
+      docker buildx build ${buildparams} -t ${DOCKER_USER}/magicmirror:latest .; \
       cd ..; \
       update_docker_readme.sh magicmirror; \
     fi;     
