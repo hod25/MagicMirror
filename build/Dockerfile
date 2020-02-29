@@ -49,7 +49,6 @@ RUN set -e; \
     rm -rf /home/node/.cache; \
     sed -i "s:address\: \"localhost\":address\: \"0.0.0.0\":" config/config.js.sample; \
     sed -i "s:ipWhitelist\: \[.*\],:ipWhitelist\: \[\],:" config/config.js.sample; \
-    [ -f run-start.sh ] && sed -i "s:xorg\=\$(pgrep Xorg):xorg=dummy:" run-start.sh; \
     mkdir mount_ori; \
     mv modules mount_ori/; \
     mv config mount_ori/; \
