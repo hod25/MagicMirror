@@ -4,6 +4,7 @@ stages:
 
 variables:
   MagicMirror_Version: v2.10.1
+  GitRepo: https://github.com/MichMich/MagicMirror.git
 
 .whenrun:
   only:
@@ -41,7 +42,7 @@ build:
   - docker context create xbuilder-context
   - docker buildx create xbuilder-context --name xbuilder --use
   - docker buildx ls
-  - buildparams="--progress "plain" --platform "${Platforms}" --build-arg "BuildRef=${BuildRef}" --cache-from=type=registry,ref=${CACHE_TAG} --cache-to=type=registry,ref=${CACHE_TAG},mode=max --push"
+  - buildparams="--progress "plain" --platform "${Platforms}" --build-arg "BuildRef=${BuildRef}" --build-arg "GitRepo=${GitRepo}" --cache-from=type=registry,ref=${CACHE_TAG} --cache-to=type=registry,ref=${CACHE_TAG},mode=max --push"
   - docker buildx build ${buildparams} -t ${DOCKER_USER}/magicmirror:${CI_COMMIT_REF_NAME} .
   - |
     if [ "${CI_COMMIT_REF_NAME}" == "master" ]; then \
