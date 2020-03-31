@@ -33,9 +33,10 @@ USER node
 
 # --arch param needed for electron 7.x, no side effects for older versions
 ARG BuildRef
+ARG GitRepo
 RUN set -e; \
     node -v; \
-    git clone --depth 1 -b ${BuildRef} --single-branch https://github.com/MichMich/MagicMirror.git .; \
+    git clone --depth 1 -b ${BuildRef} --single-branch ${GitRepo} .; \
     cat package.json; \
     echo arch=$(arch); \
     if [ "$(arch)" = "armv7l" ]; then \

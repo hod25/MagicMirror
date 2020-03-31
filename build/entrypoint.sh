@@ -14,6 +14,10 @@ fi
 sudo chown -R node:node /opt/magic_mirror/modules
 sudo chown -R node:node /opt/magic_mirror/config
 
+if [ "$MM_SHOW_CURSOR" = "true" ]; then 
+  sed -i "s|  cursor: .*;|  cursor: auto;|" /opt/magic_mirror/css/main.css
+fi
+
 if [ "$StartEnv" = "test" ]; then 
 
   echo "start tests"

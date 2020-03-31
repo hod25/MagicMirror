@@ -16,7 +16,7 @@ There are 2 usecases:
 
 # Debian Buster
 
-> This image uses `debian:buster-slim` as base image. After upgrading from `stretch` to `bustor` there is no longer a simple solution to shutdown/restart the host from inside the container.
+> This image uses `debian:buster-slim` as base image. After upgrading from `stretch` to `buster` there is no longer a simple solution to shutdown/restart the host from inside the container.
   As workaround you can use my [mmm-remote-docker module](https://gitlab.com/khassel/mmm-remote-docker).
 
 # Installation prerequisites for server only mode with linux
