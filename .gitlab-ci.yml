@@ -3,7 +3,7 @@ stages:
   - test
 
 variables:
-  MagicMirror_Version: v2.10.1
+  MagicMirror_Version: v2.11.0
   GitRepo: https://github.com/MichMich/MagicMirror.git
 
 .whenrun:
