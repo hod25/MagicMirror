@@ -38,14 +38,7 @@ RUN set -e; \
     node -v; \
     git clone --depth 1 -b ${BuildRef} --single-branch ${GitRepo} .; \
     cat package.json; \
-    echo arch=$(arch); \
-    if [ "$(arch)" = "armv7l" ]; then \
-      echo "install rpi"; \
-      npm install --only=production --arch=$(arch); \
-    else \
-      echo "install debian"; \
-      npm install --only=production; \
-    fi; \
+    npm install --only=production; \
     npm cache clean -f; \
     rm -rf /home/node/.cache; \
     sed -i "s:address\: \"localhost\":address\: \"0.0.0.0\":" config/config.js.sample; \
