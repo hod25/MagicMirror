@@ -42,11 +42,14 @@ build:
   - docker buildx create xbuilder-context --name xbuilder --use
   - docker buildx ls
   - buildparams="--progress "plain" --platform "${Platforms}" --build-arg "BuildRef=${BuildRef}" --build-arg "GitRepo=${GitRepo}" --push"
-  - docker buildx build ${buildparams} -t ${DOCKER_USER}/magicmirror:${CI_COMMIT_REF_NAME} .
+  - target_img="-t "${DOCKER_USER}"/magicmirror:"${CI_COMMIT_REF_NAME}
   - |
     if [ "${CI_COMMIT_REF_NAME}" == "master" ]; then \
-      docker buildx build ${buildparams} -t ${DOCKER_USER}/magicmirror:${BuildRef} .; \
-      docker buildx build ${buildparams} -t ${DOCKER_USER}/magicmirror:latest .; \
+      target_img=${target_img}" -t "${DOCKER_USER}"/magicmirror:"${BuildRef}" -t "${DOCKER_USER}"/magicmirror:latest"
+    fi;     
+  - docker buildx build ${buildparams} ${target_img} .
+  - |
+    if [ "${CI_COMMIT_REF_NAME}" == "master" ]; then \
       cd ..; \
       update_docker_readme.sh magicmirror; \
     fi;     
