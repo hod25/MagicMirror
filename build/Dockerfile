@@ -31,7 +31,7 @@ RUN set -e; \
 
 USER node
 
-# --arch param needed for electron 7.x, no side effects for older versions
+# create css/custom.css file https://github.com/MichMich/MagicMirror/issues/1977
 ARG BuildRef
 ARG GitRepo
 RUN set -e; \
@@ -43,6 +43,7 @@ RUN set -e; \
     rm -rf /home/node/.cache; \
     sed -i "s:address\: \"localhost\":address\: \"0.0.0.0\":" config/config.js.sample; \
     sed -i "s:ipWhitelist\: \[.*\],:ipWhitelist\: \[\],:" config/config.js.sample; \
+    touch css/custom.css; \
     mkdir mount_ori; \
     mv modules mount_ori/; \
     mv config mount_ori/; \
