@@ -28,9 +28,13 @@ if [ "$StartEnv" = "test" ]; then
   sed -i "s:test.timeout(10000):test.timeout(30000):g" tests/e2e/global-setup.js
   cat tests/e2e/global-setup.js
   
-  grunt
-  npm run test:unit
+  if [ "$branch" = "master" ]; then
+    grunt
+  else
+    npm run test:lint
+  fi;
   npm run test:e2e
+  npm run test:unit
 
 else
 

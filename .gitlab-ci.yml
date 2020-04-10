@@ -66,11 +66,14 @@ test:
   script:
   - sudo apt-get update
   - sudo apt-get install -y xvfb
-  - sudo npm install -g grunt-cli
+  - |
+    if [ "${CI_COMMIT_REF_NAME}" == "master" ]; then \
+      sudo npm install -g grunt-cli; \
+    fi;     
   - cd /opt/magic_mirror
   - npm install
   - cp -v package-lock.json ${CI_PROJECT_DIR}
-  - StartEnv=test ./entrypoint.sh
+  - StartEnv=test branch=${CI_COMMIT_REF_NAME} ./entrypoint.sh
   artifacts:
     paths:
     - package-lock.json
