@@ -1,67 +1,101 @@
 stages:
   - build
+  - manifest
   - test
 
 variables:
-  MagicMirror_Version: v2.11.0
-  GitRepo: https://github.com/MichMich/MagicMirror.git
+  GIT_DEPTH: 1
+  KANIKO_IMG: ${DOCKER_USER}/kaniko-executor:latest
 
-.whenrun:
+.buildrun:
   only:
-  - master
-  - develop
+    variables:
+    - $testarch == null
+    refs:
+    - master
+    - develop
   tags:
   - docker
 
-build:
+.build:
   stage: build
+  image:
+    name: ${KANIKO_IMG}
+    entrypoint: [""]
   variables:
-    # When using dind, it's wise to use the overlayfs driver for improved performance.
+    MagicMirror_Version: v2.11.0
+    GitRepo: https://github.com/MichMich/MagicMirror.git
+  script:
+  # set branch name used from MagicMirror git-repo
+  - |
+    if [ "${CI_COMMIT_REF_NAME}" == "master" ]; then
+      echo "branch=master"
+      export BuildRef=${MagicMirror_Version}
+    else
+      echo "branch<>master"
+      export BuildRef=develop
+    fi
+  - echo "MagicMirror-BuildRef="${BuildRef}
+  # set build arch
+  - |
+    if [ -n "${buildarch}" ]; then
+      export imgarch=arm
+      /register
+    else
+      export imgarch=amd64
+    fi
+  # docker login
+  - docker.login
+  # build and push
+  - |
+    /kaniko/executor --context $CI_PROJECT_DIR/build \
+      --dockerfile $CI_PROJECT_DIR/build/Dockerfile \
+      --destination ${DOCKER_USER}/magicmirror:${CI_COMMIT_REF_NAME}_${imgarch} \
+      --build-arg buildarch=${buildarch} \
+      --build-arg BuildRef=${BuildRef} \
+      --build-arg GitRepo=${GitRepo}
+  # start test pipeline
+  - |
+    if [ "${imgarch}" == "amd64" ]; then
+      wget --post-data "token=${trigger_token}&ref=${CI_COMMIT_REF_NAME}&variables[testarch]=${imgarch}" https://gitlab.com/api/v4/projects/10637719/trigger/pipeline
+    fi
+  after_script:
+  - docker.logout
+  extends: .buildrun
+
+build_amd64:
+  extends: .build
+
+build_arm:
+  variables:
+    buildarch: "arm32v7/"
+  extends: .build
+
+manifest:
+  stage: manifest
+  image: ${DOCKER_USER}/docker:stable
+  variables:
     DOCKER_DRIVER: overlay2
     DOCKER_TLS_CERTDIR: "/certs"
-    GIT_DEPTH: 1
-    Platforms: "linux/amd64,linux/arm/v7"
-  image: ${DOCKER_USER}/docker:stable
   services:
   - docker:dind
   script:
-  - docker info
   - |
-    if [ "${CI_COMMIT_REF_NAME}" == "master" ]; then \
-      echo "branch=master"; \
-      export BuildRef=${MagicMirror_Version}; \
-    else \
-      echo "branch<>master"; \
-      export BuildRef=${CI_COMMIT_REF_NAME}; \
-    fi;     
-  - echo "BuildRef="${BuildRef}
-  - cd ./build
-  - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-  - docker login -u=${DOCKER_USER} -p=${DOCKER_PASS}
-  - docker context create xbuilder-context
-  - docker buildx create xbuilder-context --name xbuilder --use
-  - docker buildx ls
-  - buildparams="--progress "plain" --platform "${Platforms}" --build-arg "BuildRef=${BuildRef}" --build-arg "GitRepo=${GitRepo}" --push"
-  - target_img="-t "${DOCKER_USER}"/magicmirror:"${CI_COMMIT_REF_NAME}
-  - |
-    if [ "${CI_COMMIT_REF_NAME}" == "master" ]; then \
-      target_img=${target_img}" -t "${DOCKER_USER}"/magicmirror:"${BuildRef}" -t "${DOCKER_USER}"/magicmirror:latest"
-    fi;     
-  - docker buildx build ${buildparams} ${target_img} .
-  - |
-    if [ "${CI_COMMIT_REF_NAME}" == "master" ]; then \
-      cd ..; \
-      update_docker_readme.sh magicmirror; \
-    fi;     
-  - docker logout
-  extends: .whenrun
+    if [ "${CI_COMMIT_REF_NAME}" == "master" ]; then
+      write_docker_manifest.sh ${DOCKER_USER}/magicmirror:${CI_COMMIT_REF_NAME} latest
+      write_docker_manifest.sh ${DOCKER_USER}/magicmirror:${CI_COMMIT_REF_NAME} ${MagicMirror_Version}
+      update_docker_readme.sh magicmirror
+    else
+      write_docker_manifest.sh ${DOCKER_USER}/magicmirror:${CI_COMMIT_REF_NAME} ${CI_COMMIT_REF_NAME}
+    fi
+  extends: .buildrun
 
-test:
+test_amd64:
   stage: test
   variables:
     GIT_STRATEGY: none
-  image: 
-    name: ${DOCKER_USER}/magicmirror:${CI_COMMIT_REF_NAME}
+  image:
+    name: ${DOCKER_USER}/magicmirror:${CI_COMMIT_REF_NAME}_${testarch}
     entrypoint: [""]
   script:
   - sudo apt-get update
@@ -72,10 +106,9 @@ test:
     fi;     
   - cd /opt/magic_mirror
   - npm install
-  - cp -v package-lock.json ${CI_PROJECT_DIR}
-  - StartEnv=test branch=${CI_COMMIT_REF_NAME} ./entrypoint.sh
-  artifacts:
-    paths:
-    - package-lock.json
-  allow_failure: true
-  extends: .whenrun
+  - StartEnv=test ./entrypoint.sh
+  tags:
+  - docker
+  only:
+    variables:
+    - $testarch == "amd64"

@@ -1,4 +1,5 @@
-FROM node:buster-slim
+ARG buildarch
+FROM ${buildarch}node:buster-slim
 MAINTAINER Karsten Hassel
 
 EXPOSE 8080
@@ -48,6 +49,6 @@ RUN set -e; \
     mv modules mount_ori/; \
     mv config mount_ori/; \
     mv /tmp/*entrypoint.sh .; \
-    find . -name "*.md" -delete; 
+    find . -name "*.md" -delete;
 
 ENTRYPOINT ["./entrypoint.sh"]
