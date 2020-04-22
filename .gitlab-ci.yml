@@ -8,12 +8,8 @@ variables:
   KANIKO_IMG: ${DOCKER_USER}/kaniko-executor:latest
 
 .buildrun:
-  only:
-    variables:
-    - $testarch == null
-    refs:
-    - master
-    - develop
+  rules:
+  - if: $testarch == null && $CI_COMMIT_BRANCH =~ /^master$|^develop$/
   tags:
   - docker
 
@@ -109,6 +105,5 @@ test_amd64:
   - StartEnv=test ./entrypoint.sh
   tags:
   - docker
-  only:
-    variables:
-    - $testarch == "amd64"
+  rules:
+  - if: $testarch == "amd64"
