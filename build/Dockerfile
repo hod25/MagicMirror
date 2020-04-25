@@ -1,6 +1,6 @@
 ARG buildarch
 FROM ${buildarch}node:buster-slim
-MAINTAINER Karsten Hassel
+LABEL maintainer="Karsten Hassel"
 
 EXPOSE 8080
 
