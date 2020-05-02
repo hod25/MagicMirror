@@ -1,18 +1,11 @@
 stages:
   - build
-  - manifest
   - test
 
 variables:
   GIT_DEPTH: 1
   KANIKO_IMG: ${DOCKER_USER}/kaniko-executor:latest
   MagicMirror_Version: v2.11.0
-
-.buildrun:
-  rules:
-  - if: $testarch == null && $CI_COMMIT_BRANCH =~ /^master$|^develop$/
-  tags:
-  - docker
 
 .build:
   stage: build
@@ -24,7 +17,7 @@ variables:
   script:
   # set branch name used from MagicMirror git-repo
   - |
-    if [ "${CI_COMMIT_REF_NAME}" == "master" ]; then
+    if [ "${CI_COMMIT_BRANCH}" == "master" ]; then
       echo "branch=master"
       export BuildRef=${MagicMirror_Version}
     else
@@ -46,18 +39,29 @@ variables:
   - |
     /kaniko/executor --context $CI_PROJECT_DIR/build \
       --dockerfile $CI_PROJECT_DIR/build/Dockerfile \
-      --destination ${DOCKER_USER}/magicmirror:${CI_COMMIT_REF_NAME}_${imgarch} \
+      --destination ${DOCKER_USER}/magicmirror:${CI_COMMIT_BRANCH}_${imgarch} \
       --build-arg buildarch=${buildarch} \
       --build-arg BuildRef=${BuildRef} \
       --build-arg GitRepo=${GitRepo}
   # start test pipeline
   - |
     if [ "${imgarch}" == "amd64" ]; then
-      wget --post-data "token=${trigger_token}&ref=${CI_COMMIT_REF_NAME}&variables[testarch]=${imgarch}" https://gitlab.com/api/v4/projects/10637719/trigger/pipeline
+      wget --post-data "token=${trigger_token}&ref=${CI_COMMIT_BRANCH}&variables[testarch]=${imgarch}" https://gitlab.com/api/v4/projects/10637719/trigger/pipeline
+    fi
+  - |
+    if [ "${CI_COMMIT_BRANCH}" == "master" ]; then
+      docker.manifest ${DOCKER_USER}/magicmirror:${CI_COMMIT_BRANCH} latest
+      docker.manifest ${DOCKER_USER}/magicmirror:${CI_COMMIT_BRANCH} ${MagicMirror_Version}
+      docker.readme magicmirror
+    else
+      docker.manifest ${DOCKER_USER}/magicmirror:${CI_COMMIT_BRANCH} ${CI_COMMIT_BRANCH}
     fi
   after_script:
   - docker.logout
-  extends: .buildrun
+  rules:
+  - if: $testarch == null && $CI_COMMIT_BRANCH =~ /^master$|^develop$/
+  tags:
+  - docker
 
 build_amd64:
   extends: .build
@@ -67,37 +71,18 @@ build_arm:
     buildarch: "arm32v7/"
   extends: .build
 
-manifest:
-  stage: manifest
-  image: ${DOCKER_USER}/docker:stable
-  variables:
-    DOCKER_DRIVER: overlay2
-    DOCKER_TLS_CERTDIR: "/certs"
-  services:
-  - docker:dind
-  script:
-  - |
-    if [ "${CI_COMMIT_REF_NAME}" == "master" ]; then
-      write_docker_manifest.sh ${DOCKER_USER}/magicmirror:${CI_COMMIT_REF_NAME} latest
-      write_docker_manifest.sh ${DOCKER_USER}/magicmirror:${CI_COMMIT_REF_NAME} ${MagicMirror_Version}
-      update_docker_readme.sh magicmirror
-    else
-      write_docker_manifest.sh ${DOCKER_USER}/magicmirror:${CI_COMMIT_REF_NAME} ${CI_COMMIT_REF_NAME}
-    fi
-  extends: .buildrun
-
 test_amd64:
   stage: test
   variables:
     GIT_STRATEGY: none
   image:
-    name: ${DOCKER_USER}/magicmirror:${CI_COMMIT_REF_NAME}_${testarch}
+    name: ${DOCKER_USER}/magicmirror:${CI_COMMIT_BRANCH}_${testarch}
     entrypoint: [""]
   script:
   - sudo apt-get update
   - sudo apt-get install -y xvfb
   - |
-    if [ "${CI_COMMIT_REF_NAME}" == "master" ]; then \
+    if [ "${CI_COMMIT_BRANCH}" == "master" ]; then \
       sudo npm install -g grunt-cli; \
     fi;     
   - cd /opt/magic_mirror
