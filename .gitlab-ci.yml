@@ -2,18 +2,15 @@ stages:
   - build
   - test
 
-variables:
-  GIT_DEPTH: 1
-  KANIKO_IMG: ${DOCKER_USER}/kaniko-executor:latest
-  MagicMirror_Version: v2.11.0
-
 .build:
   stage: build
   image:
-    name: ${KANIKO_IMG}
+    name: ${DOCKER_USER}/kaniko-executor:latest
     entrypoint: [""]
   variables:
+    GIT_DEPTH: 1
     GitRepo: https://github.com/MichMich/MagicMirror.git
+    MagicMirror_Version: v2.11.0
   script:
   # set branch name used from MagicMirror git-repo
   - |
