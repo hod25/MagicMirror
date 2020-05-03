@@ -117,7 +117,7 @@ docker-compose down
 
 will stop and remove the MagicMirror container.
 
-# Volume Mounts
+# Config and Modules
 
 After the first start of the container you find 2 directories
 ````bash
@@ -125,7 +125,11 @@ After the first start of the container you find 2 directories
 ~/magicmirror/mounts/modules
 ````
 
-In `config` you find the `config.js` and in `modules` all installed modules. You can change your config and add modules, for more information on that please visit the [project website](https://github.com/MichMich/MagicMirror).
+`config` conatins the `config.js`, you find more information [here](https://docs.magicmirror.builders/getting-started/configuration.html#general).
+
+For installing modules refer to the module website, the default modules are described [here](https://docs.magicmirror.builders/modules/introduction.html).
+
+> There is one difference installing or updating modules compared to a standard setup: You must do the `git clone ...`, `git pull` and `npm install` commands from inside the running docker container. For this you execute `docker exec -it mm bash` and in this shell you navigate to the `modules/MMM-...` folder. For exiting from the container you type `exit`.
 
 # Problems seeing the MagicMirror
 
