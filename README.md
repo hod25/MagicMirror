@@ -131,6 +131,24 @@ For installing modules refer to the module website, the default modules are desc
 
 > There is one difference installing or updating modules compared to a standard setup: You must do the `git clone ...`, `git pull` and `npm install` commands from inside the running docker container. For this you execute `docker exec -it mm bash` and in this shell you navigate to the `modules/MMM-...` folder. For exiting from the container you type `exit`.
 
+# Default Modules
+
+The default modules of MagicMirror are also located in the folder `~/magicmirror/mounts/modules`. These modules are maintained in the MagicMirror project and not - as other modules - in own git repositories. So if they are mounted the first time outside the container this version remains on the host and would never updated again. To prevent this, the docker container overrides the `default` modules folder with the versions from inside the container.
+
+If someone does not agree with this procedure he can avoid the copy process by adding the environment variable `MM_OVERRIDE_DEFAULT_MODULES` to `false` in his `docker-compose.yml` file:
+````
+    environment:
+      MM_OVERRIDE_DEFAULT_MODULES: "false"
+````
+
+# Mouse cursor
+
+The mouse cursor is diabled by default. You can enable it by adding the environment variable `MM_SHOW_CURSOR` to `true` in your `docker-compose.yml` file:
+````
+    environment:
+      MM_SHOW_CURSOR: "true"
+````
+
 # Problems seeing the MagicMirror
 
 If you have problmes to access your MagicMirror, check the params `address` and `ipWhitelist` in your 

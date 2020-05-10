@@ -1,24 +1,34 @@
 #!/bin/sh
 
-sudo rm -rf /opt/magic_mirror/modules/default
+default_dir="/opt/magic_mirror/modules/default"
+config_dir="/opt/magic_mirror/config"
 
-sudo mkdir -p /opt/magic_mirror/modules/default
-sudo mkdir -p /opt/magic_mirror/config
+[ ! -d "${default_dir}" ] && MM_OVERRIDE_DEFAULT_MODULES=true
 
-sudo cp -r /opt/magic_mirror/mount_ori/modules/default/. /opt/magic_mirror/modules/default/
-
-if [ ! -f /opt/magic_mirror/config/config.js ]; then
-  sudo cp /opt/magic_mirror/mount_ori/config/config.js.sample /opt/magic_mirror/config/config.js
+if [ "${MM_OVERRIDE_DEFAULT_MODULES}" = "true" ]; then 
+  echo "copy default modules to host ..."
+  sudo rm -rf ${default_dir}
+  sudo mkdir -p ${default_dir}
+  sudo cp -r /opt/magic_mirror/mount_ori/modules/default/. ${default_dir}/
 fi
 
+sudo mkdir -p ${config_dir}
+
+if [ ! -f ${config_dir}/config.js ]; then
+  echo "copy default config.js to host ..."
+  sudo cp /opt/magic_mirror/mount_ori/config/config.js.sample ${config_dir}/config.js
+fi
+
+echo "chown modules and config folder ..."
 sudo chown -R node:node /opt/magic_mirror/modules
-sudo chown -R node:node /opt/magic_mirror/config
+sudo chown -R node:node ${config_dir}
 
 if [ "$MM_SHOW_CURSOR" = "true" ]; then 
+  echo "enable mouse cursor ..."
   sed -i "s|  cursor: .*;|  cursor: auto;|" /opt/magic_mirror/css/main.css
 fi
 
-if [ "$StartEnv" = "test" ]; then 
+if [ "$StartEnv" = "test" ]; then
   echo "start tests ..."
   Xvfb :99 -screen 0 1024x768x16 &
   export DISPLAY=:99
@@ -34,9 +44,7 @@ if [ "$StartEnv" = "test" ]; then
   fi;
   npm run test:e2e
   npm run test:unit
-
 else
-
   echo "start magicmirror"
 
   exec "$@"
