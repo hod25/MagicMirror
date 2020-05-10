@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+  magicmirror:
+    container_name: mm
+    image: karsten13/magicmirror:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ../mounts/config:/opt/magic_mirror/config
+      - ../mounts/modules:/opt/magic_mirror/modules
+      - mm-volume:/opt/magic_mirror
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      TZ: Europe/Berlin
+    restart: unless-stopped
+    command: 
+      - npm
+      - run
+      - server
+
+  mmpm:
+    container_name: mmpm
+    image: karsten13/mmpm:latest
+    depends_on:
+      - magicmirror
+    ports:
+      - "7890:7890"
+      - "7891:7891"
+      - "7892:7892"
+      - "7893:7893"
+    volumes:
+      - ../mounts/modules:/home/node/MagicMirror/modules
+      - ../mounts/config:/home/node/MagicMirror/config
+      - mm-volume:/home/node/MagicMirror:ro
+    restart: unless-stopped
+
+volumes:
+  mm-volume:
