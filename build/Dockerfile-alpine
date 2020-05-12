@@ -1,0 +1,32 @@
+ARG BUILDER_IMG
+FROM ${BUILDER_IMG} as builder
+FROM node:alpine
+LABEL maintainer="Karsten Hassel"
+
+EXPOSE 8080
+
+USER root
+
+ENV ELECTRON_DISABLE_SANDBOX=1 \
+    MM_OVERRIDE_DEFAULT_MODULES=true
+
+WORKDIR /opt/magic_mirror
+
+# only amd64, for pi you need more packages: 
+# apk add --no-cache git gtk+3.0 libx11-dev nss-dev nano procps arp-scan sudo; \
+# sudo bug
+RUN set -e; \
+    echo "http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories; \
+    apk update --no-cache; \
+    apk upgrade --no-cache; \
+    apk add --no-cache git nano sudo; \
+    echo "node ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers; \
+    echo "Set disable_coredump false" > /etc/sudo.conf; \
+    chown -R node:node /home/node/; \
+    chown -R node:node .;
+
+USER node
+
+COPY --from=builder --chown=node:node /opt/magic_mirror /opt/magic_mirror
+
+ENTRYPOINT ["./entrypoint.sh"]
