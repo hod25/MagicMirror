@@ -17,11 +17,13 @@ COPY entrypoint.sh /tmp/
 # procps, arp-scan and sudo needed for the module MMM-NetworkScanner
 # sudo needed for the module MMM-Remote-Control
 # sudo needed for cp in entrypoint
+ARG buildarch
 RUN set -e; \
     apt-get update; \
     apt-get upgrade -y --allow-unauthenticated; \
-    DEBIAN_FRONTEND=noninteractive apt-get -qy --allow-unauthenticated install git libgtk-3-0 libx11-xcb-dev libnss3-dev libxss1 libasound2 nano \
-      procps arp-scan sudo; \
+    _pck="git nano sudo"; \
+    [ -z "${buildarch}" ] || _pck="${_pck} libgtk-3-0 libx11-xcb-dev libnss3-dev libxss1 libasound2 procps arp-scan"; \
+    DEBIAN_FRONTEND=noninteractive apt-get -qy --allow-unauthenticated install ${_pck}; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*; \
     usermod -a -G video node; \
