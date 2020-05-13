@@ -1,49 +1,66 @@
-**MagicMirror²** is an open source modular smart mirror platform. For more info visit the [project website](https://github.com/MichMich/MagicMirror).
+# **MagicMirror²**
+
+is an open source modular smart mirror platform. For more info visit the [project website](https://github.com/MichMich/MagicMirror). This project packs MagicMirror into a docker image.
 
 # Why Docker?
 
 Using docker simplifies the setup by using the container instead of setting up the host with installing all the node.js stuff etc.
 Getting/Updating the container is done with one command.
 
-There are 2 usecases:
-- Scenario 1: Running the application in server only mode. 
+We have two usecases:
+- Scenario ☝️: Running the application in server only mode. 
   
   This will start the server, after which you can open the application in your browser of choice. 
   This is e.g useful for testing or running the application somewhere online, so you can access it with a browser from everywhere. 
   
   
-- Scenario 2: Using docker on the raspberry pi and starting the magicmirror on the screen of the pi.
+- Scenario ✌️: Using docker on the raspberry pi and starting the MagicMirror on the screen of the pi.
 
-# Debian Buster
+# Docker Images
 
-> This image uses `debian:buster-slim` as base image. After upgrading from `stretch` to `buster` there is no longer a simple solution to shutdown/restart the host from inside the container.
-  As workaround you can use my [mmm-remote-docker module](https://gitlab.com/khassel/mmm-remote-docker).
+The docker image `karsten13/magicmirror` is provided in this versions:
 
-# Installation prerequisites for server only mode with linux
+TAG     | OS/ARCH     | DESCRIPTION
+------- | ----------- | -----------------------------------------------------------
+latest  | linux/amd64 | only `serveronly`-mode, electron not working, based on debian buster
+latest  | linux/arm   | for raspberry pi, based on debian buster
+v2.x.y  | linux/amd64 | MagicMirror-Version, same as latest
+v2.x.y  | linux/arm   | MagicMirror-Version, same as latest
+alpine  | linux/amd64 | only `serveronly`-mode, electron not working, based on alpine, smaller in size
 
-You need a successful [Docker installation](https://docs.docker.com/engine/installation/) and [docker-compose](https://docs.docker.com/compose/install/), which is not included in the docker linux installation.
+Currently v2.x.y is v2.11.0. Older version tags remain on docker hub, the other tags are floating tags and therefore overwritten with every new build.
+
+⛔ The following experimental images are not for production use:
+
+TAG            | OS/ARCH     | DESCRIPTION
+-------------- | ----------- | -----------------------------------------------------------
+develop        | linux/amd64 | only `serveronly`-mode, electron not working, based on debian buster
+develop        | linux/arm   | for raspberry pi, based on debian buster
+develop_alpine | linux/amd64 | only `serveronly`-mode, electron not working, based on alpine, smaller in size
+
+These images are using the `develop` branch of the MagicMirror git repository.
+
+# Installation prerequisites for server only mode on a linux machine
+
+* [Docker](https://docs.docker.com/engine/installation/)
+* [docker-compose](https://docs.docker.com/compose/install/)
 
 # Installation prerequisites for running on a raspberry pi
 
-### Requirements
-- raspberry pi version 2 or 3 with running raspian jessie
-- LAN or WLAN access
-- logged in as user pi (otherwise you have to substitute "pi" with your user in the following lines)
+You can use [MagicMirrorOS](https://github.com/guysoft/MagicMirrorOS), it contains already all the following things needed (beside the hardware):
 
-### Setup Docker
-- get Docker: `curl -sSL get.docker.com | sh`
-- set Docker to auto-start: `sudo systemctl enable docker`
-- start the Docker daemon: `sudo systemctl start docker` (or reboot your pi)
-- add user pi to docker group: `sudo usermod -aG docker pi` (you have to logout and login after this)
+* running raspberry pi version >2 with running raspian with LAN or WLAN access
+* [Docker](https://docs.docker.com/engine/installation/)
+* [docker-compose](https://docs.docker.com/compose/install/)
 
-### Setup docker-compose
-````bash
-curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py 
-sudo python3 get-pip.py
-sudo pip install docker-compose
-````
+> The pi image uses `debian:buster-slim` as base image. After upgrading from `stretch` to `buster` there is no longer a 
+  simple solution to shutdown/restart the host from inside the container.
+  As workaround you can use my [mmm-remote-docker module](https://gitlab.com/khassel/mmm-remote-docker).
 
-# Installation prerequisites for running on a raspberry pi with Scenario 2
+
+# Installation prerequisites for running on a raspberry pi with Scenario ✌️
+
+> 👉 if you use [MagicMirrorOS](https://github.com/guysoft/MagicMirrorOS) the steps in this section are already done.
 
 ### Setup for graphical desktop
 - install unclutter: `sudo apt-get install -y unclutter`
@@ -74,13 +91,13 @@ Open a shell in your home directory and run
 git clone https://gitlab.com/khassel/magicmirror.git
 ````
 
-Now cd into the new directory `magicmirror/run` and copy the yml-file depending on the scenario, for scenario 1:
+Now cd into the new directory `magicmirror/run` and copy the yml-file depending on the scenario, for scenario ☝️:
 ````bash
 cd ./magicmirror/run
 cp serveronly.yml docker-compose.yml
 ````
 
-For scenario 2:
+For scenario ✌️:
 ````bash
 cd ./magicmirror/run
 cp rpi.yml docker-compose.yml
@@ -94,7 +111,7 @@ Navigate to `~/magicmirror/run` and execute
 docker-compose up -d
 ````
 
-The container will start and with scenario 2 the magicmirror should appear on the screen of your pi. In server only mode opening a browser at http://localhost:8080 should show the MagicMirror (scenario 1).
+The container will start and with scenario ✌️ the MagicMirror should appear on the screen of your pi. In server only mode opening a browser at http://localhost:8080 should show the MagicMirror (scenario ☝️).
 
 > The container is configured to restart automatically so after executing `docker-compose up -d` it will restart with every reboot of your pi.
 
