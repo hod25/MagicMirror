@@ -40,7 +40,10 @@ ARG BuildRef
 ARG GitRepo
 RUN set -e; \
     node -v; \
+    echo BuildRef="${BuildRef}"; \
+    echo GitRepo="${GitRepo}"; \
     git clone --depth 1 -b ${BuildRef} --single-branch ${GitRepo} .; \
+    git log -1; \
     cat package.json; \
     npm install --only=production; \
     npm cache clean -f; \
