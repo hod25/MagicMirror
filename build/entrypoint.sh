@@ -30,17 +30,22 @@ fi
 
 if [ "$StartEnv" = "test" ]; then
   echo "start tests ..."
+  set -e
+
   Xvfb :99 -screen 0 1024x768x16 &
   export DISPLAY=:99
-  
+
   # adjust test timeouts
   sed -i "s:test.timeout(10000):test.timeout(30000):g" tests/e2e/global-setup.js
   cat tests/e2e/global-setup.js
-  
+
   if [ "${CI_COMMIT_REF_NAME}" = "master" ]; then
     grunt
   else
-    npm run test:lint
+    echo "/mount_ori/**/*" >> .prettierignore
+    npm run test:prettier
+    npm run test:js
+    npm run test:css
   fi;
   npm run test:e2e
   npm run test:unit
