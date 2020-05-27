@@ -20,6 +20,7 @@ services:
       DISPLAY: unix:0.0
       TZ: Europe/Berlin
     network_mode: host
+    shm_size: "128mb"
     restart: unless-stopped
     command: 
       - npm
