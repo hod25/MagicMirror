@@ -7,7 +7,8 @@ EXPOSE 8080
 USER root
 
 ENV ELECTRON_DISABLE_SANDBOX=1 \
-    MM_OVERRIDE_DEFAULT_MODULES=true
+    MM_OVERRIDE_DEFAULT_MODULES=true \
+    MM_OVERRIDE_CSS=true
 
 WORKDIR /opt/magic_mirror
 
@@ -50,10 +51,10 @@ RUN set -e; \
     rm -rf /home/node/.cache; \
     sed -i "s:address\: \"localhost\":address\: \"0.0.0.0\":" config/config.js.sample; \
     sed -i "s:ipWhitelist\: \[.*\],:ipWhitelist\: \[\],:" config/config.js.sample; \
-    touch css/custom.css; \
     mkdir mount_ori; \
     mv modules mount_ori/; \
     mv config mount_ori/; \
+    mv css mount_ori/; \
     mv /tmp/*entrypoint.sh .; \
     find . -name "*.md" -delete;
 

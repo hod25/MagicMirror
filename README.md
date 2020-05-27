@@ -145,13 +145,19 @@ After the first start of the container you find 3 directories
 
 `config` contains the `config.js`, you find more information [here](https://docs.magicmirror.builders/getting-started/configuration.html#general).
 
+For installing modules refer to the module website, the default modules are described [here](https://docs.magicmirror.builders/modules/introduction.html).
+
+> There is one difference installing or updating modules compared to a standard setup: You must do the `git clone ...`, `git pull` and `npm install` commands from inside the running docker container. For this you execute `docker exec -it mm bash` and in this shell you navigate to the `modules/MMM-...` folder. For exiting from the container you type `exit`.
+
 `css` contains the `custom.css` file, which you can use to override your
 modules' appearance. CSS basics are documented
 [here](https://forum.magicmirror.builders/topic/6808/css-101-getting-started-with-css-and-understanding-how-css-works), among many other places.
 
-For installing modules refer to the module website, the default modules are described [here](https://docs.magicmirror.builders/modules/introduction.html).
-
-> There is one difference installing or updating modules compared to a standard setup: You must do the `git clone ...`, `git pull` and `npm install` commands from inside the running docker container. For this you execute `docker exec -it mm bash` and in this shell you navigate to the `modules/MMM-...` folder. For exiting from the container you type `exit`.
+> 👉 The css-files in the `css` folder which exists in the MagicMirror git repo (currently only `main.css`) are overriden with the original file from inside the container with every restart. So if you need to change this file, you must stop this default copying by setting the environment variable `MM_OVERRIDE_CSS` to `false` in the `docker-compose.yml` file:
+````
+    environment:
+      MM_OVERRIDE_CSS: "false"
+````
 
 # Default Modules
 

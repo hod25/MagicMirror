@@ -2,6 +2,7 @@
 
 default_dir="/opt/magic_mirror/modules/default"
 config_dir="/opt/magic_mirror/config"
+css_dir="/opt/magic_mirror/css"
 
 [ ! -d "${default_dir}" ] && MM_OVERRIDE_DEFAULT_MODULES=true
 
@@ -19,9 +20,21 @@ if [ ! -f ${config_dir}/config.js ]; then
   sudo cp /opt/magic_mirror/mount_ori/config/config.js.sample ${config_dir}/config.js
 fi
 
+sudo mkdir -p ${css_dir}
+
+[ ! -f ${css_dir}/main.css ] && MM_OVERRIDE_CSS=true
+
+if [ "${MM_OVERRIDE_CSS}" = "true" ]; then
+  echo "copy css files to host ..."
+  sudo cp /opt/magic_mirror/mount_ori/css/* ${css_dir}/
+fi
+
+[ ! -f ${css_dir}/custom.css ] && touch ${css_dir}/custom.css
+
 echo "chown modules and config folder ..."
 sudo chown -R node:node /opt/magic_mirror/modules
 sudo chown -R node:node ${config_dir}
+sudo chown -R node:node ${css_dir}
 
 if [ "$MM_SHOW_CURSOR" = "true" ]; then 
   echo "enable mouse cursor ..."
