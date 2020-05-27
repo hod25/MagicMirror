@@ -9,6 +9,7 @@ services:
     volumes:
       - ../mounts/config:/opt/magic_mirror/config
       - ../mounts/modules:/opt/magic_mirror/modules
+      - ../mounts/css:/opt/magic_mirror/css
       - mm-volume:/opt/magic_mirror
       - /etc/localtime:/etc/localtime:ro
       - /tmp/.X11-unix:/tmp/.X11-unix

@@ -134,15 +134,20 @@ docker-compose down
 
 will stop and remove the MagicMirror container.
 
-# Config and Modules
+# Config, Modules, and custom CSS
 
-After the first start of the container you find 2 directories
+After the first start of the container you find 3 directories
 ````bash
 ~/magicmirror/mounts/config
 ~/magicmirror/mounts/modules
+~/magicmirror/mounts/css
 ````
 
-`config` conatins the `config.js`, you find more information [here](https://docs.magicmirror.builders/getting-started/configuration.html#general).
+`config` contains the `config.js`, you find more information [here](https://docs.magicmirror.builders/getting-started/configuration.html#general).
+
+`css` contains the `custom.css` file, which you can use to override your
+modules' appearance. CSS basics are documented
+[here](https://forum.magicmirror.builders/topic/6808/css-101-getting-started-with-css-and-understanding-how-css-works), among many other places.
 
 For installing modules refer to the module website, the default modules are described [here](https://docs.magicmirror.builders/modules/introduction.html).
 
