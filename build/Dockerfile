@@ -32,7 +32,8 @@ RUN set -e; \
     chmod +x /tmp/entrypoint.sh; \
     chown node:node /tmp/entrypoint.sh; \
     chown -R node:node /home/node/; \
-    chown -R node:node .;
+    chown -R node:node .; \
+    c_rehash;
 
 USER node
 
