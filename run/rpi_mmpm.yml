@@ -10,7 +10,6 @@ services:
       - ../mounts/config:/opt/magic_mirror/config
       - ../mounts/modules:/opt/magic_mirror/modules
       - ../mounts/css:/opt/magic_mirror/css
-      - mm-volume:/opt/magic_mirror
       - /etc/localtime:/etc/localtime:ro
       - /tmp/.X11-unix:/tmp/.X11-unix
       - /opt/vc:/opt/vc/:ro
@@ -39,8 +38,4 @@ services:
     volumes:
       - ../mounts/modules:/home/node/MagicMirror/modules
       - ../mounts/config:/home/node/MagicMirror/config
-      - mm-volume:/home/node/MagicMirror:ro
     restart: unless-stopped
-
-volumes:
-  mm-volume:
