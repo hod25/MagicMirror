@@ -29,7 +29,7 @@ if [ "${MM_OVERRIDE_CSS}" = "true" ]; then
   sudo cp /opt/magic_mirror/mount_ori/css/* ${css_dir}/
 fi
 
-[ ! -f ${css_dir}/custom.css ] && touch ${css_dir}/custom.css
+[ ! -f ${css_dir}/custom.css ] && sudo touch ${css_dir}/custom.css
 
 echo "chown modules and config folder ..."
 sudo chown -R node:node /opt/magic_mirror/modules
@@ -52,14 +52,10 @@ if [ "$StartEnv" = "test" ]; then
   sed -i "s:test.timeout(10000):test.timeout(30000):g" tests/e2e/global-setup.js
   cat tests/e2e/global-setup.js
 
-  if [ "${CI_COMMIT_REF_NAME}" = "master" ]; then
-    grunt
-  else
-    echo "/mount_ori/**/*" >> .prettierignore
-    npm run test:prettier
-    npm run test:js
-    npm run test:css
-  fi;
+  echo "/mount_ori/**/*" >> .prettierignore
+  npm run test:prettier
+  npm run test:js
+  npm run test:css
   npm run test:e2e
   npm run test:unit
 else

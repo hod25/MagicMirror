@@ -24,11 +24,11 @@ TAG     | OS/ARCH     | DESCRIPTION
 ------- | ----------- | -----------------------------------------------------------
 latest  | linux/amd64 | only `serveronly`-mode, electron not working, based on debian buster
 latest  | linux/arm   | for raspberry pi, based on debian buster
-v2.x.y  | linux/amd64 | MagicMirror-Version, same as latest
-v2.x.y  | linux/arm   | MagicMirror-Version, same as latest
+v2.x.y  | linux/amd64 | MagicMirror-Version, same as latest or old version tag
+v2.x.y  | linux/arm   | MagicMirror-Version, same as latest or old version tag
 alpine  | linux/amd64 | only `serveronly`-mode, electron not working, based on alpine, smaller in size
 
-Currently v2.x.y is v2.11.0. Older version tags remain on docker hub, the other tags are floating tags and therefore overwritten with every new build.
+Version v2.x.y is the current release of MagicMirror. Older version tags remain on docker hub, the other tags are floating tags and therefore overwritten with every new build.
 
 ⛔ The following experimental images are not for production use:
 

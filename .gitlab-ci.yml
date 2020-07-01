@@ -13,7 +13,7 @@ variables:
   stage: build
   variables:
     GitRepo: https://github.com/MichMich/MagicMirror.git
-    MagicMirror_Version: v2.11.0
+    MagicMirror_Version: v2.12.0
   script:
   # set branch name used from MagicMirror git-repo
   - |
@@ -104,10 +104,6 @@ test_amd64:
   script:
   - sudo apt-get update
   - sudo apt-get install -y xvfb libgtk-3-0 libx11-xcb-dev libnss3-dev libxss1 libasound2
-  - |
-    if [ "${CI_COMMIT_BRANCH}" == "master" ]; then \
-      sudo npm install -g grunt-cli; \
-    fi;     
   - cd /opt/magic_mirror
   - npm install
   - StartEnv=test ./entrypoint.sh
