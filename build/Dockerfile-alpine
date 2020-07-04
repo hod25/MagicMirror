@@ -20,7 +20,7 @@ RUN set -e; \
     echo "http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories; \
     apk update --no-cache; \
     apk upgrade --no-cache; \
-    apk add --no-cache git nano sudo; \
+    apk add --no-cache git nano sudo gettext; \
     echo "node ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers; \
     echo "Set disable_coredump false" > /etc/sudo.conf; \
     chown -R node:node /home/node/; \

@@ -15,21 +15,28 @@ fi
 
 sudo mkdir -p ${config_dir}
 
-if [ ! -f ${config_dir}/config.js ]; then
+if [ -f "${config_dir}/config.js.template" ]; then
+  if [ -f "${config_dir}/config.js" ]; then
+    mv -v ${config_dir}/config.js ${config_dir}/config.js-old
+  fi
+  envsubst < ${config_dir}/config.js.template > ${config_dir}/config.js
+fi
+
+if [ ! -f "${config_dir}/config.js" ]; then
   echo "copy default config.js to host ..."
   sudo cp /opt/magic_mirror/mount_ori/config/config.js.sample ${config_dir}/config.js
 fi
 
 sudo mkdir -p ${css_dir}
 
-[ ! -f ${css_dir}/main.css ] && MM_OVERRIDE_CSS=true
+[ ! -f "${css_dir}/main.css" ] && MM_OVERRIDE_CSS=true
 
 if [ "${MM_OVERRIDE_CSS}" = "true" ]; then
   echo "copy css files to host ..."
   sudo cp /opt/magic_mirror/mount_ori/css/* ${css_dir}/
 fi
 
-[ ! -f ${css_dir}/custom.css ] && sudo touch ${css_dir}/custom.css
+[ ! -f "${css_dir}/custom.css" ] && sudo touch ${css_dir}/custom.css
 
 echo "chown modules and config folder ..."
 sudo chown -R node:node /opt/magic_mirror/modules

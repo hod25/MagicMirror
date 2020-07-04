@@ -22,7 +22,7 @@ ARG buildarch
 RUN set -e; \
     apt-get update; \
     apt-get upgrade -y --allow-unauthenticated; \
-    _pck="git nano sudo"; \
+    _pck="git nano sudo gettext"; \
     [ -z "${buildarch}" ] || _pck="${_pck} libgtk-3-0 libx11-xcb-dev libnss3-dev libxss1 libasound2 procps arp-scan"; \
     DEBIAN_FRONTEND=noninteractive apt-get -qy --allow-unauthenticated install ${_pck}; \
     apt-get clean; \
