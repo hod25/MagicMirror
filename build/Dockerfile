@@ -37,7 +37,6 @@ RUN set -e; \
 
 USER node
 
-# create css/custom.css file https://github.com/MichMich/MagicMirror/issues/1977
 ARG BuildRef
 ARG GitRepo
 RUN set -e; \
@@ -56,7 +55,7 @@ RUN set -e; \
     mv modules mount_ori/; \
     mv config mount_ori/; \
     mv css mount_ori/; \
-    mv /tmp/*entrypoint.sh .; \
+    mv /tmp/entrypoint.sh .; \
     find . -name "*.md" -delete;
 
 ENTRYPOINT ["./entrypoint.sh"]

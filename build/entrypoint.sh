@@ -36,6 +36,7 @@ if [ "${MM_OVERRIDE_CSS}" = "true" ]; then
   sudo cp /opt/magic_mirror/mount_ori/css/* ${css_dir}/
 fi
 
+# create css/custom.css file https://github.com/MichMich/MagicMirror/issues/1977
 [ ! -f "${css_dir}/custom.css" ] && sudo touch ${css_dir}/custom.css
 
 echo "chown modules and config folder ..."
