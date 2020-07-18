@@ -14,7 +14,7 @@ services:
     environment:
       TZ: Europe/Berlin
     restart: unless-stopped
-    command: 
+    command:
       - npm
       - run
       - server
@@ -30,4 +30,6 @@ services:
     volumes:
       - ../mounts/modules:/home/node/MagicMirror/modules
       - ../mounts/config:/home/node/MagicMirror/config
+      - ../mounts/css:/home/node/MagicMirror/css
+      - ../mounts/mmpm-config:/home/node/.config/mmpm
     restart: unless-stopped
