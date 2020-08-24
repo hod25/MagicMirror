@@ -9,11 +9,14 @@ image:
 variables:
   GIT_DEPTH: 1
 
-.build:
+build:
   stage: build
   variables:
     GitRepo: https://github.com/MichMich/MagicMirror.git
-    MagicMirror_Version: v2.12.0
+  parallel:
+    matrix:
+    - buildarch: ["", "arm32v7/"]
+      MagicMirror_Version: v2.12.0
   script:
   # set branch name used from MagicMirror git-repo
   - |
@@ -64,14 +67,6 @@ variables:
   - if: $testarch == null && $CI_COMMIT_BRANCH =~ /^(master|develop)$/
   tags:
   - docker
-
-build_amd64:
-  extends: .build
-
-build_arm:
-  variables:
-    buildarch: "arm32v7/"
-  extends: .build
 
 build_alpine:
   stage: test
