@@ -11,8 +11,7 @@ services:
       - ../mounts/modules:/opt/magic_mirror/modules
       - ../mounts/css:/opt/magic_mirror/css
       - /etc/localtime:/etc/localtime:ro
-    environment:
-      TZ: Europe/Berlin
+      - /etc/timezone:/etc/timezone:ro
     restart: unless-stopped
     command:
       - npm

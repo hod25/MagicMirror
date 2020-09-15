@@ -176,6 +176,21 @@ If someone does not agree with this procedure he can avoid the copy process by a
       MM_OVERRIDE_DEFAULT_MODULES: "false"
 ````
 
+# Timezone
+
+The timezone and localtime are mapped from the host into the container. If you want to set the timezone to a different value you can do this by editing the `docker-compose.yml` file. You have to remove the line
+
+````
+      - /etc/timezone:/etc/timezone:ro
+````
+
+and add the timezone as environment variable:
+
+````
+    environment:
+      TZ: Europe/Berlin
+````
+
 # Mouse cursor
 
 The mouse cursor is diabled by default. You can enable it by adding the environment variable `MM_SHOW_CURSOR` to `true` in your `docker-compose.yml` file:

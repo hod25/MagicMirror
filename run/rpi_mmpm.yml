@@ -11,6 +11,7 @@ services:
       - ../mounts/modules:/opt/magic_mirror/modules
       - ../mounts/css:/opt/magic_mirror/css
       - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
       - /tmp/.X11-unix:/tmp/.X11-unix
       - /opt/vc:/opt/vc/:ro
     devices:
@@ -18,7 +19,6 @@ services:
     environment:
       LD_LIBRARY_PATH: /opt/vc/lib
       DISPLAY: unix:0.0
-      TZ: Europe/Berlin
     network_mode: host
     shm_size: "128mb"
     restart: unless-stopped
