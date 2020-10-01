@@ -13,7 +13,7 @@ variables:
   stage: build
   variables:
     GitRepo: https://github.com/MichMich/MagicMirror.git
-    MagicMirror_Version: v2.12.0
+    MagicMirror_Version: v2.13.0
   script:
   # set branch name used from MagicMirror git-repo
   - |
