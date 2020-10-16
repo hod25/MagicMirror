@@ -1,0 +1,46 @@
+kind: pipeline
+type: docker
+name: mm
+
+defaultall: &defaultall
+  environment:
+    DOCKER_USER:
+      from_secret: docker_username
+    DOCKER_PASS:
+      from_secret: docker_password
+  when:
+    branch: drone
+
+defaultbuild: &defaultbuild
+  <<: *defaultall
+  image: karsten13/kaniko-executor:latest
+#  pull: always
+  depends_on:
+  - clone
+
+steps:
+- name: build_amd64
+  <<: *defaultbuild
+  commands:
+  - ./bin/build.sh ${DRONE_BRANCH}
+
+- name: build_arm
+  privileged: true
+  <<: *defaultbuild
+  commands:
+  - ./bin/build.sh ${DRONE_BRANCH} "arm32v7/"
+
+- name: build_alpine
+  <<: *defaultbuild
+  commands:
+  - ./bin/build_alpine.sh ${DRONE_BRANCH}
+  depends_on:
+  - build_amd64
+
+- name: test_amd64
+  depends_on:
+  - build_amd64
+  <<: *defaultall
+  image: karsten13/magicmirror:${DRONE_BRANCH}_amd64
+  commands:
+  - StartEnv=test /opt/magic_mirror/entrypoint.sh

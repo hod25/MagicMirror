@@ -19,46 +19,8 @@ variables:
 
 .build:
   stage: build
-  variables:
-    GitRepo: https://github.com/MichMich/MagicMirror.git
-    MagicMirror_Version: v2.13.0
   script:
-  # set branch name used from MagicMirror git-repo
-  - |
-    if [ "${CI_COMMIT_BRANCH}" == "master" ]; then
-      echo "branch=master"
-      export BuildRef=${MagicMirror_Version}
-    else
-      echo "branch<>master"
-      export BuildRef=develop
-    fi
-  - echo "MagicMirror-BuildRef="${BuildRef}
-  # set build arch
-  - |
-    if [ -n "${buildarch}" ]; then
-      export imgarch=arm
-      /register
-    else
-      export imgarch=amd64
-    fi
-  # docker login
-  - docker.login
-  # build and push
-  - |
-    /kaniko/executor --context $CI_PROJECT_DIR/build \
-      --dockerfile Dockerfile \
-      --destination ${DOCKER_USER}/magicmirror:${CI_COMMIT_BRANCH}_${imgarch} \
-      --build-arg buildarch=${buildarch} \
-      --build-arg BuildRef=${BuildRef} \
-      --build-arg GitRepo=${GitRepo}
-  - |
-    if [ "${CI_COMMIT_BRANCH}" == "master" ]; then
-      docker.manifest ${DOCKER_USER}/magicmirror:${CI_COMMIT_BRANCH} latest
-      docker.manifest ${DOCKER_USER}/magicmirror:${CI_COMMIT_BRANCH} ${MagicMirror_Version}
-      docker.readme magicmirror
-    else
-      docker.manifest ${DOCKER_USER}/magicmirror:${CI_COMMIT_BRANCH} ${CI_COMMIT_BRANCH}
-    fi
+  - ./bin/build.sh ${CI_COMMIT_BRANCH} ${buildarch}
   extends: .jobext
 
 build_amd64:
@@ -73,19 +35,7 @@ build_alpine:
   stage: test
   needs: ["build_amd64"]
   script:
-  - dest="--destination ${DOCKER_USER}/magicmirror:${CI_COMMIT_BRANCH}_alpine"
-  - |
-    if [ "${CI_COMMIT_BRANCH}" == "master" ]; then \
-      dest="${dest} --destination ${DOCKER_USER}/magicmirror:alpine"; \
-    fi;     
-  # docker login
-  - docker.login
-  # build and push
-  - |
-    /kaniko/executor --context $CI_PROJECT_DIR/build \
-      --dockerfile Dockerfile-alpine \
-      ${dest} \
-      --build-arg BUILDER_IMG=${DOCKER_USER}/magicmirror:${CI_COMMIT_BRANCH}_amd64
+  - ./bin/build_alpine.sh ${CI_COMMIT_BRANCH}
   extends: .jobext
 
 test_amd64:
@@ -97,9 +47,5 @@ test_amd64:
     name: ${DOCKER_USER}/magicmirror:${CI_COMMIT_BRANCH}_amd64
     entrypoint: [""]
   script:
-  - sudo apt-get update
-  - sudo apt-get install -y xvfb libgtk-3-0 libx11-xcb-dev libnss3-dev libxss1 libasound2
-  - cd /opt/magic_mirror
-  - npm install
-  - StartEnv=test ./entrypoint.sh
+  - StartEnv=test /opt/magic_mirror/entrypoint.sh
   extends: .jobext

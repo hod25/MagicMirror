@@ -50,8 +50,15 @@ if [ "$MM_SHOW_CURSOR" = "true" ]; then
 fi
 
 if [ "$StartEnv" = "test" ]; then
-  echo "start tests ..."
   set -e
+
+  echo "install test dependencies ..."
+  sudo apt-get update
+  sudo apt-get install -y xvfb libgtk-3-0 libx11-xcb-dev libnss3-dev libxss1 libasound2
+  cd /opt/magic_mirror
+  npm install
+
+  echo "start tests ..."
 
   Xvfb :99 -screen 0 1024x768x16 &
   export DISPLAY=:99
