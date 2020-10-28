@@ -1,6 +1,6 @@
 ARG BUILDER_IMG
 FROM ${BUILDER_IMG} as builder
-FROM node:alpine
+FROM node:lts-alpine
 LABEL maintainer="Karsten Hassel"
 
 EXPOSE 8080

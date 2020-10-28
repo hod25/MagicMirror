@@ -1,5 +1,5 @@
 ARG buildarch
-FROM ${buildarch}node:buster-slim
+FROM ${buildarch}node:lts-buster-slim
 LABEL maintainer="Karsten Hassel"
 
 EXPOSE 8080

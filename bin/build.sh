@@ -8,7 +8,7 @@ function finish {
 trap finish EXIT
 
 branch=${1}
-buildarch=${2}
+imgarch=${2}
 
 GitRepo="https://github.com/MichMich/MagicMirror.git"
 MagicMirror_Version="v2.13.0"
@@ -23,11 +23,11 @@ fi
 echo "MagicMirror-BuildRef="${BuildRef}
 
 # set build arch
-if [ -n "${buildarch}" ]; then
-  imgarch=arm
+if [ "${imgarch}" = "arm" ]; then
   /register
-else
-  imgarch=amd64
+  buildarch="arm32v7/"
+elif [ ! "${imgarch}" = "amd64" ]; then
+  echo "unsupported image arch: ${imgarch}"
 fi
 
 docker.login

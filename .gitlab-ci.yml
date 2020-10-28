@@ -17,35 +17,31 @@ variables:
   tags:
   - docker
 
-.build:
+build:
   stage: build
   script:
-  - ./bin/build.sh ${CI_COMMIT_BRANCH} ${buildarch}
+  - ./bin/build.sh ${CI_COMMIT_BRANCH} ${imgarch}
   extends: .jobext
-
-build_amd64:
-  extends: .build
-
-build_arm:
-  variables:
-    buildarch: "arm32v7/"
-  extends: .build
+  parallel:
+    matrix:
+      - imgarch: ["amd64", "arm"]
 
 build_alpine:
   stage: test
-  needs: ["build_amd64"]
+  needs: ["build: [amd64]"]
   script:
   - ./bin/build_alpine.sh ${CI_COMMIT_BRANCH}
   extends: .jobext
 
 test_amd64:
   stage: test
-  needs: ["build_amd64"]
+  needs: ["build: [amd64]"]
   variables:
     GIT_STRATEGY: none
-  image:
+    StartEnv: test
+  image: 
     name: ${DOCKER_USER}/magicmirror:${CI_COMMIT_BRANCH}_amd64
     entrypoint: [""]
   script:
-  - StartEnv=test /opt/magic_mirror/entrypoint.sh
+  - /opt/magic_mirror/entrypoint.sh
   extends: .jobext
