@@ -46,7 +46,11 @@ RUN set -e; \
     git clone --depth 1 -b ${BuildRef} --single-branch ${GitRepo} .; \
     git log -1; \
     cat package.json; \
-    npm install --only=production; \
+    if [ $(echo "${BuildRef}" | grep -E ^v[0-9]+.[0-9]+.[0-9]+$) ] ; then \
+      npm ci --only=production; \
+    else \
+      npm install --only=production; \
+    fi; \
     npm cache clean -f; \
     rm -rf /home/node/.cache; \
     sed -i "s:address\: \"localhost\":address\: \"0.0.0.0\":" config/config.js.sample; \
