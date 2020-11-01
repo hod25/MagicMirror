@@ -2,9 +2,7 @@ stages:
   - build
   - test
 
-image:
-  name: ${DOCKER_USER}/kaniko-executor:latest
-  entrypoint: [""]
+image: ${DOCKER_USER}/kaniko-executor:latest
 
 variables:
   GIT_DEPTH: 1
