@@ -21,10 +21,9 @@ COPY entrypoint.sh /tmp/
 ARG buildarch
 RUN set -e; \
     apt-get update; \
-    apt-get upgrade -y --allow-unauthenticated; \
-    _pck="git nano sudo gettext"; \
-    [ -z "${buildarch}" ] || _pck="${_pck} libgtk-3-0 libx11-xcb-dev libnss3-dev libxss1 libasound2 procps arp-scan"; \
-    DEBIAN_FRONTEND=noninteractive apt-get -qy --allow-unauthenticated install ${_pck}; \
+    _pck="git nano sudo gettext openssl ca-certificates"; \
+    [ -z "${buildarch}" ] || _pck="${_pck} libgtk-3-0 libx11-xcb-dev libnss3-dev libxss1 libxtst6 libasound2 procps arp-scan"; \
+    DEBIAN_FRONTEND=noninteractive apt-get -qy --no-install-recommends install ${_pck}; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*; \
     usermod -a -G video node; \
@@ -43,10 +42,10 @@ RUN set -e; \
     node -v; \
     echo BuildRef="${BuildRef}"; \
     echo GitRepo="${GitRepo}"; \
-    git clone --depth 1 -b ${BuildRef} --single-branch ${GitRepo} .; \
+    git clone --depth 1 -b "${BuildRef}" --single-branch "${GitRepo}" .; \
     git log -1; \
     cat package.json; \
-    if [ $(echo "${BuildRef}" | grep -E ^v[0-9]+.[0-9]+.[0-9]+$) ] ; then \
+    if [ $(echo "${BuildRef}" | grep -E "^v[0-9]+.[0-9]+.[0-9]+$") ] ; then \
       npm ci --only=production; \
     else \
       npm install --only=production; \
