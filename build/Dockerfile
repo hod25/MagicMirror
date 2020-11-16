@@ -44,12 +44,14 @@ RUN set -e; \
     echo GitRepo="${GitRepo}"; \
     git clone --depth 1 -b "${BuildRef}" --single-branch "${GitRepo}" .; \
     git log -1; \
-    cat package.json; \
     if [ $(echo "${BuildRef}" | grep -E "^v[0-9]+.[0-9]+.[0-9]+$") ] ; then \
       npm ci --only=production; \
     else \
+      # use socket.io version 3.0.1
+      sed -i "s|\"socket.io\": \"\^2.3.0\"|\"socket.io\": \"\^3.0.1\"|g" package.json; \
       npm install --only=production; \
     fi; \
+    cat package.json; \
     npm cache clean -f; \
     rm -rf /home/node/.cache; \
     sed -i "s:address\: \"localhost\":address\: \"0.0.0.0\":" config/config.js.sample; \
@@ -59,6 +61,9 @@ RUN set -e; \
     mv config mount_ori/; \
     mv css mount_ori/; \
     mv /tmp/entrypoint.sh .; \
+    # remove unused test stuff which causes CVE's:
+    rm -rf node_modules/clarinet/benchmark; \
+    # remove md files:
     find . -name "*.md" -delete;
 
 ENTRYPOINT ["./entrypoint.sh"]
