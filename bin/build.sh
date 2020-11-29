@@ -30,19 +30,20 @@ elif [ ! "${imgarch}" = "amd64" ]; then
   echo "unsupported image arch: ${imgarch}"
 fi
 
-docker.login
+docker.gitlab.login
 
 /kaniko/executor --context ./build \
   --dockerfile Dockerfile \
-  --destination ${DOCKER_USER}/magicmirror:${branch}_${imgarch} \
+  --destination ${CI_REGISTRY_IMAGE}:${branch}_${imgarch} \
   --build-arg buildarch=${buildarch} \
   --build-arg BuildRef=${BuildRef} \
   --build-arg GitRepo=${GitRepo}
 
 if [ "${branch}" = "master" ]; then
-  docker.manifest ${DOCKER_USER}/magicmirror:${branch} latest
-  docker.manifest ${DOCKER_USER}/magicmirror:${branch} ${MagicMirror_Version}
-  docker.readme magicmirror
+  docker.manifest ${CI_REGISTRY_IMAGE}:${branch} latest
+  docker.manifest ${CI_REGISTRY_IMAGE}:${branch} ${MagicMirror_Version}
+  docker.sync "${CI_REGISTRY_IMAGE}:latest ${CI_REGISTRY_IMAGE}:${MagicMirror_Version}"
 else
-  docker.manifest ${DOCKER_USER}/magicmirror:${branch} ${branch}
+  docker.manifest ${CI_REGISTRY_IMAGE}:${branch} ${branch}
+  docker.sync "${CI_REGISTRY_IMAGE}:${branch}"
 fi

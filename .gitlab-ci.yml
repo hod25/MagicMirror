@@ -2,7 +2,7 @@ stages:
   - build
   - test
 
-image: ${DOCKER_USER}/kaniko-executor:latest
+image: ${CI_REGISTRY}/khassel/container/kaniko:latest
 
 variables:
   GIT_DEPTH: 1
@@ -38,7 +38,7 @@ test_amd64:
     GIT_STRATEGY: none
     StartEnv: test
   image: 
-    name: ${DOCKER_USER}/magicmirror:${CI_COMMIT_BRANCH}_amd64
+    name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_amd64
     entrypoint: [""]
   script:
   - /opt/magic_mirror/entrypoint.sh
