@@ -8,8 +8,6 @@ variables:
   GIT_DEPTH: 1
 
 .jobext:
-  after_script:
-  - docker.logout
   rules:
   - if: $CI_COMMIT_BRANCH =~ /^(master|develop)$/
   tags:
