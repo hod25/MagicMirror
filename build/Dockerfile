@@ -47,8 +47,11 @@ RUN set -e; \
     if [ $(echo "${BuildRef}" | grep -E "^v[0-9]+.[0-9]+.[0-9]+$") ] ; then \
       npm ci --only=production; \
     else \
-      # use socket.io version 3.0.1
-      sed -i "s|\"socket.io\": \"\^2.3.0\"|\"socket.io\": \"\^3.0.1\"|g" package.json; \
+      # test updated dependencies
+      sed -i "s|\"eslint\": \".*\"|\"eslint\": \"\^7.14.0\"|g" package.json; \
+      sed -i "s|\"feedme\": \".*\"|\"feedme\": \"\^2.0.1\"|g" package.json; \
+      sed -i "s|\"simple-git\": \".*\"|\"simple-git\": \"\^2.24.0\"|g" package.json; \
+      sed -i "s|\"socket.io\": \".*\"|\"socket.io\": \"\^3.0.3\"|g" package.json; \
       npm install --only=production; \
     fi; \
     cat package.json; \
