@@ -16,18 +16,11 @@ variables:
 build:
   stage: build
   script:
-  - ./bin/build.sh ${CI_COMMIT_BRANCH} ${imgarch}
+  - ./bin/build.sh
   extends: .jobext
   parallel:
     matrix:
       - imgarch: ["amd64", "arm"]
-
-build_alpine:
-  stage: test
-  needs: ["build: [amd64]"]
-  script:
-  - ./bin/build_alpine.sh ${CI_COMMIT_BRANCH}
-  extends: .jobext
 
 test_amd64:
   stage: test

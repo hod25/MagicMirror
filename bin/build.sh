@@ -7,17 +7,14 @@ function finish {
 }
 trap finish EXIT
 
-branch=${1}
-imgarch=${2}
-
 GitRepo="https://github.com/MichMich/MagicMirror.git"
 MagicMirror_Version="v2.13.0"
 
-if [ "${branch}" = "master" ]; then
-  echo "branch is master"
+if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+  echo "CI_COMMIT_BRANCH is master"
   BuildRef=${MagicMirror_Version}
 else
-  echo "branch is not master"
+  echo "CI_COMMIT_BRANCH is not master"
   BuildRef=develop
 fi
 echo "MagicMirror-BuildRef="${BuildRef}
@@ -31,7 +28,7 @@ elif [ ! "${imgarch}" = "amd64" ]; then
 fi
 
 BUILDER_IMG="${CI_REGISTRY_IMAGE}:${BuildRef}_${imgarch}_artifacts"
-if [ "$(skopeo inspect docker://${BUILDER_IMG} > /dev/null 2>&1)" ] && [ "${branch}" = "master" ]; then
+if [ "$(skopeo inspect docker://${BUILDER_IMG} > /dev/null 2>&1)" ] && [ "${CI_COMMIT_BRANCH}" = "master" ]; then
   echo "no builder image rebuild"
   BUILD_ARTIFACTS=false
 else
@@ -49,22 +46,43 @@ if [ "${BUILD_ARTIFACTS}" ]; then
     --build-arg BuildRef=${BuildRef} \
     --build-arg GitRepo=${GitRepo}
 
-  ls -la /kaniko
+  #cleanup kaniko
   rm -rf /kaniko/0
-  rm -rf /kaniko/1
 fi
 
 /kaniko/executor --context ./build \
   --dockerfile Dockerfile-debian \
-  --destination ${CI_REGISTRY_IMAGE}:${branch}_${imgarch} \
+  --destination ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_${imgarch} \
   --build-arg buildarch=${buildarch} \
   --build-arg BUILDER_IMG=${BUILDER_IMG}
 
-if [ "${branch}" = "master" ]; then
-  docker.manifest ${CI_REGISTRY_IMAGE}:${branch} latest
-  docker.manifest ${CI_REGISTRY_IMAGE}:${branch} ${MagicMirror_Version}
+if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+  docker.manifest ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH} latest
+  docker.manifest ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH} ${MagicMirror_Version}
   docker.sync "${CI_REGISTRY_IMAGE}:latest ${CI_REGISTRY_IMAGE}:${MagicMirror_Version}"
 else
-  docker.manifest ${CI_REGISTRY_IMAGE}:${branch} ${branch}
-  docker.sync "${CI_REGISTRY_IMAGE}:${branch}"
+  docker.manifest ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH} ${CI_COMMIT_BRANCH}
+  docker.sync "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}"
+fi
+
+# alpine image
+if [ "${imgarch}" = "amd64" ]; then
+  #cleanup kaniko
+  rm -rf /kaniko/0
+
+  dest="--destination ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine"
+  if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+    dest="${dest} --destination ${CI_REGISTRY_IMAGE}:alpine"
+  fi
+
+  /kaniko/executor --context ./build \
+    --dockerfile Dockerfile-alpine \
+    ${dest} \
+    --build-arg BUILDER_IMG=${BUILDER_IMG}
+
+  if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+    docker.sync "${CI_REGISTRY_IMAGE}:alpine"
+  else
+    docker.sync "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine"
+  fi
 fi
