@@ -3,13 +3,7 @@ FROM ${BUILDER_IMG} as builder
 FROM node:lts-alpine
 LABEL maintainer="Karsten Hassel"
 
-EXPOSE 8080
-
 USER root
-
-ENV ELECTRON_DISABLE_SANDBOX=1 \
-    MM_OVERRIDE_DEFAULT_MODULES=true \
-    MM_OVERRIDE_CSS=true
 
 WORKDIR /opt/magic_mirror
 
@@ -28,5 +22,11 @@ RUN set -e; \
 USER node
 
 COPY --from=builder --chown=node:node /opt/magic_mirror /opt/magic_mirror
+
+ENV ELECTRON_DISABLE_SANDBOX=1 \
+    MM_OVERRIDE_DEFAULT_MODULES=true \
+    MM_OVERRIDE_CSS=true
+
+EXPOSE 8080
 
 ENTRYPOINT ["./entrypoint.sh"]

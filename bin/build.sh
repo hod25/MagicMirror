@@ -30,14 +30,35 @@ elif [ ! "${imgarch}" = "amd64" ]; then
   echo "unsupported image arch: ${imgarch}"
 fi
 
+BUILDER_IMG="${CI_REGISTRY_IMAGE}:${BuildRef}_${imgarch}_artifacts"
+if [ "$(skopeo inspect docker://${BUILDER_IMG} > /dev/null 2>&1)" ] && [ "${branch}" = "master" ]; then
+  echo "no builder image rebuild"
+  BUILD_ARTIFACTS=false
+else
+  echo "builder image (re)build"
+  BUILD_ARTIFACTS=true
+fi
+
 docker.gitlab.login
 
+if [ "${BUILD_ARTIFACTS}" ]; then
+  /kaniko/executor --context ./build \
+    --dockerfile Dockerfile-artifacts \
+    --destination ${BUILDER_IMG} \
+    --build-arg buildarch=${buildarch} \
+    --build-arg BuildRef=${BuildRef} \
+    --build-arg GitRepo=${GitRepo}
+
+  ls -la /kaniko
+  rm -rf /kaniko/0
+  rm -rf /kaniko/1
+fi
+
 /kaniko/executor --context ./build \
-  --dockerfile Dockerfile \
+  --dockerfile Dockerfile-debian \
   --destination ${CI_REGISTRY_IMAGE}:${branch}_${imgarch} \
   --build-arg buildarch=${buildarch} \
-  --build-arg BuildRef=${BuildRef} \
-  --build-arg GitRepo=${GitRepo}
+  --build-arg BUILDER_IMG=${BUILDER_IMG}
 
 if [ "${branch}" = "master" ]; then
   docker.manifest ${CI_REGISTRY_IMAGE}:${branch} latest
