@@ -28,17 +28,17 @@ elif [ ! "${imgarch}" = "amd64" ]; then
 fi
 
 BUILDER_IMG="${CI_REGISTRY_IMAGE}:${BuildRef}_${imgarch}_artifacts"
-if [ "$(skopeo inspect docker://${BUILDER_IMG} > /dev/null 2>&1)" ] && [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+if [ "$(skopeo inspect docker://${BUILDER_IMG})" ] && [ "${CI_COMMIT_BRANCH}" = "master" ]; then
   echo "no builder image rebuild"
-  BUILD_ARTIFACTS=false
+  BUILD_ARTIFACTS="false"
 else
   echo "builder image (re)build"
-  BUILD_ARTIFACTS=true
+  BUILD_ARTIFACTS="true"
 fi
 
 docker.gitlab.login
 
-if [ "${BUILD_ARTIFACTS}" ]; then
+if [ "${BUILD_ARTIFACTS}" = "true" ]; then
   /kaniko/executor --context ./build \
     --dockerfile Dockerfile-artifacts \
     --destination ${BUILDER_IMG} \
