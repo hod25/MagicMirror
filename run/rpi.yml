@@ -4,8 +4,6 @@ services:
   magicmirror:
     container_name: mm
     image: karsten13/magicmirror:latest
-    ports:
-      - "8080:8080"
     volumes:
       - ../mounts/config:/opt/magic_mirror/config
       - ../mounts/modules:/opt/magic_mirror/modules

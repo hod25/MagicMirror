@@ -3,7 +3,7 @@ version: '3'
 services:
   magicmirror:
     container_name: mm
-    image: karsten13/magicmirror:latest
+    image: registry.gitlab.com/khassel/magicmirror:develop_gpio
     volumes:
       - ../mounts/config:/opt/magic_mirror/config
       - ../mounts/modules:/opt/magic_mirror/modules
@@ -12,6 +12,8 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /tmp/.X11-unix:/tmp/.X11-unix
       - /opt/vc:/opt/vc/:ro
+      - /sys:/sys
+      - /usr/bin/vcgencmd:/usr/bin/vcgencmd
     devices:
       - /dev/vchiq
     environment:
@@ -20,22 +22,7 @@ services:
     network_mode: host
     shm_size: "128mb"
     restart: unless-stopped
-    command:
+    command: 
       - npm
       - run
       - start
-
-  mmpm:
-    container_name: mmpm
-    image: karsten13/mmpm:latest
-    depends_on:
-      - magicmirror
-    ports:
-      - "7890:7890"
-      - "7892:7892"
-    volumes:
-      - ../mounts/modules:/home/node/MagicMirror/modules
-      - ../mounts/config:/home/node/MagicMirror/config
-      - ../mounts/css:/home/node/MagicMirror/css
-      - ../mounts/mmpm-config:/home/node/.config/mmpm
-    restart: unless-stopped
