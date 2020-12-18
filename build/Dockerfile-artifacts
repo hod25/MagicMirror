@@ -6,15 +6,15 @@ USER root
 WORKDIR /opt/magic_mirror
 
 # copy startscripts into container:
-COPY entrypoint.sh /tmp/
+COPY *.sh /tmp/
 
 RUN set -e; \
     apt-get update; \
     DEBIAN_FRONTEND=noninteractive apt-get -qy --no-install-recommends install git ca-certificates; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*; \
-    chmod +x /tmp/entrypoint.sh; \
-    chown node:node /tmp/entrypoint.sh; \
+    chmod +x /tmp/*.sh; \
+    chown node:node /tmp/*.sh; \
     chown -R node:node .;
 
 USER node
@@ -41,7 +41,8 @@ RUN set -e; \
     mv modules mount_ori/; \
     mv config mount_ori/; \
     mv css mount_ori/; \
-    mv /tmp/entrypoint.sh .; \
+    mv /tmp/*.sh .; \
+    touch restore.sh; \
     # remove unused test stuff which causes CVE's:
     rm -rf node_modules/clarinet/benchmark; \
     # remove md files:
