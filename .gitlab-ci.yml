@@ -20,7 +20,7 @@ build:
   extends: .jobext
   parallel:
     matrix:
-      - imgarch: ["amd64", "arm"]
+      - imgarch: ["amd64", "arm", "arm64"]
 
 # test raspi-image with gpio support and python
 build_gpio:

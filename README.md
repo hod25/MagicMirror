@@ -20,13 +20,12 @@ We have two usecases:
 
 The docker image `karsten13/magicmirror` is provided in this versions:
 
-TAG     | OS/ARCH     | DESCRIPTION
-------- | ----------- | -----------------------------------------------------------
-latest  | linux/amd64 | only `serveronly`-mode, electron not working, based on debian buster
-latest  | linux/arm   | for raspberry pi, based on debian buster
-v2.x.y  | linux/amd64 | MagicMirror-Version, same as latest or old version tag
-v2.x.y  | linux/arm   | MagicMirror-Version, same as latest or old version tag
-alpine  | linux/amd64 | only `serveronly`-mode, electron not working, based on alpine, smaller in size
+TAG                | OS/ARCH     | DESCRIPTION
+------------------ | ----------- | -----------------------------------------------------------
+latest (or v2.x.y) | linux/amd64 | only `serveronly`-mode, electron not working, based on debian buster
+latest (or v2.x.y) | linux/arm   | for raspberry pi, based on debian buster
+latest (or v2.x.y) | linux/arm64 | for raspberry pi4 64-Bit-Version, based on debian buster
+alpine             | linux/amd64 | only `serveronly`-mode, electron not working, based on alpine, smaller in size
 
 Version v2.x.y is the current release of MagicMirror. Older version tags remain on docker hub, the other tags are floating tags and therefore overwritten with every new build.
 
@@ -36,6 +35,7 @@ TAG            | OS/ARCH     | DESCRIPTION
 -------------- | ----------- | -----------------------------------------------------------
 develop        | linux/amd64 | only `serveronly`-mode, electron not working, based on debian buster
 develop        | linux/arm   | for raspberry pi, based on debian buster
+develop        | linux/arm64 | for raspberry pi4 64-Bit-Version, based on debian buster
 develop_alpine | linux/amd64 | only `serveronly`-mode, electron not working, based on alpine, smaller in size
 
 These images are using the `develop` branch of the MagicMirror git repository.

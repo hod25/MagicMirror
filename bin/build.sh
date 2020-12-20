@@ -23,6 +23,9 @@ echo "MagicMirror-BuildRef="${BuildRef}
 if [ "${imgarch}" = "arm" ]; then
   /register
   buildarch="arm32v7/"
+elif [ "${imgarch}" = "arm64" ]; then
+  /register
+  buildarch="arm64v8/"
 elif [ ! "${imgarch}" = "amd64" ]; then
   echo "unsupported image arch: ${imgarch}"
 fi
