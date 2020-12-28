@@ -21,16 +21,19 @@ USER node
 
 ARG BuildRef
 ARG GitRepo
+ARG buildarch
 RUN set -e; \
     node -v; \
     echo BuildRef="${BuildRef}"; \
     echo GitRepo="${GitRepo}"; \
     git clone --depth 1 -b "${BuildRef}" --single-branch "${GitRepo}" .; \
     git log -1; \
+    npmargs="--only=prod"; \
+    [ -z "${buildarch}" ] && npmargs="${npmargs} --no-optional"; \
     if [ $(echo "${BuildRef}" | grep -E "^v[0-9]+.[0-9]+.[0-9]+$") ] ; then \
-      npm ci --only=production; \
+      npm ci ${npmargs}; \
     else \
-      npm install --only=production; \
+      npm install ${npmargs}; \
     fi; \
     cat package.json; \
     npm cache clean -f; \
