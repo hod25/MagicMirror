@@ -10,7 +10,6 @@ services:
       - ../mounts/config:/opt/magic_mirror/config
       - ../mounts/modules:/opt/magic_mirror/modules
       - ../mounts/css:/opt/magic_mirror/css
-      - /etc/timezone:/etc/timezone:ro
     restart: unless-stopped
     command: 
       - npm

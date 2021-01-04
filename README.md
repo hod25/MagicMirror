@@ -178,13 +178,7 @@ If someone does not agree with this procedure he can avoid the copy process by a
 
 # Timezone
 
-The timezone and localtime are mapped from the host into the container. If you want to set the timezone to a different value you can do this by editing the `docker-compose.yml` file. You have to remove the line
-
-````
-      - /etc/timezone:/etc/timezone:ro
-````
-
-and add the timezone as environment variable:
+The container tries to get the timezone by location. If this is not possible or wrong, you can set the timezone to a different value by editing the `docker-compose.yml` file. You have to add the timezone as environment variable:
 
 ````
     environment:

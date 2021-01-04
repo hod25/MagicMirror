@@ -49,9 +49,15 @@ if [ "$MM_SHOW_CURSOR" = "true" ]; then
   sed -i "s|  cursor: .*;|  cursor: auto;|" /opt/magic_mirror/css/main.css
 fi
 
-[ -z "$TZ" ] && export TZ="$(cat /etc/timezone | tr -d '\n')"
+[ -z "$TZ" ] && export TZ="$(wget -qO - http://geoip.ubuntu.com/lookup | sed -n -e 's/.*<TimeZone>\(.*\)<\/TimeZone>.*/\1/p')"
 
-sudo ln -fs /usr/share/zoneinfo/$TZ /etc/localtime
+if [ -z "$TZ" ]; then
+  echo "***WARNING*** could not set timezone, please set TZ variable in docker-compose.yml, see https://gitlab.com/khassel/magicmirror#timezone" 
+else
+  echo "timezone is $TZ"
+  sudo ln -fs /usr/share/zoneinfo/$TZ /etc/localtime
+  sudo sh -c "echo $TZ > /etc/timezone"
+fi
 
 [ -z "$MM_RESTORE_SCRIPT_CONFIG" ] || (/opt/magic_mirror/create_restore_script.sh "$MM_RESTORE_SCRIPT_CONFIG" || true)
 
@@ -84,5 +90,5 @@ if [ "$StartEnv" = "test" ]; then
 else
   echo "start magicmirror"
 
-  exec "$@"
+  exec env TZ=$TZ "$@"
 fi
