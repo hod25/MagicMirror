@@ -81,7 +81,7 @@ if [ "${imgarch}" = "amd64" ]; then
   /kaniko/executor --context ./build \
     --dockerfile Dockerfile-alpine \
     ${dest} \
-    --build-arg BUILDER_IMG=${BUILDER_IMG}
+    --build-arg BUILDER_IMG=${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_${imgarch}
 
   if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
     docker.sync "${CI_REGISTRY_IMAGE}:alpine"

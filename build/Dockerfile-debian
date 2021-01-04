@@ -8,6 +8,9 @@ USER root
 
 WORKDIR /opt/magic_mirror
 
+# copy startscripts into container:
+COPY *.sh /opt/magic_mirror/
+
 # procps, arp-scan and sudo needed for the module MMM-NetworkScanner
 # sudo needed for the module MMM-Remote-Control
 # sudo needed for cp in entrypoint
@@ -21,6 +24,9 @@ RUN set -e; \
     rm -rf /var/lib/apt/lists/*; \
     usermod -a -G video node; \
     echo "node ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers; \
+    chmod +x *.sh; \
+    chown node:node *.sh; \
+    touch restore.sh; \
     c_rehash;
 
 USER node
