@@ -49,6 +49,10 @@ if [ "$MM_SHOW_CURSOR" = "true" ]; then
   sed -i "s|  cursor: .*;|  cursor: auto;|" /opt/magic_mirror/css/main.css
 fi
 
+[ -z "$TZ" ] && export TZ="$(cat /etc/timezone | tr -d '\n')"
+
+sudo ln -fs /usr/share/zoneinfo/$TZ /etc/localtime
+
 [ -z "$MM_RESTORE_SCRIPT_CONFIG" ] || (/opt/magic_mirror/create_restore_script.sh "$MM_RESTORE_SCRIPT_CONFIG" || true)
 
 if [ "$StartEnv" = "test" ]; then
