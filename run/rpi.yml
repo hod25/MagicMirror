@@ -10,6 +10,7 @@ services:
       - ../mounts/css:/opt/magic_mirror/css
       - /tmp/.X11-unix:/tmp/.X11-unix
       - /opt/vc:/opt/vc/:ro
+      - /usr/bin/vcgencmd:/usr/bin/vcgencmd
     devices:
       - /dev/vchiq
     environment:
@@ -18,7 +19,7 @@ services:
     network_mode: host
     shm_size: "128mb"
     restart: unless-stopped
-    command: 
+    command:
       - npm
       - run
       - start
