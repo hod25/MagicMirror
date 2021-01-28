@@ -50,3 +50,22 @@ test_amd64:
   script:
   - /opt/magic_mirror/entrypoint.sh
   extends: .jobext
+
+snyk_amd64:
+  stage: test
+  image: 
+    name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_amd64
+    entrypoint: [""]
+  script:
+  - sudo npm install -g snyk snyk-to-html
+  - snyk auth ${SNYK_TOKEN}
+  - cd /opt/magic_mirror
+  - snyk test --json | snyk-to-html -o ${CI_PROJECT_DIR}/snyk_results.html || true
+  rules:
+  - if: $CI_COMMIT_BRANCH =~ /^(master|develop)$/ && $TASK == "snyk"
+  tags:
+  - docker
+  artifacts:
+    when: always
+    paths: 
+      - snyk_results.html

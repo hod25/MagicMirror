@@ -64,6 +64,8 @@ fi
 if [ "$StartEnv" = "test" ]; then
   set -e
 
+  export NODE_ENV=test
+
   echo "install test dependencies ..."
   sudo apt-get update
   sudo apt-get install -y xvfb libgtk-3-0 libx11-xcb-dev libnss3-dev libxss1 libasound2

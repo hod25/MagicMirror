@@ -24,6 +24,7 @@ USER node
 COPY --from=builder --chown=node:node /opt/magic_mirror /opt/magic_mirror
 
 ENV ELECTRON_DISABLE_SANDBOX=1 \
+    NODE_ENV=production \
     MM_OVERRIDE_DEFAULT_MODULES=true \
     MM_OVERRIDE_CSS=true
 
