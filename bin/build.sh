@@ -15,7 +15,7 @@ if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
   BuildRef=${MagicMirror_Version}
 else
   echo "CI_COMMIT_BRANCH is not master"
-  BuildRef=develop
+  BuildRef="develop"
 fi
 echo "MagicMirror-BuildRef="${BuildRef}
 

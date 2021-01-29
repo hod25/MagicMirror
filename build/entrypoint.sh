@@ -68,7 +68,7 @@ if [ "$StartEnv" = "test" ]; then
 
   echo "install test dependencies ..."
   sudo apt-get update
-  sudo apt-get install -y xvfb libgtk-3-0 libx11-xcb-dev libnss3-dev libxss1 libasound2
+  sudo apt-get install -y xvfb libgtk-3-0 libx11-xcb-dev libnss3-dev libxss1 libasound2 libdrm2 libgbm1
 
   cd /opt/magic_mirror
 
