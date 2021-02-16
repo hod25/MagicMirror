@@ -8,35 +8,35 @@ Using docker simplifies the setup by using the container instead of setting up t
 Getting/Updating the container is done with one command.
 
 We have two usecases:
-- Scenario ☝️: Running the application in server only mode. 
+- Scenario **server** ☝️: Running the application in server only mode. 
   
   This will start the server, after which you can open the application in your browser of choice. 
   This is e.g useful for testing or running the application somewhere online, so you can access it with a browser from everywhere. 
   
   
-- Scenario ✌️: Using docker on the raspberry pi and starting the MagicMirror on the screen of the pi.
+- Scenario **electron** ✌️: Using docker on the raspberry pi and starting the MagicMirror on the screen of the pi using electron.
 
 # Docker Images
 
 The docker image `karsten13/magicmirror` is provided in this versions:
 
-TAG                | OS/ARCH     | DESCRIPTION
------------------- | ----------- | -----------------------------------------------------------
-latest (or v2.x.y) | linux/amd64 | only `serveronly`-mode, electron not working, based on debian buster
-latest (or v2.x.y) | linux/arm   | for raspberry pi, based on debian buster
-latest (or v2.x.y) | linux/arm64 | for raspberry pi4 64-Bit-Version, based on debian buster
-alpine             | linux/amd64 | only `serveronly`-mode, electron not working, based on alpine, smaller in size
+TAG                | OS/ARCH     | ELECTRON | DESCRIPTION
+------------------ | ----------- | -------- | -------------------------------------------------
+latest (or v2.x.y) | linux/amd64 | no       | only `serveronly`-mode, based on debian buster
+latest (or v2.x.y) | linux/arm   | yes      | for raspberry pi, based on debian buster
+latest (or v2.x.y) | linux/arm64 | yes      | for raspberry pi4 64-Bit-Version, based on debian buster
+alpine             | linux/amd64 | no       | only `serveronly`-mode, based on alpine, smaller in size
 
 Version v2.x.y is the current release of MagicMirror. Older version tags remain on docker hub, the other tags are floating tags and therefore overwritten with every new build.
 
 ⛔ The following experimental images are not for production use:
 
-TAG            | OS/ARCH     | DESCRIPTION
--------------- | ----------- | -----------------------------------------------------------
-develop        | linux/amd64 | only `serveronly`-mode, electron not working, based on debian buster
-develop        | linux/arm   | for raspberry pi, based on debian buster
-develop        | linux/arm64 | for raspberry pi4 64-Bit-Version, based on debian buster
-develop_alpine | linux/amd64 | only `serveronly`-mode, electron not working, based on alpine, smaller in size
+TAG            | OS/ARCH     | ELECTRON | DESCRIPTION
+-------------- | ----------- | -------- | --------------------------------------------------
+develop        | linux/amd64 | no       | only `serveronly`-mode, based on debian buster
+develop        | linux/arm   | yes      | for raspberry pi, based on debian buster
+develop        | linux/arm64 | yes      | for raspberry pi4 64-Bit-Version, based on debian buster
+develop_alpine | linux/amd64 | no       | only `serveronly`-mode, based on alpine, smaller in size
 
 These images are using the `develop` branch of the MagicMirror git repository.
 
@@ -58,7 +58,7 @@ You can use [MagicMirrorOS](https://github.com/guysoft/MagicMirrorOS), it contai
   As workaround you can use my [mmm-remote-docker module](https://gitlab.com/khassel/mmm-remote-docker).
 
 
-# Installation prerequisites for running on a raspberry pi with Scenario ✌️
+# Installation prerequisites for running on a raspberry pi with Scenario **electron** ✌️
 
 > 👉 if you use [MagicMirrorOS](https://github.com/guysoft/MagicMirrorOS) the steps in this section are already done.
 
@@ -91,13 +91,13 @@ Open a shell in your home directory and run
 git clone https://gitlab.com/khassel/magicmirror.git
 ````
 
-Now cd into the new directory `magicmirror/run` and copy the yml-file depending on the scenario, for scenario ☝️:
+Now cd into the new directory `magicmirror/run` and copy the yml-file depending on the scenario, for scenario **server** ☝️:
 ````bash
 cd ./magicmirror/run
 cp serveronly.yml docker-compose.yml
 ````
 
-For scenario ✌️:
+For scenario **electron** ✌️:
 ````bash
 cd ./magicmirror/run
 cp rpi.yml docker-compose.yml
@@ -111,7 +111,7 @@ Navigate to `~/magicmirror/run` and execute
 docker-compose up -d
 ````
 
-The container will start and with scenario ✌️ the MagicMirror should appear on the screen of your pi. In server only mode opening a browser at http://localhost:8080 should show the MagicMirror (scenario ☝️).
+The container will start and with scenario **electron** ✌️ the MagicMirror should appear on the screen of your pi. In server only mode opening a browser at http://localhost:8080 should show the MagicMirror (scenario **server** ☝️).
 
 > The container is configured to restart automatically so after executing `docker-compose up -d` it will restart with every reboot of your pi.
 
