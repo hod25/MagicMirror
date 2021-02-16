@@ -72,16 +72,14 @@ if [ "$StartEnv" = "test" ]; then
 
   cd /opt/magic_mirror
 
+  git reset --hard
+
   npm install
 
   echo "start tests ..."
 
   Xvfb :99 -screen 0 1024x768x16 &
   export DISPLAY=:99
-
-  # adjust test timeouts
-  sed -i "s:test.timeout(10000):test.timeout(30000):g" tests/e2e/global-setup.js
-  cat tests/e2e/global-setup.js
 
   echo "/mount_ori/**/*" >> .prettierignore
   npm run test:prettier

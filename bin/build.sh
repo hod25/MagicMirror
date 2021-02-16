@@ -9,6 +9,7 @@ trap finish EXIT
 
 GitRepo="https://github.com/MichMich/MagicMirror.git"
 MagicMirror_Version="v2.14.0"
+NODE_VERSION="lts"
 
 if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
   echo "CI_COMMIT_BRANCH is master"
@@ -16,6 +17,8 @@ if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
 else
   echo "CI_COMMIT_BRANCH is not master"
   BuildRef="develop"
+  # use node 15:
+  NODE_VERSION="15"
 fi
 echo "MagicMirror-BuildRef="${BuildRef}
 
@@ -30,7 +33,7 @@ elif [ ! "${imgarch}" = "amd64" ]; then
   echo "unsupported image arch: ${imgarch}"
 fi
 
-BUILDER_IMG="${CI_REGISTRY_IMAGE}:${BuildRef}_${imgarch}_artifacts"
+BUILDER_IMG="${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_${imgarch}_artifacts"
 if [ "$(skopeo inspect docker://${BUILDER_IMG})" ] && [ "${CI_COMMIT_BRANCH}" = "master" ]; then
   echo "no builder image rebuild"
   BUILD_ARTIFACTS="false"
@@ -45,6 +48,7 @@ if [ "${BUILD_ARTIFACTS}" = "true" ]; then
   /kaniko/executor --context ./build \
     --dockerfile Dockerfile-artifacts \
     --destination ${BUILDER_IMG} \
+    --build-arg NODE_VERSION=${NODE_VERSION} \
     --build-arg buildarch=${buildarch} \
     --build-arg BuildRef=${BuildRef} \
     --build-arg GitRepo=${GitRepo}
@@ -56,6 +60,7 @@ fi
 /kaniko/executor --context ./build \
   --dockerfile Dockerfile-debian \
   --destination ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_${imgarch} \
+  --build-arg NODE_VERSION=${NODE_VERSION} \
   --build-arg buildarch=${buildarch} \
   --build-arg BUILDER_IMG=${BUILDER_IMG}
 
@@ -81,6 +86,7 @@ if [ "${imgarch}" = "amd64" ]; then
   /kaniko/executor --context ./build \
     --dockerfile Dockerfile-alpine \
     ${dest} \
+    --build-arg NODE_VERSION=${NODE_VERSION} \
     --build-arg BUILDER_IMG=${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_${imgarch}
 
   if [ "${CI_COMMIT_BRANCH}" = "master" ]; then

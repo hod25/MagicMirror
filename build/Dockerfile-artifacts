@@ -1,5 +1,6 @@
 ARG buildarch
-FROM ${buildarch}node:lts-buster-slim as builder
+ARG NODE_VERSION
+FROM ${buildarch}node:${NODE_VERSION}-buster-slim as builder
 
 USER root
 
@@ -40,9 +41,7 @@ RUN set -e; \
     mv config mount_ori/; \
     mv css mount_ori/; \
     # remove unused test stuff which causes CVE's:
-    rm -rf node_modules/clarinet/benchmark; \
-    # remove md files:
-    find . -name "*.md" -delete;
+    rm -rf node_modules/clarinet/benchmark;
 
 FROM scratch
 LABEL maintainer="Karsten Hassel"
