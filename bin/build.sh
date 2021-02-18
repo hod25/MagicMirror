@@ -45,19 +45,16 @@ fi
 docker.gitlab.login
 
 if [ "${BUILD_ARTIFACTS}" = "true" ]; then
-  /kaniko/executor --context ./build \
+  build --context ./build \
     --dockerfile Dockerfile-artifacts \
     --destination ${BUILDER_IMG} \
     --build-arg NODE_VERSION=${NODE_VERSION} \
     --build-arg buildarch=${buildarch} \
     --build-arg BuildRef=${BuildRef} \
     --build-arg GitRepo=${GitRepo}
-
-  #cleanup kaniko
-  rm -rf /kaniko/0
 fi
 
-/kaniko/executor --context ./build \
+build --context ./build \
   --dockerfile Dockerfile-debian \
   --destination ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_${imgarch} \
   --build-arg NODE_VERSION=${NODE_VERSION} \
@@ -75,15 +72,12 @@ fi
 
 # alpine image
 if [ "${imgarch}" = "amd64" ]; then
-  #cleanup kaniko
-  rm -rf /kaniko/0
-
   dest="--destination ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine"
   if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
     dest="${dest} --destination ${CI_REGISTRY_IMAGE}:alpine"
   fi
 
-  /kaniko/executor --context ./build \
+  build --context ./build \
     --dockerfile Dockerfile-alpine \
     ${dest} \
     --build-arg NODE_VERSION=${NODE_VERSION} \

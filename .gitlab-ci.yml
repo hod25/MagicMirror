@@ -29,7 +29,7 @@ build_gpio:
   - |
     /register
     docker.gitlab.login
-    /kaniko/executor --context ./build \
+    build --context ./build \
       --dockerfile Dockerfile-gpio \
       --destination ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_gpio \
       --build-arg BASE_IMG=${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_arm
