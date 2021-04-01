@@ -14,9 +14,11 @@ NODE_VERSION="lts"
 if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
   echo "CI_COMMIT_BRANCH is master"
   BuildRef=${MagicMirror_Version}
+  BuilderTag=${MagicMirror_Version}
 else
   echo "CI_COMMIT_BRANCH is not master"
   BuildRef="develop"
+  BuilderTag=${CI_COMMIT_BRANCH}
   # use node 15:
   NODE_VERSION="15"
 fi
@@ -33,8 +35,8 @@ elif [ ! "${imgarch}" = "amd64" ]; then
   echo "unsupported image arch: ${imgarch}"
 fi
 
-BUILDER_IMG="${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_${imgarch}_artifacts"
-if [ "$(skopeo inspect docker://${BUILDER_IMG})" ] && [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+BUILDER_IMG="${CI_REGISTRY_IMAGE}:${BuilderTag}_${imgarch}_artifacts"
+if [ "$(skopeo inspect docker://${BUILDER_IMG})" ] && [ "${BuilderTag}" = "master" ]; then
   echo "no builder image rebuild"
   BUILD_ARTIFACTS="false"
 else
