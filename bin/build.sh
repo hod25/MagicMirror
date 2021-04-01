@@ -8,7 +8,7 @@ function finish {
 trap finish EXIT
 
 GitRepo="https://github.com/MichMich/MagicMirror.git"
-MagicMirror_Version="v2.14.0"
+MagicMirror_Version="v2.15.0"
 NODE_VERSION="lts"
 
 if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
