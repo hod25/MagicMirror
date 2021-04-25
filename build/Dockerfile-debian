@@ -18,7 +18,7 @@ COPY *.sh /opt/magic_mirror/
 ARG buildarch
 RUN set -e; \
     apt-get update; \
-    _pck="git nano sudo gettext openssl ca-certificates wget"; \
+    _pck="git nano sudo gettext openssl ca-certificates wget tini"; \
     [ -z "${buildarch}" ] || _pck="${_pck} libgtk-3-0 libx11-xcb-dev libnss3-dev libxss1 libxtst6 libasound2 libdrm2 libgbm1 procps arp-scan"; \
     DEBIAN_FRONTEND=noninteractive apt-get -qy --no-install-recommends install ${_pck}; \
     apt-get clean; \
@@ -41,4 +41,4 @@ ENV ELECTRON_DISABLE_SANDBOX=1 \
 
 EXPOSE 8080
 
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["/usr/bin/tini", "--", "./entrypoint.sh"]
