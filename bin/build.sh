@@ -19,8 +19,8 @@ else
   echo "CI_COMMIT_BRANCH is not master"
   BuildRef="develop"
   BuilderTag=${CI_COMMIT_BRANCH}
-  # use node 15:
-  NODE_VERSION="15"
+  # use node 16:
+  NODE_VERSION="16"
 fi
 echo "MagicMirror-BuildRef="${BuildRef}
 
