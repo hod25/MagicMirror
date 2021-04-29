@@ -4,25 +4,14 @@ title: Installation
 permalink: /installation/
 ---
 
-## Installation prerequisites for server only mode on a linux machine
+## Installation prerequisites
 
 * [Docker](https://docs.docker.com/engine/installation/)
-* [docker-compose](https://docs.docker.com/compose/install/)
+* I recommend [docker-compose](https://docs.docker.com/compose/install/). The images can also started with `docker run ...` commands instead,
+  but this would result in very long statements. `docker-compose` uses yml-Files which are included in this setup. You find an example using
+  docker in the [FAQ](/faq/).
 
-## Installation prerequisites for running on a raspberry pi
-
-You can use [MagicMirrorOS](https://github.com/guysoft/MagicMirrorOS), it contains already all the following things needed (beside the hardware):
-
-* running raspberry pi version >2 with running raspian with LAN or WLAN access
-* [Docker](https://docs.docker.com/engine/installation/)
-* [docker-compose](https://docs.docker.com/compose/install/)
-
-> The pi image uses `debian:buster-slim` as base image. After upgrading from `stretch` to `buster` there is no longer a 
-  simple solution to shutdown/restart the host from inside the container.
-  As workaround you can use my [mmm-remote-docker module](https://gitlab.com/khassel/mmm-remote-docker).
-
-
-## Installation prerequisites for running on a raspberry pi with Scenario **electron** ✌️
+## Additional prerequisites for running on a raspberry pi with Scenario **electron** ✌️
 
 > 👉 if you use [MagicMirrorOS](https://github.com/guysoft/MagicMirrorOS) the steps in this section are already done.
 
@@ -78,7 +67,7 @@ docker-compose up -d
 
 The container will start and with scenario **electron** ✌️ the MagicMirror should appear on the screen of your pi. In server only mode opening a browser at `http://localhost:8080` should show the MagicMirror (scenario **server** ☝️).
 
-> The container is configured to restart automatically so after executing `docker-compose up -d` it will restart with every reboot of your pi.
+> The container is configured to restart automatically so after executing `docker-compose up -d` it will also restart after a reboot of your pi.
 
 
 You can see the logs with

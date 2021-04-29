@@ -71,7 +71,7 @@ snyk_amd64:
       - snyk_results.html
 
 pages:
-  stage: test
+  stage: build
   image: ruby:2.7
   script:
     - cd pages

@@ -19,9 +19,47 @@ var config = {
   ...
 ```
 
+## How to start MagicMirror without docker-compose?
 
+If you don't want to use `docker-compose` yo can start and stop your container with `docker` commands. For starting the container you have to translate the `docker-compose.yml` file into a `docker run ...` command. Here an example:
 
-## How to patch a file of MagicMirror
+`docker-compose.yml`:
+```yaml
+version: '3'
+
+services:
+  magicmirror:
+    container_name: mm
+    image: karsten13/magicmirror:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ../mounts/config:/opt/magic_mirror/config
+      - ../mounts/modules:/opt/magic_mirror/modules
+      - ../mounts/css:/opt/magic_mirror/css
+    restart: unless-stopped
+    command: 
+      - npm
+      - run
+      - server
+```
+
+Corresponding `docker run` command:
+
+```yaml
+docker run  -d \
+    --publish 8080:8080 \
+    --restart always \
+    --volume ~/magicmirror/mounts/config:/opt/magic_mirror/config \
+    --volume ~/magicmirror/mounts/modules:/opt/magic_mirror/modules \
+    --volume ~/magicmirror/mounts/css:/opt/magic_mirror/css \
+    --name mm \
+    karsten13/magicmirror:latest npm run server
+```
+
+You can stop and remove the container with `docker rm -f mm`.
+
+## How to patch a file of MagicMirror?
 
 You may want to test something or fix a bug in MagicMirror and therefore you want to edit a file of the MagicMirror installation.
 With a classic install this is no problem, just edit the file, save it and restart MagicMirror.
