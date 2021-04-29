@@ -1,14 +1,18 @@
+---
+layout: single
+title: Pi Related Modules
+permalink: /pi-modules/
+---
+
+Many modules are working out of the box with this docker setup. But if you want to use modules which needs hardware of the raspberry pi the setup can be tricky. This step-by-step example is a showcase how to solve such problems when you want to use a PIR motion sensor.
+
 # MagicMirror with PIR motion sensor
-
-The images provided in this setup cannot cover all use cases. There is always a conflict between installing more packages and image size.
-
-So I will show in this document how to enhance an existing image.
 
 ## Install module MMM-Pir-Sensor
 
 Start image `karsten13/magicmirror:latest` on a raspberry pi and login into the running container with `docker exec -it mm bash`. Navigate to the `modules` folder and clone [MMM-PIR-Sensor](https://github.com/paviro/MMM-PIR-Sensor) with `git clone https://github.com/paviro/MMM-PIR-Sensor.git`. Now `cd` into the new folgder `MMM-PIR-Sensor` and run `npm install`.
 
-This will throw errors because these packages are needed but not installed: python3, g++ and make.
+This will throw errors because some packages are needed but not installed: python3, g++ and make.
 
 So we have to build a new Docker image:
 
@@ -29,7 +33,6 @@ USER node
 First we have to switch to user `root` so we can install packages. In the `RUN` section the missing packages are installed and we clean up for a small image size. After this, we switch back to the default user `node`.
 
 We need to build this image and update the `docker-compose.yml` with the new image name.
-After restarting the container, installing MMM-PIR-Sensor should work.
 
 ## Configure MMM-PIR-Sensor
 
