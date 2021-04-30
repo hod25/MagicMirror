@@ -2,6 +2,7 @@
 layout: single
 title: Docker Images
 permalink: /images/
+toc: false
 ---
 
 The docker image `karsten13/magicmirror` is provided in this versions:

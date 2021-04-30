@@ -2,6 +2,7 @@
 layout: single
 title: Docker Setup
 permalink: /
+toc: false
 ---
 
 # MagicMirror²

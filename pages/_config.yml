@@ -206,10 +206,14 @@ defaults:
       read_time: false
       share: false
       related: false
+      toc: true
+      toc_icon: "arrow-circle-right"
+      toc_sticky: true
       sidebar:
         nav: "main"
       header:
         overlay_image: https://raw.githubusercontent.com/MichMich/MagicMirror-Website/master/public/img/mirror.png
 
 footer_scripts:
+  - /assets/js/main.min.js # this is missing if another footer script is added
   - /assets/js/external_links.js

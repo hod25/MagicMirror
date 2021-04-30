@@ -9,7 +9,7 @@ permalink: /installation/
 * [Docker](https://docs.docker.com/engine/installation/)
 * I recommend [docker-compose](https://docs.docker.com/compose/install/). The images can also started with `docker run ...` commands instead,
   but this would result in very long statements. `docker-compose` uses yml-Files which are included in this setup. You find an example using
-  docker in the [FAQ]({{ site.baseurl }}/faq/).
+  docker in the [FAQ]({{ site.baseurl }}/faq/#how-to-start-magicmirror-without-docker-compose).
 
 ## Additional prerequisites for running on a raspberry pi with Scenario **electron** ✌️
 
