@@ -86,6 +86,6 @@ pages:
     paths:
       - public
   rules:
-  - if: $CI_COMMIT_BRANCH =~ /^(master|develop)$/ && $TASK == "pages"
+  - if: ($CI_COMMIT_BRANCH =~ /^(master|develop)$/) && ($TASK == "pages" || $TASK == "runtime")
   tags:
   - docker
