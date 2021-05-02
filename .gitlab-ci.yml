@@ -6,6 +6,9 @@ image: ${CI_REGISTRY}/khassel/container/kaniko:latest
 
 variables:
   GIT_DEPTH: 1
+  MAGICMIRROR_VERSION: "v2.15.0"
+  NODE_VERSION_MASTER: "lts"
+  NODE_VERSION_DEVELOP: "16"
 
 .jobext:
   rules:
@@ -74,6 +77,7 @@ pages:
   stage: build
   image: ruby:2.7
   script:
+    - cp -v .gitlab-ci.yml ${CI_PROJECT_DIR}/pages/_data/gitlab.yml
     - cd pages
     - gem install bundler
     - bundle install

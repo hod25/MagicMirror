@@ -8,19 +8,17 @@ function finish {
 trap finish EXIT
 
 GitRepo="https://github.com/MichMich/MagicMirror.git"
-MagicMirror_Version="v2.15.0"
-NODE_VERSION="lts"
+NODE_VERSION=${NODE_VERSION_MASTER}
 
 if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
   echo "CI_COMMIT_BRANCH is master"
-  BuildRef=${MagicMirror_Version}
-  BuilderTag=${MagicMirror_Version}
+  BuildRef=${MAGICMIRROR_VERSION}
+  BuilderTag=${MAGICMIRROR_VERSION}
 else
   echo "CI_COMMIT_BRANCH is not master"
   BuildRef="develop"
   BuilderTag=${CI_COMMIT_BRANCH}
-  # use node 16:
-  NODE_VERSION="16"
+  NODE_VERSION=${NODE_VERSION_DEVELOP}
 fi
 echo "MagicMirror-BuildRef="${BuildRef}
 
@@ -65,8 +63,8 @@ build --context ./build \
 
 if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
   docker.manifest ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH} latest
-  docker.manifest ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH} ${MagicMirror_Version}
-  docker.sync "${CI_REGISTRY_IMAGE}:latest ${CI_REGISTRY_IMAGE}:${MagicMirror_Version}"
+  docker.manifest ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH} ${MAGICMIRROR_VERSION}
+  docker.sync "${CI_REGISTRY_IMAGE}:latest ${CI_REGISTRY_IMAGE}:${MAGICMIRROR_VERSION}"
 else
   docker.manifest ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH} ${CI_COMMIT_BRANCH}
   docker.sync "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}"
