@@ -75,12 +75,11 @@ snyk_amd64:
 
 pages:
   stage: build
-  image: ruby:2.7
+  image: ${CI_REGISTRY}/khassel/jekyll:latest
   script:
     - cp -v .gitlab-ci.yml ${CI_PROJECT_DIR}/pages/_data/gitlab.yml
+    - uglify.sh ${CI_PROJECT_DIR}/pages/assets/js
     - cd pages
-    - gem install bundler
-    - bundle install
     - bundle exec jekyll build -d ${CI_PROJECT_DIR}/public
   artifacts:
     paths:
