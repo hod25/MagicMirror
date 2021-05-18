@@ -60,10 +60,11 @@ snyk_amd64:
     name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_amd64
     entrypoint: [""]
   script:
-  - sudo npm install -g snyk snyk-to-html
+  - sudo npm install -g snyk snyk-to-html npm-check-updates
   - snyk auth ${SNYK_TOKEN}
   - cd /opt/magic_mirror
   - snyk test --json | snyk-to-html -o ${CI_PROJECT_DIR}/snyk_results.html || true
+  - ncu
   rules:
   - if: $CI_COMMIT_BRANCH =~ /^(master|develop)$/ && $TASK == "snyk"
   tags:
