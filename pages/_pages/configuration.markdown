@@ -22,6 +22,9 @@ This make sense for keeping secrets (e.g. passwords, api keys) out of the config
     environment:
       MY_SECRET: "abc"
 ```
+
+You can also use an `.env` file (in the same directory as your `docker-compose.yml`) to define your secrets there, for more info on this see [the docker-compose reference](https://docs.docker.com/compose/environment-variables/).
+
 > 👉 When the container starts, the `config.js` will be created using the `config.js.template`. An existing `config.js` will be overwritten and saved as `config.js-old`
 
 For installing modules refer to the module website, the default modules are described [here](https://docs.magicmirror.builders/modules/introduction.html).
