@@ -34,7 +34,7 @@ elif [ ! "${imgarch}" = "amd64" ]; then
 fi
 
 BUILDER_IMG="${CI_REGISTRY_IMAGE}:${BuilderTag}_${imgarch}_artifacts"
-if [ "$(skopeo inspect docker://${BUILDER_IMG})" ] && [ "${BuilderTag}" = "master" ]; then
+if [ "$(skopeo inspect docker://${BUILDER_IMG})" ] && [ "${CI_COMMIT_BRANCH}" = "master" ]; then
   echo "no builder image rebuild"
   BUILD_ARTIFACTS="false"
 else
