@@ -87,3 +87,23 @@ docker-compose down
 ```
 
 will stop and remove the MagicMirror container.
+
+## Updating the image
+
+The MagicMirror²-Project has quarterly releases so every 1st of Jan/Apr/Jul/Oct a new version is released.
+
+This project ist updated weekly because the image contains debian as operating system. To get (security) updates in time the image build is executed every sunday.
+
+To get the newest image you have to update this locally. Navigate to `~/magicmirror/run` and execute
+
+```bash
+docker-compose pull
+```
+
+After the new image is pulled you have to restart the container with
+
+```bash
+docker-compose up -d
+```
+
+> With every new image the old image remains on your hard disc and occupies disk space. To get rid of all old images you can execute `docker image prune -f`.
