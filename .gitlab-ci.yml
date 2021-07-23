@@ -81,6 +81,9 @@ pages:
     - cp -v .gitlab-ci.yml ${CI_PROJECT_DIR}/pages/_data/gitlab.yml
     - uglify.sh ${CI_PROJECT_DIR}/pages/assets/js
     - cd pages
+    - echo 'source "https://rubygems.org"' > Gemfile
+    - echo 'gem "jekyll", "~> '${V_JEKYLL}'"' >> Gemfile
+    - echo 'gem "minimal-mistakes-jekyll", "~> '${V_MISTAKES}'"' >> Gemfile
     - bundle exec jekyll build -d ${CI_PROJECT_DIR}/public
   artifacts:
     paths:
