@@ -29,6 +29,8 @@ variables:
       elif [ "${imgarch}" = "arm64" ]; then
         /register
         export buildarch="arm64v8/"
+      elif [ "${imgarch}" = "debug" ]; then
+        export debug="true"
       elif [ ! "${imgarch}" = "amd64" ]; then
         echo "unsupported image arch: ${imgarch}"
       fi
@@ -69,11 +71,12 @@ build_artifacts:
     --build-arg NODE_VERSION=${NODE_VERSION} \
     --build-arg buildarch=${buildarch} \
     --build-arg BuildRef=${BuildRef} \
-    --build-arg GitRepo=${GitRepo}
+    --build-arg GitRepo=${GitRepo} \
+    --build-arg debug=${debug}
   extends: .jobextbuild
   parallel:
     matrix:
-      - imgarch: ["amd64", "arm", "arm64"]
+      - imgarch: ["amd64", "arm", "arm64", "debug"]
 
 .runtime:
   stage: build
@@ -85,7 +88,10 @@ build_artifacts:
       --destination ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_${imgarch} \
       --build-arg NODE_VERSION=${NODE_VERSION} \
       --build-arg buildarch=${buildarch} \
-      --build-arg BUILDER_IMG=${BUILDER_IMG}
+      --build-arg BUILDER_IMG=${BUILDER_IMG} \
+      --build-arg debug=${debug}
+
+    [ -z "${debug}" ] || exit 0
 
     if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
       docker.manifest ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH} latest
@@ -113,6 +119,12 @@ build_arm64:
   variables:
     imgarch: "arm64"
   needs: ["build_artifacts: [arm64]"]
+  extends: .runtime
+
+build_debug:
+  variables:
+    imgarch: "debug"
+  needs: ["build_artifacts: [debug]"]
   extends: .runtime
 
 build_alpine:
@@ -155,14 +167,14 @@ build_gpio:
   tags:
   - docker
 
-test_amd64:
+test_debug:
   stage: test
-  needs: ["build_amd64"]
+  needs: ["build_debug"]
   variables:
     GIT_STRATEGY: none
     StartEnv: test
   image: 
-    name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_amd64
+    name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_debug
     entrypoint: [""]
   script:
   - /opt/magic_mirror/entrypoint.sh

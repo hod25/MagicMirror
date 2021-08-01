@@ -16,10 +16,14 @@ COPY *.sh /opt/magic_mirror/
 # sudo needed for the module MMM-Remote-Control
 # sudo needed for cp in entrypoint
 ARG buildarch
+ARG debug
 RUN set -e; \
     apt-get update; \
     _pck="git nano sudo gettext openssl ca-certificates wget tini"; \
-    [ -z "${buildarch}" ] || _pck="${_pck} libgtk-3-0 libx11-xcb-dev libnss3-dev libxss1 libxtst6 libasound2 libdrm2 libgbm1 libxshmfence1 fonts-arphic-uming procps arp-scan"; \
+    if [ ! -z "${buildarch}" ] || [ ! -z "${debug}" ]; then \
+      _pck="${_pck} libgtk-3-0 libx11-xcb-dev libnss3-dev libxss1 libxtst6 libasound2 libdrm2 libgbm1 libxshmfence1 fonts-arphic-uming procps arp-scan"; \
+    fi; \
+    [ -z "${debug}" ] || _pck="${_pck} xvfb"; \
     DEBIAN_FRONTEND=noninteractive apt-get -qy --no-install-recommends install ${_pck}; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*; \

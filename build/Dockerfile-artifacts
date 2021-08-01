@@ -18,14 +18,17 @@ USER node
 ARG BuildRef
 ARG GitRepo
 ARG buildarch
+ARG debug
 RUN set -e; \
     node -v; \
     echo BuildRef="${BuildRef}"; \
     echo GitRepo="${GitRepo}"; \
     git clone --depth 1 -b "${BuildRef}" --single-branch "${GitRepo}" .; \
     git log -1; \
-    npmargs="--only=prod"; \
-    [ -z "${buildarch}" ] && npmargs="${npmargs} --no-optional"; \
+    if [ -z "${debug}" ]; then \
+      npmargs="--only=prod"; \
+      [ -z "${buildarch}" ] && npmargs="${npmargs} --no-optional"; \
+    fi; \
     if [ $(echo "${BuildRef}" | grep -E "^v[0-9]+.[0-9]+.[0-9]+$") ] ; then \
       npm ci ${npmargs}; \
     else \

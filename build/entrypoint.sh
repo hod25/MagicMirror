@@ -66,27 +66,19 @@ if [ "$StartEnv" = "test" ]; then
 
   export NODE_ENV=test
 
-  echo "install test dependencies ..."
-  sudo apt-get update
-  sudo apt-get install -y xvfb libgtk-3-0 libx11-xcb-dev libnss3-dev libxss1 libasound2 libdrm2 libgbm1
-
-  cd /opt/magic_mirror
-
-  git reset --hard
-
-  npm install
-
   echo "start tests ..."
 
   Xvfb :99 -screen 0 1024x768x16 &
   export DISPLAY=:99
 
+  cd /opt/magic_mirror
+
   echo "/mount_ori/**/*" >> .prettierignore
   npm run test:prettier
   npm run test:js
   npm run test:css
-  npm run test:e2e
   npm run test:unit
+  npm run test:e2e
 else
   echo "start magicmirror"
 
