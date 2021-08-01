@@ -1,4 +1,5 @@
 stages:
+  - buildartifacts
   - build
   - test
 
@@ -16,14 +17,127 @@ variables:
   tags:
   - docker
 
-build:
-  stage: build
-  script:
-  - ./bin/build.sh
+.jobextbuild:
   extends: .jobext
+  before_script:
+    - docker.gitlab.login
+    - | 
+      # set build arch
+      if [ "${imgarch}" = "arm" ]; then
+        /register
+        export buildarch="arm32v7/"
+      elif [ "${imgarch}" = "arm64" ]; then
+        /register
+        export buildarch="arm64v8/"
+      elif [ ! "${imgarch}" = "amd64" ]; then
+        echo "unsupported image arch: ${imgarch}"
+      fi
+      # master or not
+      if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+        BuilderTag=${MAGICMIRROR_VERSION}
+        export NODE_VERSION=${NODE_VERSION_MASTER}
+      else
+        BuilderTag=${CI_COMMIT_BRANCH}
+        export NODE_VERSION=${NODE_VERSION_DEVELOP}
+      fi
+      export BUILDER_IMG="${CI_REGISTRY_IMAGE}:${BuilderTag}_${imgarch}_artifacts"
+  after_script:
+    - docker.logout
+
+build_artifacts:
+  stage: buildartifacts
+  variables:
+    GitRepo: "https://github.com/MichMich/MagicMirror.git"
+  script:
+  - |
+    if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+      echo "CI_COMMIT_BRANCH is master"
+      BuildRef=${MAGICMIRROR_VERSION}
+    else
+      echo "CI_COMMIT_BRANCH is not master"
+      BuildRef="develop"
+    fi
+    set | grep -E "BUILDER_IMG=|NODE_VERSION=|buildarch=|BuildRef=|GitRepo="
+    if [ "$(skopeo inspect docker://${BUILDER_IMG})" ] && [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+      echo "no builder image rebuild"
+      exit 0
+    fi
+    echo "builder image (re)build"
+    build --context ./build \
+    --dockerfile Dockerfile-artifacts \
+    --destination ${BUILDER_IMG} \
+    --build-arg NODE_VERSION=${NODE_VERSION} \
+    --build-arg buildarch=${buildarch} \
+    --build-arg BuildRef=${BuildRef} \
+    --build-arg GitRepo=${GitRepo}
+  extends: .jobextbuild
   parallel:
     matrix:
       - imgarch: ["amd64", "arm", "arm64"]
+
+.runtime:
+  stage: build
+  script:
+  - |
+    set | grep -E "BUILDER_IMG=|NODE_VERSION=|buildarch="
+    build --context ./build \
+      --dockerfile Dockerfile-debian \
+      --destination ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_${imgarch} \
+      --build-arg NODE_VERSION=${NODE_VERSION} \
+      --build-arg buildarch=${buildarch} \
+      --build-arg BUILDER_IMG=${BUILDER_IMG}
+
+    if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+      docker.manifest ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH} latest
+      docker.manifest ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH} ${MAGICMIRROR_VERSION}
+      docker.sync "${CI_REGISTRY_IMAGE}:latest ${CI_REGISTRY_IMAGE}:${MAGICMIRROR_VERSION}"
+    else
+      docker.manifest ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH} ${CI_COMMIT_BRANCH}
+      docker.sync "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}"
+    fi
+  extends: .jobextbuild
+
+build_amd64:
+  variables:
+    imgarch: "amd64"
+  needs: ["build_artifacts: [amd64]"]
+  extends: .runtime
+
+build_arm:
+  variables:
+    imgarch: "arm"
+  needs: ["build_artifacts: [arm]"]
+  extends: .runtime
+
+build_arm64:
+  variables:
+    imgarch: "arm64"
+  needs: ["build_artifacts: [arm64]"]
+  extends: .runtime
+
+build_alpine:
+  variables:
+    imgarch: "amd64"
+  stage: build
+  needs: ["build_artifacts: [amd64]"]
+  script:
+  - |
+    set | grep -E "BUILDER_IMG=|NODE_VERSION="
+    dest="--destination ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine"
+    if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+      dest="${dest} --destination ${CI_REGISTRY_IMAGE}:alpine"
+    fi
+    build --context ./build \
+      --dockerfile Dockerfile-alpine \
+      ${dest} \
+      --build-arg NODE_VERSION=${NODE_VERSION} \
+      --build-arg BUILDER_IMG=${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_${imgarch}
+    if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+      docker.sync "${CI_REGISTRY_IMAGE}:alpine"
+    else
+      docker.sync "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine"
+    fi
+  extends: .jobextbuild
 
 # test raspi-image with gpio support and python
 build_gpio:
@@ -43,7 +157,7 @@ build_gpio:
 
 test_amd64:
   stage: test
-  needs: ["build: [amd64]"]
+  needs: ["build_amd64"]
   variables:
     GIT_STRATEGY: none
     StartEnv: test
@@ -76,6 +190,7 @@ snyk_amd64:
 
 pages:
   stage: build
+  needs: []
   image: ${CI_REGISTRY}/khassel/jekyll:latest
   script:
     - cp -v .gitlab-ci.yml ${CI_PROJECT_DIR}/pages/_data/gitlab.yml
