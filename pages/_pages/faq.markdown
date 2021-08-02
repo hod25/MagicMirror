@@ -150,7 +150,7 @@ Require stack:
 To get your MagicMirror running you can use the following workaround:
 - if your container doesn't start see the section above
 - login into the container with `docker exec -it mm bash` and navigate into the folder of the module, e.g. `cd modules/MMM-quote-of-the-day`
-- check with `ls -la` if the folder contains a file `package.json`, if not run `npm init`
+- check with `ls -la` if the folder contains a file `package.json`, if not run `npm init -y`
 - run `npm install request`
 
 After this manual install of `request` the module should work.
