@@ -1,8 +1,9 @@
 ARG buildarch
 ARG BUILDER_IMG
 ARG NODE_VERSION
+ARG DEBIAN_VERSION
 FROM ${BUILDER_IMG} as builder
-FROM ${buildarch}node:${NODE_VERSION}-buster-slim
+FROM ${buildarch}node:${NODE_VERSION}-${DEBIAN_VERSION}-slim
 LABEL maintainer="Karsten Hassel"
 
 USER root

@@ -1,6 +1,7 @@
 ARG buildarch
 ARG NODE_VERSION
-FROM ${buildarch}node:${NODE_VERSION}-buster-slim as builder
+ARG DEBIAN_VERSION
+FROM ${buildarch}node:${NODE_VERSION}-${DEBIAN_VERSION}-slim as builder
 
 USER root
 

@@ -10,6 +10,8 @@ variables:
   MAGICMIRROR_VERSION: "v2.16.0"
   NODE_VERSION_MASTER: "lts"
   NODE_VERSION_DEVELOP: "16"
+  DEBIAN_VERSION_MASTER: "buster"
+  DEBIAN_VERSION_DEVELOP: "buster"
 
 .jobext:
   rules:
@@ -38,9 +40,11 @@ variables:
       if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
         BuilderTag=${MAGICMIRROR_VERSION}
         export NODE_VERSION=${NODE_VERSION_MASTER}
+        export DEBIAN_VERSION=${DEBIAN_VERSION_MASTER}
       else
         BuilderTag=${CI_COMMIT_BRANCH}
         export NODE_VERSION=${NODE_VERSION_DEVELOP}
+        export DEBIAN_VERSION=${DEBIAN_VERSION_DEVELOP}
       fi
       export BUILDER_IMG="${CI_REGISTRY_IMAGE}:${BuilderTag}_${imgarch}_artifacts"
   after_script:
@@ -69,6 +73,7 @@ build_artifacts:
     --dockerfile Dockerfile-artifacts \
     --destination ${BUILDER_IMG} \
     --build-arg NODE_VERSION=${NODE_VERSION} \
+    --build-arg DEBIAN_VERSION=${DEBIAN_VERSION} \
     --build-arg buildarch=${buildarch} \
     --build-arg BuildRef=${BuildRef} \
     --build-arg GitRepo=${GitRepo} \
@@ -87,6 +92,7 @@ build_artifacts:
       --dockerfile Dockerfile-debian \
       --destination ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_${imgarch} \
       --build-arg NODE_VERSION=${NODE_VERSION} \
+      --build-arg DEBIAN_VERSION=${DEBIAN_VERSION} \
       --build-arg buildarch=${buildarch} \
       --build-arg BUILDER_IMG=${BUILDER_IMG} \
       --build-arg debug=${debug}
