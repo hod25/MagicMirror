@@ -16,8 +16,6 @@ variables:
 .jobext:
   rules:
   - if: $CI_COMMIT_BRANCH =~ /^(master|develop)$/ && $TASK == "runtime"
-  tags:
-  - docker
 
 .jobextbuild:
   extends: .jobext
@@ -169,8 +167,6 @@ build_gpio:
       --build-arg BASE_IMG=${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_arm
   rules:
   - if: $CI_COMMIT_BRANCH =~ /^(master|develop)$/ && $TASK == "gpio"
-  tags:
-  - docker
 
 test_debug:
   stage: test
@@ -198,8 +194,6 @@ snyk_amd64:
   - ncu
   rules:
   - if: $CI_COMMIT_BRANCH =~ /^(master|develop)$/ && $TASK == "snyk"
-  tags:
-  - docker
   artifacts:
     when: always
     paths: 
@@ -222,5 +216,3 @@ pages:
       - public
   rules:
   - if: ($CI_COMMIT_BRANCH =~ /^(master|develop)$/) && ($TASK == "pages" || $TASK == "runtime")
-  tags:
-  - docker
