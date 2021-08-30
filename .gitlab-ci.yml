@@ -12,6 +12,7 @@ variables:
   NODE_VERSION_DEVELOP: "16"
   DEBIAN_VERSION_MASTER: "buster"
   DEBIAN_VERSION_DEVELOP: "buster"
+  GitRepo: "https://github.com/MichMich/MagicMirror.git"
 
 .jobext:
   rules:
@@ -48,8 +49,6 @@ variables:
 
 build_artifacts:
   stage: buildartifacts
-  variables:
-    GitRepo: "https://github.com/MichMich/MagicMirror.git"
   script:
   - |
     if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
@@ -152,6 +151,37 @@ build_alpine:
       docker.sync "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine"
     fi
   extends: .jobextbuild
+
+test_alpine:
+  stage: test
+  needs: ["build_alpine"]
+  variables:
+    GIT_STRATEGY: none
+  image: 
+    name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine
+    entrypoint: [""]
+  script:
+  - |
+    cd /opt/magic_mirror
+    git log -1 > /tmp/image.txt
+    if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+      echo "CI_COMMIT_BRANCH is master"
+      BuildRef=${MAGICMIRROR_VERSION}
+    else
+      echo "CI_COMMIT_BRANCH is not master"
+      BuildRef="develop"
+    fi
+    cd /tmp
+    git clone --depth 1 -b "${BuildRef}" --single-branch "${GitRepo}" mm
+    cd mm
+    git log -1 > /tmp/clone.txt
+    cat /tmp/image.txt
+    echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+    cat /tmp/clone.txt
+    echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+    diff /tmp/image.txt /tmp/clone.txt
+    echo "no diffs detected."
+  extends: .jobext
 
 # test raspi-image with gpio support and python
 build_gpio:
