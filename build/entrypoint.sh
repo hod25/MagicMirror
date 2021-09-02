@@ -82,5 +82,10 @@ if [ "$StartEnv" = "test" ]; then
 else
   echo "start magicmirror"
 
+  if [ -f "start_script.sh" ]; then
+    chmod +x "start_script.sh"
+    . "./start_script.sh"
+  fi
+
   exec env TZ=$TZ "$@"
 fi

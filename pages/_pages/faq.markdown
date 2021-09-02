@@ -19,6 +19,49 @@ var config = {
   ...
 ```
 
+## How to install OS dependencies needed by a module?
+
+You have 2 choices:
+
+### Build your own image
+
+This is the preferred solution if you need a lot of dependencies and start time of MagicMirror matters. Here an example Dockerfile for [MMM-GoogleCast](https://github.com/ferferga/MMM-GoogleCast):
+
+```bash
+FROM karsten13/magicmirror:latest
+
+USER root
+
+RUN set -e; \
+    apt-get update; \
+    DEBIAN_FRONTEND=noninteractive apt-get -qy --allow-unauthenticated install python3 python3-pip; \
+    pip3 install pychromecast; \
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/*; \
+    python3 --version;
+
+USER node
+```
+
+### Use a start script
+
+This is the preferred solution if you need only a few dependencies and start time of MagicMirror doesn't matter.
+
+For this you have to write a `start_script.sh` file and put this beside your `docker-compose.yml` file. Additionally the `start_script.sh` file must be mapped into the container so you need an extra line in the `volumes` section of your `docker-compose.yml` file:
+
+```yaml
+    volumes:
+      - ./start_script.sh:/opt/magic_mirror/start_script.sh
+```
+
+Here an example for the content of `start_script.sh`. If you want to use [MMM-ServerStatus](https://github.com/XBCreepinJesus/MMM-ServerStatus) you need to install the missing `ping` command. This is done by this `start_script.sh`:
+
+```bash
+#!/bin/sh
+sudo apt-get update
+sudo apt-get install -y iputils-ping
+```
+
 ## How to start MagicMirror without docker-compose?
 
 If you don't want to use `docker-compose` yo can start and stop your container with `docker` commands. For starting the container you have to translate the `docker-compose.yml` file into a `docker run ...` command. Here an example:
