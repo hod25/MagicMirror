@@ -63,9 +63,6 @@ build_artifacts:
       echo "no builder image rebuild"
       exit 0
     fi
-    # to avoid getting old artifact image in following stages delete it:
-    echo "delete ${BUILDER_IMG}"
-    skopeo delete --creds ${GITLAB_USER_LOGIN}:${GITLAB_REGISTRY_TOKEN} docker://${BUILDER_IMG} || true
     echo "builder image (re)build"
     build --context ./build \
     --dockerfile Dockerfile-artifacts \
