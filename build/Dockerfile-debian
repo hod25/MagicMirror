@@ -32,7 +32,6 @@ RUN set -e; \
     echo "node ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers; \
     chmod +x *.sh; \
     chown node:node *.sh; \
-    touch restore.sh; \
     c_rehash;
 
 USER node
