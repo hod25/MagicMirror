@@ -79,6 +79,7 @@ if [ "$StartEnv" = "test" ]; then
   npm run test:css
   npm run test:unit
   npm run test:e2e
+  npm run test:electron
 else
   echo "start magicmirror"
 
