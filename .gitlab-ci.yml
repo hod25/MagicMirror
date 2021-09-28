@@ -14,12 +14,17 @@ variables:
   DEBIAN_VERSION_DEVELOP: "buster"
   GitRepo: "https://github.com/MichMich/MagicMirror.git"
 
-.jobext:
+.rule:
   rules:
   - if: $CI_COMMIT_BRANCH =~ /^(master|develop)$/ && $TASK == "runtime"
 
-.jobextbuild:
-  extends: .jobext
+.ruledelayed:
+  rules:
+  - if: $CI_COMMIT_BRANCH =~ /^(master|develop)$/ && $TASK == "runtime"
+    when: delayed
+    start_in: 10 seconds
+
+.beforescript:
   before_script:
     - docker.gitlab.login
     - | 
@@ -73,7 +78,9 @@ build_artifacts:
     --build-arg BuildRef=${BuildRef} \
     --build-arg GitRepo=${GitRepo} \
     --build-arg debug=${debug}
-  extends: .jobextbuild
+  extends: 
+  - .beforescript
+  - .rule
   parallel:
     matrix:
       - imgarch: ["amd64", "arm", "arm64", "debug"]
@@ -102,7 +109,9 @@ build_artifacts:
       docker.manifest ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH} ${CI_COMMIT_BRANCH}
       docker.sync "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}"
     fi
-  extends: .jobextbuild
+  extends: 
+  - .beforescript
+  - .ruledelayed
 
 build_amd64:
   variables:
@@ -150,7 +159,9 @@ build_alpine:
     else
       docker.sync "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine"
     fi
-  extends: .jobextbuild
+  extends: 
+  - .beforescript
+  - .ruledelayed
 
 test_alpine:
   stage: test
@@ -181,7 +192,7 @@ test_alpine:
     echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
     diff /tmp/image.txt /tmp/clone.txt
     echo "no diffs detected."
-  extends: .jobext
+  extends: .rule
 
 # test raspi-image with gpio support and python
 build_gpio:
@@ -209,7 +220,7 @@ test_debug:
     entrypoint: [""]
   script:
   - /opt/magic_mirror/entrypoint.sh
-  extends: .jobext
+  extends: .rule
 
 snyk_amd64:
   stage: test
