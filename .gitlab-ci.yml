@@ -18,12 +18,6 @@ variables:
   rules:
   - if: $CI_COMMIT_BRANCH =~ /^(master|develop)$/ && $TASK == "runtime"
 
-.ruledelayed:
-  rules:
-  - if: $CI_COMMIT_BRANCH =~ /^(master|develop)$/ && $TASK == "runtime"
-    when: delayed
-    start_in: 10 seconds
-
 .beforescript:
   before_script:
     - docker.gitlab.login
@@ -78,6 +72,7 @@ build_artifacts:
     --build-arg BuildRef=${BuildRef} \
     --build-arg GitRepo=${GitRepo} \
     --build-arg debug=${debug}
+    skopeo inspect docker://${BUILDER_IMG}
   extends: 
   - .beforescript
   - .rule
@@ -89,31 +84,45 @@ build_artifacts:
   stage: build
   script:
   - |
-    set | grep -E "BUILDER_IMG=|NODE_VERSION=|buildarch="
+    if [ -z "${SLIM}" ]; then
+      export FAT="_fat"
+      export DEFAULT_TAG="fat"
+    else
+      export DEFAULT_TAG="latest"
+    fi
+    set | grep -E "BUILDER_IMG=|NODE_VERSION=|buildarch=|FAT"
     build --context ./build \
       --dockerfile Dockerfile-debian \
-      --destination ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_${imgarch} \
+      --destination ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${FAT}_${imgarch} \
       --build-arg NODE_VERSION=${NODE_VERSION} \
       --build-arg DEBIAN_VERSION=${DEBIAN_VERSION} \
       --build-arg buildarch=${buildarch} \
       --build-arg BUILDER_IMG=${BUILDER_IMG} \
+      --build-arg SLIM=${SLIM} \
       --build-arg debug=${debug}
 
     [ -z "${debug}" ] || exit 0
 
     if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
-      docker.manifest ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH} latest
-      docker.manifest ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH} ${MAGICMIRROR_VERSION}
-      docker.sync "${CI_REGISTRY_IMAGE}:latest ${CI_REGISTRY_IMAGE}:${MAGICMIRROR_VERSION}"
+      docker.manifest ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${FAT} ${DEFAULT_TAG}
+      docker.manifest ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${FAT} ${MAGICMIRROR_VERSION}${FAT}
+      docker.sync "${CI_REGISTRY_IMAGE}:${DEFAULT_TAG} ${CI_REGISTRY_IMAGE}:${MAGICMIRROR_VERSION}${FAT}"
     else
-      docker.manifest ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH} ${CI_COMMIT_BRANCH}
-      docker.sync "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}"
+      docker.manifest ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${FAT} ${CI_COMMIT_BRANCH}${FAT}
+      docker.sync "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${FAT}"
     fi
   extends: 
   - .beforescript
-  - .ruledelayed
+  - .rule
 
 build_amd64:
+  variables:
+    imgarch: "amd64"
+    SLIM: "-slim"
+  needs: ["build_artifacts: [amd64]"]
+  extends: .runtime
+
+build_amd64_fat:
   variables:
     imgarch: "amd64"
   needs: ["build_artifacts: [amd64]"]
@@ -122,10 +131,24 @@ build_amd64:
 build_arm:
   variables:
     imgarch: "arm"
+    SLIM: "-slim"
+  needs: ["build_artifacts: [arm]"]
+  extends: .runtime
+
+build_arm_fat:
+  variables:
+    imgarch: "arm"
   needs: ["build_artifacts: [arm]"]
   extends: .runtime
 
 build_arm64:
+  variables:
+    imgarch: "arm64"
+    SLIM: "-slim"
+  needs: ["build_artifacts: [arm64]"]
+  extends: .runtime
+
+build_arm64_fat:
   variables:
     imgarch: "arm64"
   needs: ["build_artifacts: [arm64]"]
@@ -161,7 +184,7 @@ build_alpine:
     fi
   extends: 
   - .beforescript
-  - .ruledelayed
+  - .rule
 
 test_alpine:
   stage: test
