@@ -30,11 +30,13 @@ RUN set -e; \
       npmargs="--only=prod"; \
       [ -z "${buildarch}" ] && npmargs="${npmargs} --no-optional"; \
     fi; \
-    if [ $(echo "${BuildRef}" | grep -E "^v[0-9]+.[0-9]+.[0-9]+$") ] ; then \
-      npm ci ${npmargs}; \
-    else \
-      npm install ${npmargs}; \
-    fi; \
+    # npm ci with node14 doesn't work with --no-optional because the package-lock.json format has changed and is already updated because using node16 on develop
+    # if [ $(echo "${BuildRef}" | grep -E "^v[0-9]+.[0-9]+.[0-9]+$") ] ; then \
+    #   npm ci ${npmargs}; \
+    # else \
+    #   npm install ${npmargs}; \
+    # fi; \
+    npm install ${npmargs}; \
     cat package.json; \
     npm cache clean -f; \
     rm -rf /home/node/.cache; \
