@@ -18,14 +18,14 @@ COPY *.sh /opt/magic_mirror/
 # sudo needed for the module MMM-Remote-Control
 # sudo needed for cp in entrypoint
 ARG buildarch
-ARG debug
+ARG NODE_ENV
 RUN set -e; \
     apt-get update; \
     _pck="git nano sudo gettext openssl ca-certificates wget tini"; \
-    if [ ! -z "${buildarch}" ] || [ ! -z "${debug}" ]; then \
+    if [ ! -z "${buildarch}" ] || [ "${NODE_ENV}" = "test" ]; then \
       _pck="${_pck} libgtk-3-0 libx11-xcb-dev libnss3-dev libxss1 libxtst6 libasound2 libdrm2 libgbm1 libxshmfence1 fonts-arphic-uming procps arp-scan"; \
     fi; \
-    [ -z "${debug}" ] || _pck="${_pck} xvfb"; \
+    [ "${NODE_ENV}" = "test" ] && _pck="${_pck} xvfb"; \
     DEBIAN_FRONTEND=noninteractive apt-get -qy --no-install-recommends install ${_pck}; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*; \
@@ -39,8 +39,9 @@ USER node
 
 COPY --from=builder --chown=node:node /opt/magic_mirror /opt/magic_mirror
 
+ARG NODE_ENV
 ENV ELECTRON_DISABLE_SANDBOX=1 \
-    NODE_ENV=production \
+    NODE_ENV=${NODE_ENV} \
     MM_OVERRIDE_DEFAULT_MODULES=true \
     MM_OVERRIDE_CSS=true
 
