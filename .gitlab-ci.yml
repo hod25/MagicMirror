@@ -72,7 +72,8 @@ build_artifacts:
     --build-arg BuildRef=${BuildRef} \
     --build-arg GitRepo=${GitRepo} \
     --build-arg debug=${debug}
-    skopeo inspect docker://${BUILDER_IMG}
+    # dummy for pulling image once before used in runtime:
+    skopeo copy --policy /kaniko/policy.json docker://${BUILDER_IMG} docker://${CI_REGISTRY_IMAGE}:dummy
   extends: 
   - .beforescript
   - .rule
