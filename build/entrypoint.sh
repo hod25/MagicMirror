@@ -80,7 +80,7 @@ if [ "$StartEnv" = "test" ]; then
   npm run test:unit
   npm run test:e2e
   # run electron tests only if version <> 15:
-  [ "$(cat package.json | grep '\"electron\": \"' | sed -r 's|.*\^([0-9]*).*|\1|g')" = "15" ] || npm run test:electron
+  [ "$(cat package.json | grep '\"electron\": \"' | sed -r 's|.*: "([^.]*).*|\1|g;s|[^0-9]||g')" = "15" ] || npm run test:electron
 else
   echo "start magicmirror"
 
