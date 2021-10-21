@@ -16,7 +16,7 @@ variables:
 
 .rule:
   rules:
-  - if: $CI_COMMIT_BRANCH =~ /^(master|develop)$/ && $TASK == "runtime"
+  - if: $TASK == "runtime"
 
 .beforescript:
   before_script:
@@ -240,7 +240,7 @@ build_gpio:
       --destination ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_gpio \
       --build-arg BASE_IMG=${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_arm
   rules:
-  - if: $CI_COMMIT_BRANCH =~ /^(master|develop)$/ && $TASK == "gpio"
+  - if: $TASK == "gpio"
 
 test_debug:
   stage: test
@@ -267,7 +267,7 @@ snyk_amd64:
   - snyk test --json | snyk-to-html -o ${CI_PROJECT_DIR}/snyk_results.html || true
   - ncu
   rules:
-  - if: $CI_COMMIT_BRANCH =~ /^(master|develop)$/ && $TASK == "snyk"
+  - if: $TASK == "snyk"
   artifacts:
     when: always
     paths: 
@@ -287,4 +287,4 @@ pages:
     paths:
       - public
   rules:
-  - if: ($CI_COMMIT_BRANCH =~ /^(master|develop)$/) && ($TASK == "pages" || $TASK == "runtime")
+  - if: ($CI_COMMIT_BRANCH == "master" && $TASK == "runtime") || ($TASK == "pages")
