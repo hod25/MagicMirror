@@ -8,6 +8,10 @@ USER root
 
 WORKDIR /opt/magic_mirror
 
+COPY --from=builder --chown=node:node /opt/magic_mirror /opt/magic_mirror
+# copy startscripts into container:
+COPY --chown=node:node *.sh /opt/magic_mirror/
+
 # only amd64, for pi you need more packages: 
 # apk add --no-cache git gtk+3.0 libx11-dev nss-dev nano procps arp-scan sudo; \
 # sudo bug
@@ -18,11 +22,10 @@ RUN set -e; \
     echo "node ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers; \
     echo "Set disable_coredump false" > /etc/sudo.conf; \
     chown -R node:node /home/node/; \
-    chown -R node:node .;
+    chown -R node:node .; \
+    chmod +x *.sh;
 
 USER node
-
-COPY --from=builder --chown=node:node /opt/magic_mirror /opt/magic_mirror
 
 ENV ELECTRON_DISABLE_SANDBOX=1 \
     NODE_ENV=production \

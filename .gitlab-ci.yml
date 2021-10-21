@@ -115,33 +115,6 @@ build_artifacts:
   - .beforescript
   - .rule
 
-.alpine:
-  variables:
-    imgarch: "amd64"
-  stage: build
-  script:
-  - |
-    set | grep -E "BUILDER_IMG=|NODE_VERSION="
-    dest="--destination ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine"
-    if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
-      dest="${dest} --destination ${CI_REGISTRY_IMAGE}:alpine"
-    fi
-    build --context ./build \
-      --dockerfile Dockerfile-alpine \
-      ${dest} \
-      --build-arg NODE_VERSION=${NODE_VERSION} \
-      --build-arg BUILDER_IMG=${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_${imgarch}
-    if [ "$CI_JOB_NAME" = "build_alpine" ]; then
-      if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
-        docker.sync "${CI_REGISTRY_IMAGE}:alpine"
-      else
-        docker.sync "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine"
-      fi
-    fi
-  extends: 
-  - .beforescript
-  - .rule
-
 build_amd64:
   variables:
     imgarch: "amd64"
@@ -188,13 +161,33 @@ build_debug:
   needs: ["build_artifacts: [debug]"]
   extends: .runtime
 
-pre_build_alpine:
-  needs: ["build_artifacts: [amd64]"]
-  extends: .alpine
-
 build_alpine:
-  needs: ["pre_build_alpine"]
-  extends: .alpine
+  needs: ["build_artifacts: [amd64]"]
+  variables:
+    imgarch: "amd64"
+  stage: build
+  script:
+  - |
+    set | grep -E "BUILDER_IMG=|NODE_VERSION="
+    dest="--destination ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine"
+    if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+      dest="${dest} --destination ${CI_REGISTRY_IMAGE}:alpine"
+    fi
+    build --context ./build \
+      --dockerfile Dockerfile-alpine \
+      ${dest} \
+      --build-arg NODE_VERSION=${NODE_VERSION} \
+      --build-arg BUILDER_IMG=${BUILDER_IMG}
+    if [ "$CI_JOB_NAME" = "build_alpine" ]; then
+      if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+        docker.sync "${CI_REGISTRY_IMAGE}:alpine"
+      else
+        docker.sync "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine"
+      fi
+    fi
+  extends: 
+  - .beforescript
+  - .rule
 
 test_alpine:
   stage: test
