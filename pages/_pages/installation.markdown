@@ -88,6 +88,8 @@ docker-compose down
 
 will stop and remove the MagicMirror container.
 
+You can restart the container with one command `docker-compose up -d --force-recreate`. This is e.g. necessary if you change the configuration.
+
 ## Updating the image
 
 The MagicMirror²-Project has quarterly releases so every 1st of Jan/Apr/Jul/Oct a new version is released.
