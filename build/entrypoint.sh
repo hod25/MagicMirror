@@ -39,10 +39,12 @@ fi
 # create css/custom.css file https://github.com/MichMich/MagicMirror/issues/1977
 [ ! -f "${css_dir}/custom.css" ] && sudo touch ${css_dir}/custom.css
 
-echo "chown modules and config folder ..."
-sudo chown -R node:node /opt/magic_mirror/modules
-sudo chown -R node:node ${config_dir}
-sudo chown -R node:node ${css_dir}
+if [ ! -z "$(id | grep node)" ]; then
+  echo "chown modules and config folder ..."
+  sudo chown -R node:node /opt/magic_mirror/modules
+  sudo chown -R node:node ${config_dir}
+  sudo chown -R node:node ${css_dir}
+fi
 
 if [ "$MM_SHOW_CURSOR" = "true" ]; then 
   echo "enable mouse cursor ..."
