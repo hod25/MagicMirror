@@ -1,11 +1,14 @@
 ARG buildarch
 ARG NODE_VERSION
 ARG DEBIAN_VERSION
+FROM registry.gitlab.com/khassel/container/node-prune:latest as prune
 FROM ${buildarch}node:${NODE_VERSION}-${DEBIAN_VERSION}-slim as builder
 
 USER root
 
 WORKDIR /opt/magic_mirror
+
+COPY --from=prune /node-prune /usr/local/bin/node-prune
 
 RUN set -e; \
     apt-get update; \
@@ -31,12 +34,6 @@ RUN set -e; \
       [ -z "${buildarch}" ] && npmargs="${npmargs} --no-optional"; \
     fi; \
     [ $(echo "${BuildRef}" | grep -E "^v[0-9]+.[0-9]+.[0-9]+$") ] || sed -i 's|"electron": .*|"electron": "15.2.0"|g' package.json; \
-    # npm ci with node14 doesn't work with --no-optional because the package-lock.json format has changed and is already updated because using node16 on develop
-    # if [ $(echo "${BuildRef}" | grep -E "^v[0-9]+.[0-9]+.[0-9]+$") ] ; then \
-    #   npm ci ${npmargs}; \
-    # else \
-    #   npm install ${npmargs}; \
-    # fi; \
     npm install ${npmargs}; \
     cat package.json; \
     npm cache clean -f; \
@@ -48,7 +45,9 @@ RUN set -e; \
     mv config mount_ori/; \
     mv css mount_ori/; \
     # remove unused test stuff which causes CVE's:
-    rm -rf node_modules/clarinet/benchmark;
+    rm -rf node_modules/clarinet/benchmark; \
+    # remove not needed node_modules stuff
+    [ -z "${debug}" ] && node-prune || echo "no node-prune";
 
 FROM scratch
 LABEL maintainer="Karsten Hassel"

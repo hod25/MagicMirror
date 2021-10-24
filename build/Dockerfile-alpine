@@ -17,7 +17,6 @@ COPY --chown=node:node *.sh /opt/magic_mirror/
 # sudo bug
 RUN set -e; \
     echo "http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories; \
-    apk update --no-cache; \
     apk add --no-cache git nano sudo gettext tzdata tini; \
     echo "node ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers; \
     echo "Set disable_coredump false" > /etc/sudo.conf; \
@@ -27,8 +26,7 @@ RUN set -e; \
 
 USER node
 
-ENV ELECTRON_DISABLE_SANDBOX=1 \
-    NODE_ENV=production \
+ENV NODE_ENV=production \
     MM_OVERRIDE_DEFAULT_MODULES=true \
     MM_OVERRIDE_CSS=true
 
