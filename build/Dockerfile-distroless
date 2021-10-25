@@ -1,6 +1,12 @@
 ARG BUILDER_IMG
-ARG NODE_VERSION
 FROM ${BUILDER_IMG} as builder
+
+FROM debian:11-slim as package
+
+RUN apt update; \
+    apt install -y git gettext tini;
+
+ARG NODE_VERSION
 FROM gcr.io/distroless/nodejs-debian11:${NODE_VERSION}-debug
 LABEL maintainer="Karsten Hassel"
 
@@ -11,7 +17,7 @@ WORKDIR /opt/magic_mirror
 # copy startscripts into container:
 COPY *.sh /opt/magic_mirror/
 
-# todo: missing packages gettext (for envsubst) and tini
+# todo: missing packages git, gettext (for envsubst) and tini
 
 RUN set -e; \
     chmod +x *.sh; \
@@ -22,6 +28,13 @@ RUN set -e; \
     chmod +x /usr/local/bin/sudo;
 
 COPY --from=builder /opt/magic_mirror /opt/magic_mirror
+COPY --from=package /usr/bin/tini* /usr/bin/
+COPY --from=package /usr/bin/git* /usr/bin/
+COPY --from=package /usr/lib/git-core /usr/lib/git-core
+COPY --from=package /usr/share/git-core /usr/share/git-core
+COPY --from=package /usr/bin/envsubst /usr/bin/
+COPY --from=package /usr/lib/x86_64-linux-gnu/libpcre2* /usr/lib/x86_64-linux-gnu/
+COPY --from=package /lib/x86_64-linux-gnu/libz* /lib/x86_64-linux-gnu/
 
 ARG NODE_ENV
 ENV NODE_ENV=${NODE_ENV} \
