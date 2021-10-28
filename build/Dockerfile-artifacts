@@ -33,7 +33,7 @@ RUN set -e; \
       npmargs="--only=prod"; \
       [ -z "${buildarch}" ] && npmargs="${npmargs} --no-optional"; \
     fi; \
-    [ $(echo "${BuildRef}" | grep -E "^v[0-9]+.[0-9]+.[0-9]+$") ] || sed -i 's|"electron": .*|"electron": "15.2.0"|g' package.json; \
+    [ $(echo "${BuildRef}" | grep -E "^v[0-9]+.[0-9]+.[0-9]+$") ] || sed -i 's|"electron": .*|"electron": "^15.3.0"|g' package.json; \
     npm install ${npmargs}; \
     cat package.json; \
     npm cache clean -f; \
