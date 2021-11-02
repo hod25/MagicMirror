@@ -194,8 +194,7 @@ build_distroless:
   script:
   - |
     docker.gitlab.login
-    export NODE_VERSION=${NODE_VERSION_DEVELOP}
-    export DEBIAN_VERSION=${DEBIAN_VERSION_DEVELOP}
+    export NODE_VERSION="16"
     export BUILDER_IMG="${CI_REGISTRY_IMAGE}:develop_${imgarch}_artifacts"
     set | grep -E "BUILDER_IMG=|NODE_VERSION="
     build --context ./build \
@@ -207,7 +206,6 @@ build_distroless:
   - if: $CI_COMMIT_BRANCH == "distroless" && $TASK == "distroless"
   after_script:
     - docker.logout
-
 
 test_alpine:
   stage: test
