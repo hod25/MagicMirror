@@ -33,7 +33,11 @@ RUN set -e; \
       npmargs="--only=prod"; \
       [ -z "${buildarch}" ] && npmargs="${npmargs} --no-optional"; \
     fi; \
-    [ $(echo "${BuildRef}" | grep -E "^v[0-9]+.[0-9]+.[0-9]+$") ] || sed -i 's|"electron": .*|"electron": "^15.3.0"|g' package.json; \
+    if [ ! $(echo "${BuildRef}" | grep -E "^v[0-9]+.[0-9]+.[0-9]+$") ]; then \
+      # special handling for using electron v16 in develop branch
+      sed -i 's|"electron": .*|"electron": "^16.0.1"|g' package.json; \
+      sed -i 's|const app = electron.app;|const app = electron.app;\napp.disableHardwareAcceleration();|g' js/electron.js; \
+    fi; \
     npm install ${npmargs}; \
     cat package.json; \
     npm cache clean -f; \

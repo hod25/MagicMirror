@@ -11,6 +11,7 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix
       - /opt/vc:/opt/vc/:ro
       - /usr/bin/vcgencmd:/usr/bin/vcgencmd
+      - /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket
     devices:
       - /dev/vchiq
     environment:

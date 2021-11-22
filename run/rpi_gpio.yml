@@ -12,6 +12,7 @@ services:
       - /opt/vc:/opt/vc/:ro
       - /sys:/sys
       - /usr/bin/vcgencmd:/usr/bin/vcgencmd
+      - /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket
     devices:
       - /dev/vchiq
     environment:
