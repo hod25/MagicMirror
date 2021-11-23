@@ -21,7 +21,7 @@ ARG buildarch
 ARG NODE_ENV
 RUN set -e; \
     apt-get update; \
-    _pck="git nano sudo gettext openssl ca-certificates wget tini"; \
+    _pck="git nano sudo gettext-base openssl ca-certificates wget tini"; \
     if [ ! -z "${buildarch}" ] || [ "${NODE_ENV}" = "test" ]; then \
       _pck="${_pck} libgtk-3-0 libx11-xcb-dev libnss3-dev libxss1 libxtst6 libasound2 libdrm2 libgbm1 libxshmfence1 fonts-arphic-uming procps arp-scan"; \
     fi; \
