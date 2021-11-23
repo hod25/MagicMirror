@@ -8,8 +8,8 @@ image: ${CI_REGISTRY}/khassel/container/kaniko:latest
 variables:
   GIT_DEPTH: 1
   MAGICMIRROR_VERSION: "v2.17.1"
-  NODE_VERSION_MASTER: "lts"
-  NODE_VERSION_DEVELOP: "16"
+  NODE_VERSION_MASTER: "16"
+  NODE_VERSION_DEVELOP: "17"
   DEBIAN_VERSION_MASTER: "buster"
   DEBIAN_VERSION_DEVELOP: "buster"
   GitRepo: "https://github.com/MichMich/MagicMirror.git"
