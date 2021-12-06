@@ -37,6 +37,8 @@ RUN set -e; \
       [ -z "${buildarch}" ] && npmargs="${npmargs} --no-optional"; \
     fi; \
     if [ ! $(echo "${BuildRef}" | grep -E "^v[0-9]+.[0-9]+.[0-9]+$") ]; then \
+      # delete package-lock.json to get newest dependencies in develop branch
+      rm -f package-lock.json; \
       # special handling for using electron v16 in develop branch
       sed -i 's|const app = electron.app;|const app = electron.app;\napp.disableHardwareAcceleration();|g' js/electron.js; \
     fi; \
