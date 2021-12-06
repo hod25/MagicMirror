@@ -43,6 +43,7 @@ variables:
         export DEBIAN_VERSION=${DEBIAN_VERSION_DEVELOP}
       fi
       export BUILDER_IMG="${CI_REGISTRY_IMAGE}:${BuilderTag}_${imgarch}_artifacts"
+      export GIT_INFO="commit=${CI_COMMIT_SHORT_SHA} ref=${CI_COMMIT_REF_NAME} date=${CI_COMMIT_TIMESTAMP} author=${CI_COMMIT_AUTHOR} title=${CI_COMMIT_TITLE}"
   after_script:
     - docker.logout
 
@@ -52,7 +53,7 @@ build_artifacts:
   - |
     if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
       echo "CI_COMMIT_BRANCH is master"
-      BuildRef=${MAGICMIRROR_VERSION}
+      BuildRef="${MAGICMIRROR_VERSION}"
     else
       echo "CI_COMMIT_BRANCH is not master"
       BuildRef="develop"
@@ -63,15 +64,16 @@ build_artifacts:
       exit 0
     fi
     echo "builder image (re)build"
-    build --context ./build \
-    --dockerfile Dockerfile-artifacts \
-    --destination ${BUILDER_IMG} \
-    --build-arg NODE_VERSION=${NODE_VERSION} \
-    --build-arg DEBIAN_VERSION=${DEBIAN_VERSION} \
-    --build-arg buildarch=${buildarch} \
-    --build-arg BuildRef=${BuildRef} \
-    --build-arg GitRepo=${GitRepo} \
-    --build-arg debug=${debug}
+    build --context "./build" \
+    --dockerfile "Dockerfile-artifacts" \
+    --destination "${BUILDER_IMG}" \
+    --build-arg NODE_VERSION="${NODE_VERSION}" \
+    --build-arg DEBIAN_VERSION="${DEBIAN_VERSION}" \
+    --build-arg GIT_INFO="${GIT_INFO}" \
+    --build-arg buildarch="${buildarch}" \
+    --build-arg BuildRef="${BuildRef}" \
+    --build-arg GitRepo="${GitRepo}" \
+    --build-arg debug="${debug}"
   extends: 
   - .beforescript
   - .rule
@@ -91,24 +93,25 @@ build_artifacts:
     fi
     [ -z "${debug}" ] && export NODE_ENV="production" || export NODE_ENV="test"
     set | grep -E "BUILDER_IMG=|NODE_VERSION=|buildarch=|FAT"
-    build --context ./build \
-      --dockerfile Dockerfile-debian \
-      --destination ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${FAT}_${imgarch} \
-      --build-arg NODE_VERSION=${NODE_VERSION} \
-      --build-arg DEBIAN_VERSION=${DEBIAN_VERSION} \
-      --build-arg buildarch=${buildarch} \
-      --build-arg BUILDER_IMG=${BUILDER_IMG} \
-      --build-arg SLIM=${SLIM} \
-      --build-arg NODE_ENV=${NODE_ENV}
+    build --context "./build" \
+      --dockerfile "Dockerfile-debian" \
+      --destination "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${FAT}_${imgarch}" \
+      --build-arg NODE_VERSION="${NODE_VERSION}" \
+      --build-arg DEBIAN_VERSION="${DEBIAN_VERSION}" \
+      --build-arg GIT_INFO="${GIT_INFO}" \
+      --build-arg buildarch="${buildarch}" \
+      --build-arg BUILDER_IMG="${BUILDER_IMG}" \
+      --build-arg SLIM="${SLIM}" \
+      --build-arg NODE_ENV="${NODE_ENV}"
 
     [ -z "${debug}" ] || exit 0
 
     if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
-      docker.manifest ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${FAT} ${DEFAULT_TAG}
-      docker.manifest ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${FAT} ${MAGICMIRROR_VERSION}${FAT}
+      docker.manifest "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${FAT}" "${DEFAULT_TAG}"
+      docker.manifest "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${FAT}" "${MAGICMIRROR_VERSION}${FAT}"
       docker.sync "${CI_REGISTRY_IMAGE}:${DEFAULT_TAG} ${CI_REGISTRY_IMAGE}:${MAGICMIRROR_VERSION}${FAT}"
     else
-      docker.manifest ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${FAT} ${CI_COMMIT_BRANCH}${FAT}
+      docker.manifest "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${FAT}" "${CI_COMMIT_BRANCH}${FAT}"
       docker.sync "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${FAT}"
     fi
   extends: 
@@ -173,11 +176,12 @@ build_alpine:
     if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
       dest="${dest} --destination ${CI_REGISTRY_IMAGE}:alpine"
     fi
-    build --context ./build \
-      --dockerfile Dockerfile-alpine \
+    build --context "./build" \
+      --dockerfile "Dockerfile-alpine" \
       ${dest} \
-      --build-arg NODE_VERSION=${NODE_VERSION} \
-      --build-arg BUILDER_IMG=${BUILDER_IMG}
+      --build-arg NODE_VERSION="${NODE_VERSION}" \
+      --build-arg GIT_INFO="${GIT_INFO}" \
+      --build-arg BUILDER_IMG="${BUILDER_IMG}"
     if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
       docker.sync "${CI_REGISTRY_IMAGE}:alpine"
     else
@@ -201,7 +205,7 @@ test_alpine:
     git log -1 > /tmp/image.txt
     if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
       echo "CI_COMMIT_BRANCH is master"
-      BuildRef=${MAGICMIRROR_VERSION}
+      BuildRef="${MAGICMIRROR_VERSION}"
     else
       echo "CI_COMMIT_BRANCH is not master"
       BuildRef="develop"
@@ -226,10 +230,10 @@ build_gpio:
   script:
   - |
     docker.gitlab.login
-    build --context ./build \
-      --dockerfile Dockerfile-gpio \
-      --destination ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_gpio \
-      --build-arg BASE_IMG=${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_arm
+    build --context "./build" \
+      --dockerfile "Dockerfile-gpio" \
+      --destination "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_gpio" \
+      --build-arg BASE_IMG="${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_arm"
   rules:
   - if: $TASK == "gpio"
 

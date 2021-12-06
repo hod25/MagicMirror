@@ -15,6 +15,7 @@ COPY --chown=node:node *.sh /opt/magic_mirror/
 # only amd64, for pi you need more packages: 
 # apk add --no-cache git gtk+3.0 libx11-dev nss-dev nano procps arp-scan sudo; \
 # sudo bug
+ARG GIT_INFO
 RUN set -e; \
     echo "http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories; \
     apk add --no-cache git nano sudo gettext tzdata tini; \
@@ -22,7 +23,9 @@ RUN set -e; \
     echo "Set disable_coredump false" > /etc/sudo.conf; \
     chown -R node:node /home/node/; \
     chown -R node:node .; \
-    chmod +x *.sh;
+    chmod +x *.sh; \
+    ./build_info.sh "Runtime" "$GIT_INFO"; \
+    rm -f build_info.sh;
 
 USER node
 

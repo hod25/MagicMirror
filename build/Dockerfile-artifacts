@@ -9,16 +9,19 @@ USER root
 WORKDIR /opt/magic_mirror
 
 COPY --from=prune /node-prune /usr/local/bin/node-prune
+COPY build_info.sh /tmp
 
 RUN set -e; \
     apt-get update; \
     DEBIAN_FRONTEND=noninteractive apt-get -qy --no-install-recommends install git ca-certificates; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*; \
-    chown -R node:node .;
+    chown -R node:node . /tmp/build_info.sh; \
+    chmod +x /tmp/build_info.sh;
 
 USER node
 
+ARG GIT_INFO
 ARG BuildRef
 ARG GitRepo
 ARG buildarch
@@ -50,7 +53,10 @@ RUN set -e; \
     # remove unused test stuff which causes CVE's:
     rm -rf node_modules/clarinet/benchmark; \
     # remove not needed node_modules stuff
-    [ -z "${debug}" ] && node-prune || echo "no node-prune";
+    [ -z "${debug}" ] && node-prune || echo "no node-prune"; \
+    cp /tmp/build_info.sh .; \
+    ./build_info.sh "Artifacts" "$GIT_INFO"; \
+    rm -f build_info.sh;
 
 FROM scratch
 LABEL maintainer="Karsten Hassel"
