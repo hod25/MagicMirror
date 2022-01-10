@@ -50,8 +50,6 @@ RUN set -e; \
     mv modules mount_ori/; \
     mv config mount_ori/; \
     mv css mount_ori/; \
-    # remove unused test stuff which causes CVE's:
-    rm -rf node_modules/clarinet/benchmark; \
     # remove not needed node_modules stuff
     [ -z "${debug}" ] && node-prune || echo "no node-prune"; \
     cp /tmp/build_info.sh .; \
