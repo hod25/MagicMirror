@@ -203,3 +203,7 @@ To get your MagicMirror running you can use the following workaround:
 After this manual install of `request` the module should work.
 
 This fix is persistent because the `modules` folder is mounted to the host. If you do a fresh install of such a module you have to repeat this procedure.
+
+## Running on a raspberry pi ends with a white or black screen after a while
+
+I had this behavior running the module `MMM-RAIN-MAP` which is fetching a greater amount of images for the map. So if you are running modules which needs a greater amount of shared memory, you have to increase `shm_size` in the `docker-compose.yaml`. The default there is `shm_size: "128mb"` so edit this value and restart the container with `docker-compose up -d`.
