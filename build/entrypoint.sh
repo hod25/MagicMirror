@@ -88,6 +88,9 @@ else
   if [ -f "start_script.sh" ]; then
     chmod +x "start_script.sh"
     . "./start_script.sh"
+  elif [ -f "config/start_script.sh" ]; then
+    chmod +x "config/start_script.sh"
+    . "./config/start_script.sh"
   fi
 
   exec env TZ=$TZ "$@"
