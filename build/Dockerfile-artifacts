@@ -33,11 +33,13 @@ RUN set -e; \
     git clone --depth 1 -b "${BuildRef}" --single-branch "${GitRepo}" .; \
     git log -1; \
     if [ -z "${debug}" ]; then \
-      npmargs="--only=prod"; \
-      [ -z "${buildarch}" ] && npmargs="${npmargs} --no-optional"; \
+      npmargs="--omit=dev"; \
+      [ -z "${buildarch}" ] && npmargs="${npmargs} --omit=optional"; \
     fi; \
-    # delete package-lock.json to get newest dependencies
-    rm -f package-lock.json; \
+    if [ ! $(echo "${BuildRef}" | grep -E "^v[0-9]+.[0-9]+.[0-9]+$") ]; then \
+      # if not mm-version then delete package-lock.json to get newest dependencies
+      rm -f package-lock.json; \
+    fi; \
     # special handling for using electron >= v16
     sed -i 's|const app = electron.app;|const app = electron.app;\napp.disableHardwareAcceleration();|g' js/electron.js; \
     npm install ${npmargs}; \
