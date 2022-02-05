@@ -10,8 +10,8 @@ variables:
   MAGICMIRROR_VERSION: "v2.18.0"
   NODE_VERSION_MASTER: "16"
   NODE_VERSION_DEVELOP: "17"
-  DEBIAN_VERSION_MASTER: "buster"
-  DEBIAN_VERSION_DEVELOP: "buster"
+  DEBIAN_VERSION: "bullseye"
+  DEBIAN_VERSION_ARM: "buster"
   GitRepo: "https://github.com/MichMich/MagicMirror.git"
 
 .rule:
@@ -25,6 +25,7 @@ variables:
       # set build arch
       if [ "${imgarch}" = "arm" ]; then
         export buildarch="arm32v7/"
+        export DEBIAN_VERSION=${DEBIAN_VERSION_ARM}
       elif [ "${imgarch}" = "arm64" ]; then
         export buildarch="arm64v8/"
       elif [ "${imgarch}" = "debug" ]; then
@@ -36,11 +37,9 @@ variables:
       if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
         BuilderTag=${MAGICMIRROR_VERSION}
         export NODE_VERSION=${NODE_VERSION_MASTER}
-        export DEBIAN_VERSION=${DEBIAN_VERSION_MASTER}
       else
         BuilderTag=${CI_COMMIT_BRANCH}
         export NODE_VERSION=${NODE_VERSION_DEVELOP}
-        export DEBIAN_VERSION=${DEBIAN_VERSION_DEVELOP}
       fi
       export BUILDER_IMG="${CI_REGISTRY_IMAGE}:${BuilderTag}_${imgarch}_artifacts"
       export GIT_INFO="commit=${CI_COMMIT_SHORT_SHA} ref=${CI_COMMIT_REF_NAME} date=${CI_COMMIT_TIMESTAMP} author=${CI_COMMIT_AUTHOR} title=${CI_COMMIT_TITLE}"

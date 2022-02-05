@@ -24,7 +24,7 @@ ARG NODE_ENV
 ARG DEBIAN_VERSION
 RUN set -e; \
     apt-get update; \
-    DEBIAN_FRONTEND=noninteractive apt-get -qy --no-install-recommends install git nano sudo gettext-base openssl ca-certificates wget tini; \
+    DEBIAN_FRONTEND=noninteractive apt-get -qy --no-install-recommends install git nano sudo gettext-base openssl ca-certificates wget tini gnupg; \
     if [ ! -z "${buildarch}" ] || [ "${NODE_ENV}" = "test" ]; then \
       _pck="${_pck} libgtk-3-0 libx11-xcb-dev libnss3-dev libxss1 libxtst6 libasound2 libdrm2 libgbm1 libxshmfence1 fonts-arphic-uming procps arp-scan"; \
       if [ "${buildarch}" = "arm64v8/" ]; then \
@@ -39,6 +39,7 @@ RUN set -e; \
     fi; \
     [ "${NODE_ENV}" = "test" ] && _pck="${_pck} xvfb"; \
     DEBIAN_FRONTEND=noninteractive apt-get -qy --no-install-recommends install ${_pck}; \
+    DEBIAN_FRONTEND=noninteractive apt-get -qy remove gnupg; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*; \
     usermod -a -G video node; \
