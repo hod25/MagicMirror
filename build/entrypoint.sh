@@ -17,9 +17,9 @@ sudo mkdir -p ${config_dir}
 
 if [ -f "${config_dir}/config.js.template" ]; then
   if [ -f "${config_dir}/config.js" ]; then
-    mv -v ${config_dir}/config.js ${config_dir}/config.js-old
+    sudo mv -v ${config_dir}/config.js ${config_dir}/config.js-old
   fi
-  envsubst < ${config_dir}/config.js.template > ${config_dir}/config.js
+  sudo -E envsubst < ${config_dir}/config.js.template > ${config_dir}/config.js
 fi
 
 if [ ! -f "${config_dir}/config.js" ]; then
