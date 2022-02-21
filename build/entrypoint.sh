@@ -19,7 +19,7 @@ if [ -f "${config_dir}/config.js.template" ]; then
   if [ -f "${config_dir}/config.js" ]; then
     sudo mv -v ${config_dir}/config.js ${config_dir}/config.js-old
   fi
-  sudo -E envsubst < ${config_dir}/config.js.template > ${config_dir}/config.js
+  sudo -E envsubst < ${config_dir}/config.js.template > sudo tee ${config_dir}/config.js > /dev/null
 fi
 
 if [ ! -f "${config_dir}/config.js" ]; then
