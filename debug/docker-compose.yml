@@ -1,4 +1,4 @@
-# start with: dc run --rm magicmirror
+# start with: dc run --rm --service-ports magicmirror
 version: '3'
 
 services:

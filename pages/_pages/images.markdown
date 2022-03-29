@@ -7,7 +7,7 @@ toc: false
 
 ## Images on Docker Hub:  [![](https://dockeri.co/image/karsten13/magicmirror)](https://hub.docker.com/r/karsten13/magicmirror/)
 
-The docker image `karsten13/magicmirror` is provided in this versions:
+The docker image `karsten13/magicmirror` is provided in these versions:
 
 TAG                | OS/ARCH     | ELECTRON | DISTRO | DESCRIPTION
 ------------------ | ----------- | -------- | -------|------------------------------------------
