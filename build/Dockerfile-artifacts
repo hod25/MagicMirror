@@ -40,8 +40,6 @@ RUN set -e; \
       # if not mm-version then delete package-lock.json to get newest dependencies
       rm -f package-lock.json; \
     fi; \
-    # special handling for using electron >= v16
-    sed -i 's|const app = electron.app;|const app = electron.app;\napp.disableHardwareAcceleration();|g' js/electron.js; \
     npm install ${npmargs}; \
     cat package.json; \
     npm cache clean -f; \
