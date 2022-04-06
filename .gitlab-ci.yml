@@ -256,11 +256,11 @@ snyk_amd64:
     entrypoint: [""]
   script:
   - sudo npm install -g snyk npm-check-updates
-  - snyk auth ${SNYK_TOKEN}
   - cd /opt/magic_mirror
-  - snyk test --all-projects
   - ncu --deep
   - ncu --deep --target minor
+  - snyk auth ${SNYK_TOKEN}
+  - snyk test --all-projects
   rules:
   - if: $TASK == "snyk"
 
