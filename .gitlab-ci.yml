@@ -190,6 +190,26 @@ build_alpine:
   - .beforescript
   - .rule
 
+build_distroless:
+  variables:
+    imgarch: "amd64"
+  stage: build
+  script:
+  - |
+    docker.gitlab.login
+    export NODE_VERSION="16"
+    export BUILDER_IMG="${CI_REGISTRY_IMAGE}:develop_${imgarch}_artifacts"
+    set | grep -E "BUILDER_IMG=|NODE_VERSION="
+    build --context ./build \
+      --dockerfile Dockerfile-distroless \
+      --destination ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_distroless \
+      --build-arg NODE_VERSION=${NODE_VERSION} \
+      --build-arg BUILDER_IMG=${BUILDER_IMG}
+  rules:
+  - if: $TASK == "distroless"
+  after_script:
+    - docker.logout
+
 test_alpine:
   stage: test
   needs: ["build_alpine"]

@@ -1,0 +1,37 @@
+ARG BUILDER_IMG
+FROM ${BUILDER_IMG} as builder
+
+ARG NODE_VERSION
+FROM registry.gitlab.com/khassel/bazel/node_mm:${NODE_VERSION}
+LABEL maintainer="Karsten Hassel"
+
+SHELL ["/busybox/sh", "-c"]
+
+WORKDIR /opt/magic_mirror
+
+# copy startscripts into container:
+COPY *.sh /opt/magic_mirror/
+
+USER 0
+
+RUN set -e; \
+    chmod +x *.sh; \
+    sed -i 's|#!/bin/sh|#!/busybox/sh|g' *.sh; \
+    mkdir -p /usr/local/bin; \
+    echo "#!/busybox/sh" > /usr/local/bin/sudo; \
+    echo "exec \"\$@\"" >> /usr/local/bin/sudo; \
+    chmod +x /usr/local/bin/sudo;
+
+USER node
+
+COPY --from=builder /opt/magic_mirror /opt/magic_mirror
+
+ARG NODE_ENV
+ENV NODE_ENV=${NODE_ENV} \
+    MM_OVERRIDE_DEFAULT_MODULES=true \
+    MM_OVERRIDE_CSS=true \
+    PATH=/nodejs/bin:$PATH
+
+EXPOSE 8080
+
+ENTRYPOINT ["/usr/bin/tini", "--", "./entrypoint.sh"]
