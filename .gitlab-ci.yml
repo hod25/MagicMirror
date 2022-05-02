@@ -9,7 +9,7 @@ variables:
   GIT_DEPTH: 1
   MAGICMIRROR_VERSION: "v2.19.0"
   NODE_VERSION_MASTER: "16"
-  NODE_VERSION_DEVELOP: "17"
+  NODE_VERSION_DEVELOP: "18"
   DEBIAN_VERSION: "bullseye"
   DEBIAN_VERSION_ARM: "buster"
   GitRepo: "https://github.com/MichMich/MagicMirror.git"
