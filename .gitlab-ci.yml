@@ -3,6 +3,9 @@ stages:
   - build
   - test
 
+include:
+  - template: Security/Container-Scanning.gitlab-ci.yml
+
 image: ${CI_REGISTRY}/khassel/container/kaniko:latest
 
 variables:
@@ -299,3 +302,13 @@ pages:
       - public
   rules:
   - if: ($CI_COMMIT_BRANCH == "master" && $TASK == "runtime") || ($TASK == "pages")
+
+# see https://docs.gitlab.com/ee/user/application_security/container_scanning/
+# see https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Security/Container-Scanning.gitlab-ci.yml
+container_scanning:
+  variables:
+    DOCKER_IMAGE: karsten13/magicmirror:develop
+    DOCKERFILE_PATH: build/Dockerfile-debian
+    GIT_STRATEGY: fetch
+  rules:
+  - if: $TASK == "containerscan"
