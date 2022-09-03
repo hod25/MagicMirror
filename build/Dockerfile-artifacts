@@ -1,6 +1,6 @@
 ARG NODE_VERSION
-FROM --platform=$BUILDPLATFORM registry.gitlab.com/khassel/container/node-prune:latest as prune
-FROM --platform=$BUILDPLATFORM node:${NODE_VERSION}-alpine as builder
+FROM registry.gitlab.com/khassel/container/node-prune:latest as prune
+FROM node:${NODE_VERSION}-alpine as builder
 
 WORKDIR /opt/magic_mirror
 

@@ -3,7 +3,7 @@ stages:
   - test
 
 include:
-  # - template: Security/Container-Scanning.gitlab-ci.yml
+  - template: Security/Container-Scanning.gitlab-ci.yml
   - project: "khassel/buildkit"
     file: "/.buildkit.yml"
 
@@ -151,32 +151,31 @@ build_artifacts:
 #   needs: ["build_artifacts: [debug]"]
 #   extends: .runtime
 
-# build_alpine:
-#   needs: ["build_artifacts: [amd64]"]
-#   variables:
-#     imgarch: "amd64"
-#   stage: build
-#   script:
-#   - |
-#     set | grep -E "BUILDER_IMG=|NODE_VERSION="
-#     dest="--destination ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine"
-#     if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
-#       dest="${dest} --destination ${CI_REGISTRY_IMAGE}:alpine"
-#     fi
-#     build --context "./build" \
-#       --dockerfile "Dockerfile-alpine" \
-#       ${dest} \
-#       --build-arg NODE_VERSION="${NODE_VERSION}" \
-#       --build-arg GIT_INFO="${GIT_INFO}" \
-#       --build-arg BUILDER_IMG="${BUILDER_IMG}"
-#     if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
-#       docker.sync "${CI_REGISTRY_IMAGE}:alpine"
-#     else
-#       docker.sync "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine"
-#     fi
-#   extends: 
-#   - .beforescript
-#   - .rule
+build_alpine:
+  needs:
+  - build_artifacts
+  stage: build
+  extends: 
+  - .docker_buildkit
+  - .beforescript
+  - .rule
+  variables:
+    DOCKERFILE_NAME: "Dockerfile-alpine"
+  script:
+  - |
+    set | grep -E "BUILDER_IMG=|NODE_VERSION="
+    if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+      export PUSH_IMAGES="${CI_REGISTRY_IMAGE}:alpine"
+    else
+      export PUSH_IMAGES="${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine"
+    fi
+    export BUILDKIT_ARGS="--opt build-arg:NODE_VERSION=$NODE_VERSION --opt build-arg:GIT_INFO=$GIT_INFO --opt build-arg:BUILDER_IMG=$BUILDER_IMG"
+    # if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+    #   docker.sync "${CI_REGISTRY_IMAGE}:alpine"
+    # else
+    #   docker.sync "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine"
+    # fi
+  - !reference [.docker_buildkit, script]
 
 # build_distroless:
 #   variables:
@@ -288,25 +287,25 @@ build_artifacts:
 #   rules:
 #   - if: ($CI_COMMIT_BRANCH == "master" && $TASK == "runtime") || ($TASK == "pages")
 
-# # see https://docs.gitlab.com/ee/user/application_security/container_scanning/
-# # see https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Security/Container-Scanning.gitlab-ci.yml
-# container_scanning:
-#   variables:
-#     DOCKER_IMAGE: karsten13/magicmirror:develop
-#     DOCKERFILE_PATH: build/Dockerfile-debian
-#     GIT_STRATEGY: fetch
-#   rules:
-#   - if: $TASK == "containerscan"
+# see https://docs.gitlab.com/ee/user/application_security/container_scanning/
+# see https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Security/Container-Scanning.gitlab-ci.yml
+container_scanning:
+  variables:
+    DOCKER_IMAGE: karsten13/magicmirror:develop
+    DOCKERFILE_PATH: build/Dockerfile-debian
+    GIT_STRATEGY: fetch
+  rules:
+  - if: $TASK == "containerscan"
 
-# triage:
-#   # Links:
-#   # https://about.gitlab.com/handbook/marketing/strategic-marketing/getting-started/105/
-#   # https://medium.com/analytics-vidhya/gitlab-triage-bot-ba8afca4440a
-#   # https://gitlab.com/gitlab-org/ruby/gems/gitlab-triage/-/blob/master/README.md
-#   stage: test
-#   image: ruby:2.7
-#   script:
-#     - gem install gitlab-triage
-#     - gitlab-triage --dry-run --token $TRIAGE_API_TOKEN --source projects --source-id $CI_PROJECT_PATH
-#   rules:
-#   - if: $TASK == "triage"
+triage:
+  # Links:
+  # https://about.gitlab.com/handbook/marketing/strategic-marketing/getting-started/105/
+  # https://medium.com/analytics-vidhya/gitlab-triage-bot-ba8afca4440a
+  # https://gitlab.com/gitlab-org/ruby/gems/gitlab-triage/-/blob/master/README.md
+  stage: test
+  image: ruby:2.7
+  script:
+    - gem install gitlab-triage
+    - gitlab-triage --dry-run --token $TRIAGE_API_TOKEN --source projects --source-id $CI_PROJECT_PATH
+  rules:
+  - if: $TASK == "triage"
