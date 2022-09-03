@@ -1,6 +1,6 @@
 ARG NODE_VERSION
-FROM registry.gitlab.com/khassel/container/node-prune:latest as prune
-FROM node:${NODE_VERSION}-alpine as builder
+FROM --platform=$BUILDPLATFORM registry.gitlab.com/khassel/container/node-prune:latest as prune
+FROM --platform=$BUILDPLATFORM node:${NODE_VERSION}-alpine as builder
 
 WORKDIR /opt/magic_mirror
 
@@ -14,7 +14,7 @@ RUN set -e; \
 ARG GIT_INFO
 ARG BuildRef
 ARG GitRepo
-ARG buildarch
+ARG TARGETOS
 ARG debug
 RUN set -e; \
     node -v; \
@@ -24,11 +24,11 @@ RUN set -e; \
     git log -1; \
     if [ -z "${debug}" ]; then \
       npmargs="--omit=dev"; \
-      if [ -z "${buildarch}" ]; then \
+      if [ "${TARGETOS}" = "amd64" ]; then \
         npmargs="${npmargs} --omit=optional"; \
-      elif [ "${buildarch}" = "arm32v7/" ]; then \
+      elif [ "${TARGETOS}" = "arm" ]; then \
         npmargs="${npmargs} --arch=armv7l"; \
-      elif [ "${buildarch}" = "arm64v8/" ]; then \
+      elif [ "${TARGETOS}" = "arm64" ]; then \
         npmargs="${npmargs} --arch=arm64"; \
       fi; \
     fi; \
