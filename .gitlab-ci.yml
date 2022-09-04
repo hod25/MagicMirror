@@ -35,7 +35,7 @@ variables:
       BuilderTag=${CI_COMMIT_BRANCH}
       export NODE_VERSION=${NODE_VERSION_DEVELOP}
     fi
-    export BUILDER_IMG="${CI_REGISTRY_IMAGE}:${BuilderTag}_artifacts"
+    export BUILDER_IMG="${CI_REGISTRY_IMAGE}:${BuilderTag}_${imgarch}_artifacts"
     export GIT_INFO="commit=${CI_COMMIT_SHORT_SHA} ref=${CI_COMMIT_REF_NAME} date=${CI_COMMIT_TIMESTAMP} author=${CI_COMMIT_AUTHOR} title=${CI_COMMIT_TITLE}"
 
 build_artifacts:
@@ -47,7 +47,6 @@ build_artifacts:
   - .rule
   variables:
     DOCKERFILE_NAME: "Dockerfile-artifacts"
-    TARGETPLATFORM: "linux/amd64,linux/arm64,linux/arm"
   script:
   - |
     if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
@@ -67,6 +66,9 @@ build_artifacts:
     # fi
   - echo "builder image (re)build"
   - !reference [.docker_buildkit, script]
+  parallel:
+    matrix:
+      - imgarch: ["amd64", "arm", "arm64", "debug"]
 
 # .runtime:
 #   stage: build
@@ -153,7 +155,7 @@ build_artifacts:
 
 build_alpine:
   needs:
-  - build_artifacts
+  - "build_artifacts: [amd64]"
   stage: build
   extends: 
   - .docker_buildkit
