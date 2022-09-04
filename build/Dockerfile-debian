@@ -1,10 +1,14 @@
-ARG buildarch
-ARG BUILDER_IMG
-ARG NODE_VERSION
-ARG DEBIAN_VERSION
 ARG SLIM
+ARG NODE_VERSION
+ARG BUILDER_IMG
 FROM ${BUILDER_IMG} as builder
-FROM ${buildarch}node:${NODE_VERSION}-${DEBIAN_VERSION}${SLIM}
+FROM node:${NODE_VERSION}-bullseye${SLIM} AS branch-version-amd64
+FROM node:${NODE_VERSION}-bullseye${SLIM} AS branch-version-arm64
+FROM node:${NODE_VERSION}-buster${SLIM} AS branch-version-arm
+
+ARG TARGETARCH
+FROM branch-version-${TARGETARCH}
+
 LABEL maintainer="Karsten Hassel"
 
 USER root
@@ -19,15 +23,15 @@ COPY --from=builder --chown=node:node /opt/magic_mirror /opt/magic_mirror
 # sudo needed for the module MMM-Remote-Control
 # sudo needed for cp in entrypoint
 ARG GIT_INFO
-ARG buildarch
+ARG TARGETARCH
 ARG NODE_ENV
 ARG DEBIAN_VERSION
 RUN set -e; \
     apt-get update; \
     DEBIAN_FRONTEND=noninteractive apt-get -qy --no-install-recommends install git nano sudo gettext-base openssl ca-certificates wget tini gnupg; \
-    if [ ! -z "${buildarch}" ] || [ "${NODE_ENV}" = "test" ]; then \
+    if [ ! "${TARGETARCH}" = "amd64" ] || [ "${NODE_ENV}" = "test" ]; then \
       _pck="${_pck} libgtk-3-0 libx11-xcb-dev libnss3-dev libxss1 libxtst6 libasound2 libdrm2 libgbm1 libxshmfence1 fonts-arphic-uming procps arp-scan"; \
-      if [ "${buildarch}" = "arm64v8/" ]; then \
+      if [ "${TARGETARCH}" = "arm64" ]; then \
         # install pi stuff
         _pck="${_pck} libraspberrypi-bin"; \
         wget https://archive.raspbian.org/raspbian.public.key -O - | apt-key add -; \

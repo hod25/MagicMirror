@@ -8,7 +8,8 @@ include:
     file: "/.buildkit.yml"
 
 # todo: docker readme if readme changes on master
-# todo: remove buildkit branch, e.g. in NO_IMAGE_REBUILD
+# todo: remove buildkit branch
+# todo: change DOCKER_HUB_REPO
 
 # image: ${CI_REGISTRY}/khassel/container/kaniko:latest
 
@@ -17,10 +18,10 @@ variables:
   MAGICMIRROR_VERSION: "v2.20.0"
   NODE_VERSION_MASTER: "16"
   NODE_VERSION_DEVELOP: "18"
-  DEBIAN_VERSION: "bullseye"
-  DEBIAN_VERSION_ARM: "buster"
+  DEBIAN_VERSION: "bullseye" # except for arm still buster, see Dockerfile-debian
   GitRepo: "https://github.com/MichMich/MagicMirror.git"
-  NO_IMAGE_REBUILD: "(master|buildkit)"
+  NO_IMAGE_REBUILD: "(master)"
+  DOCKER_HUB_REPO: "karsten13/curl"
 
 .rule:
   rules:
@@ -42,76 +43,79 @@ variables:
     export BUILDER_IMG="${CI_REGISTRY_IMAGE}:${BuilderTag}_${imgarch}_artifacts"
     export GIT_INFO="commit=${CI_COMMIT_SHORT_SHA} ref=${CI_COMMIT_REF_NAME} date=${CI_COMMIT_TIMESTAMP} author=${CI_COMMIT_AUTHOR} title=${CI_COMMIT_TITLE}"
 
-build_artifacts:
-  extends:
+# build_artifacts:
+#   extends:
+#   - .docker_buildkit
+#   - .beforescript
+#   - .rule
+#   variables:
+#     DOCKERFILE_NAME: "Dockerfile-artifacts"
+#   script:
+#   - |
+#     if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+#       echo "CI_COMMIT_BRANCH is master"
+#       export BuildRef="${MAGICMIRROR_VERSION}"
+#     else
+#       echo "CI_COMMIT_BRANCH is not master"
+#       export BuildRef="develop"
+#     fi
+#     export PUSH_IMAGES="${BUILDER_IMG}"
+#     export BUILDKIT_ARGS="--opt build-arg:NODE_VERSION=$NODE_VERSION --opt build-arg:GIT_INFO=$GIT_INFO --opt build-arg:BuildRef=$BuildRef --opt build-arg:GitRepo=$GitRepo --opt build-arg:imgarch=$imgarch"
+#   - set | grep -E "BUILDER_IMG=|NODE_VERSION=|BuildRef=|GitRepo="
+#   - |
+#     if [ $(echo "${CI_COMMIT_BRANCH}" | grep -E "$NO_IMAGE_REBUILD") ]; then
+#       # only check here with skopeo
+#       apk add skopeo
+#       if [ "$(skopeo inspect docker://${BUILDER_IMG})" ]; then
+#         echo "no builder image rebuild"
+#         exit 0
+#       fi
+#     fi
+#   - echo "builder image (re)build"
+#   - !reference [.docker_buildkit, script]
+#   parallel:
+#     matrix:
+#       - imgarch: ["amd64", "arm", "arm64", "debug"]
+
+.runtime:
+  variables:
+    DOCKERFILE_NAME: "Dockerfile-debian"
+  script:
+  - |
+    if [ -z "${SLIM}" ]; then
+      export FAT="_fat"
+      export DEFAULT_TAG="fat"
+    else
+      export DEFAULT_TAG="latest"
+    fi
+    if [ -z "${debug}" ]; then
+      export NODE_ENV="production"
+      export REGISTRY="docker"
+      export REGISTRY_REPO="${DOCKER_HUB_REPO}"
+    else
+      export NODE_ENV="test"
+      export REGISTRY="gitlab"
+      export REGISTRY_REPO="${CI_REGISTRY_IMAGE}"
+    fi
+    if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+      export PUSH_IMAGES="${REGISTRY_REPO}:${DEFAULT_TAG},${REGISTRY_REPO}:${MAGICMIRROR_VERSION}${FAT}"
+    else
+      export PUSH_IMAGES="${REGISTRY_REPO}:${CI_COMMIT_BRANCH}${FAT}"
+    fi
+    export BUILDKIT_ARGS="--opt build-arg:NODE_VERSION=$NODE_VERSION --opt build-arg:GIT_INFO=$GIT_INFO --opt build-arg:DEBIAN_VERSION=$DEBIAN_VERSION --opt build-arg:BUILDER_IMG=$BUILDER_IMG --opt build-arg:SLIM=$SLIM --opt build-arg:NODE_ENV=$NODE_ENV"
+    set | grep -E "BUILDER_IMG=|NODE_VERSION=|FAT="
+  - !reference [.docker_buildkit, script]
+  extends: 
   - .docker_buildkit
   - .beforescript
   - .rule
+
+build_slim:
   variables:
-    DOCKERFILE_NAME: "Dockerfile-artifacts"
-  script:
-  - |
-    if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
-      echo "CI_COMMIT_BRANCH is master"
-      export BuildRef="${MAGICMIRROR_VERSION}"
-    else
-      echo "CI_COMMIT_BRANCH is not master"
-      export BuildRef="develop"
-    fi
-    export PUSH_IMAGES="${BUILDER_IMG}"
-    export BUILDKIT_ARGS="--opt build-arg:NODE_VERSION=$NODE_VERSION --opt build-arg:GIT_INFO=$GIT_INFO --opt build-arg:BuildRef=$BuildRef --opt build-arg:GitRepo=$GitRepo --opt build-arg:imgarch=$imgarch"
-  - set | grep -E "BUILDER_IMG=|NODE_VERSION=|BuildRef=|GitRepo="
-  - |
-    if [ $(echo "${CI_COMMIT_BRANCH}" | grep -E "$NO_IMAGE_REBUILD") ]; then
-      # only check here with skopeo
-      apk add skopeo
-      if [ "$(skopeo inspect docker://${BUILDER_IMG})" ]; then
-        echo "no builder image rebuild"
-        exit 0
-      fi
-    fi
-  - echo "builder image (re)build"
-  - !reference [.docker_buildkit, script]
-  parallel:
-    matrix:
-      - imgarch: ["amd64", "arm", "arm64", "debug"]
-
-# .runtime:
-#   stage: build
-#   script:
-#   - |
-#     if [ -z "${SLIM}" ]; then
-#       export FAT="_fat"
-#       export DEFAULT_TAG="fat"
-#     else
-#       export DEFAULT_TAG="latest"
-#     fi
-#     [ -z "${debug}" ] && export NODE_ENV="production" || export NODE_ENV="test"
-#     set | grep -E "BUILDER_IMG=|NODE_VERSION=|buildarch=|FAT"
-#     build --context "./build" \
-#       --dockerfile "Dockerfile-debian" \
-#       --destination "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${FAT}_${imgarch}" \
-#       --build-arg NODE_VERSION="${NODE_VERSION}" \
-#       --build-arg DEBIAN_VERSION="${DEBIAN_VERSION}" \
-#       --build-arg GIT_INFO="${GIT_INFO}" \
-#       --build-arg buildarch="${buildarch}" \
-#       --build-arg BUILDER_IMG="${BUILDER_IMG}" \
-#       --build-arg SLIM="${SLIM}" \
-#       --build-arg NODE_ENV="${NODE_ENV}"
-
-#     [ -z "${debug}" ] || exit 0
-
-#     if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
-#       docker.manifest "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${FAT}" "${DEFAULT_TAG}"
-#       docker.manifest "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${FAT}" "${MAGICMIRROR_VERSION}${FAT}"
-#       docker.sync "${CI_REGISTRY_IMAGE}:${DEFAULT_TAG} ${CI_REGISTRY_IMAGE}:${MAGICMIRROR_VERSION}${FAT}"
-#     else
-#       docker.manifest "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${FAT}" "${CI_COMMIT_BRANCH}${FAT}"
-#       docker.sync "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${FAT}"
-#     fi
-#   extends: 
-#   - .beforescript
-#   - .rule
+    SLIM: "-slim"
+    # TARGETPLATFORM: "linux/amd64,linux/arm64,linux/arm"
+  # needs: ["build_artifacts: [amd64]"]
+  extends: .runtime
 
 # build_amd64:
 #   variables:
@@ -155,13 +159,14 @@ build_artifacts:
 # build_debug:
 #   variables:
 #     imgarch: "debug"
+#     debug: "true"
 #     SLIM: "-slim"
 #   needs: ["build_artifacts: [debug]"]
 #   extends: .runtime
 
 build_alpine:
-  needs:
-  - "build_artifacts: [amd64]"
+  # needs:
+  # - "build_artifacts: [amd64]"
   stage: build
   extends: 
   - .docker_buildkit
@@ -170,20 +175,16 @@ build_alpine:
   variables:
     imgarch: "amd64"
     DOCKERFILE_NAME: "Dockerfile-alpine"
+    REGISTRY: "docker"
   script:
   - |
     set | grep -E "BUILDER_IMG=|NODE_VERSION="
     if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
-      export PUSH_IMAGES="${CI_REGISTRY_IMAGE}:alpine"
+      export PUSH_IMAGES="${DOCKER_HUB_REPO}:alpine"
     else
-      export PUSH_IMAGES="${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine"
+      export PUSH_IMAGES="${DOCKER_HUB_REPO}:${CI_COMMIT_BRANCH}_alpine"
     fi
     export BUILDKIT_ARGS="--opt build-arg:NODE_VERSION=$NODE_VERSION --opt build-arg:GIT_INFO=$GIT_INFO --opt build-arg:BUILDER_IMG=$BUILDER_IMG"
-    # if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
-    #   docker.sync "${CI_REGISTRY_IMAGE}:alpine"
-    # else
-    #   docker.sync "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine"
-    # fi
   - !reference [.docker_buildkit, script]
 
 # build_distroless:
@@ -206,36 +207,36 @@ build_alpine:
 #   after_script:
 #     - docker.logout
 
-test_alpine:
-  stage: test
-  needs: ["build_alpine"]
-  variables:
-    GIT_STRATEGY: none
-  image: 
-    name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine
-    entrypoint: [""]
-  script:
-  - |
-    cd /opt/magic_mirror
-    git log -1 > /tmp/image.txt
-    if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
-      echo "CI_COMMIT_BRANCH is master"
-      BuildRef="${MAGICMIRROR_VERSION}"
-    else
-      echo "CI_COMMIT_BRANCH is not master"
-      BuildRef="develop"
-    fi
-    cd /tmp
-    git clone --depth 1 -b "${BuildRef}" --single-branch "${GitRepo}" mm
-    cd mm
-    git log -1 > /tmp/clone.txt
-    cat /tmp/image.txt
-    echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-    cat /tmp/clone.txt
-    echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-    diff /tmp/image.txt /tmp/clone.txt
-    echo "no diffs detected."
-  extends: .rule
+# test_alpine:
+#   stage: test
+#   needs: ["build_alpine"]
+#   variables:
+#     GIT_STRATEGY: none
+#   image: 
+#     name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine
+#     entrypoint: [""]
+#   script:
+#   - |
+#     cd /opt/magic_mirror
+#     git log -1 > /tmp/image.txt
+#     if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+#       echo "CI_COMMIT_BRANCH is master"
+#       BuildRef="${MAGICMIRROR_VERSION}"
+#     else
+#       echo "CI_COMMIT_BRANCH is not master"
+#       BuildRef="develop"
+#     fi
+#     cd /tmp
+#     git clone --depth 1 -b "${BuildRef}" --single-branch "${GitRepo}" mm
+#     cd mm
+#     git log -1 > /tmp/clone.txt
+#     cat /tmp/image.txt
+#     echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+#     cat /tmp/clone.txt
+#     echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+#     diff /tmp/image.txt /tmp/clone.txt
+#     echo "no diffs detected."
+#   extends: .rule
 
 # # test raspi-image with gpio support and python
 # build_gpio:
@@ -265,36 +266,36 @@ test_alpine:
 #   - /opt/magic_mirror/entrypoint.sh
 #   extends: .rule
 
-# snyk_amd64:
-#   stage: test
-#   image: 
-#     name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_debug
-#     entrypoint: [""]
-#   script:
-#   - sudo npm install -g snyk npm-check-updates
-#   - cd /opt/magic_mirror
-#   - ncu --deep
-#   - ncu --deep --target minor
-#   - snyk auth ${SNYK_TOKEN}
-#   - snyk test --all-projects
-#   rules:
-#   - if: $TASK == "snyk"
+snyk_amd64:
+  stage: test
+  image: 
+    name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_debug
+    entrypoint: [""]
+  script:
+  - sudo npm install -g snyk npm-check-updates
+  - cd /opt/magic_mirror
+  - ncu --deep
+  - ncu --deep --target minor
+  - snyk auth ${SNYK_TOKEN}
+  - snyk test --all-projects
+  rules:
+  - if: $TASK == "snyk"
 
-# pages:
-#   stage: build
-#   needs: []
-#   image: ${CI_REGISTRY}/khassel/jekyll:latest
-#   script:
-#     - cp -v .gitlab-ci.yml ${CI_PROJECT_DIR}/pages/_data/gitlab.yml
-#     - uglify.sh ${CI_PROJECT_DIR}/pages/assets/js
-#     - cd pages
-#     - cp -v $HOME/Gemfile .
-#     - bundle exec jekyll build -d ${CI_PROJECT_DIR}/public
-#   artifacts:
-#     paths:
-#       - public
-#   rules:
-#   - if: ($CI_COMMIT_BRANCH == "master" && $TASK == "runtime") || ($TASK == "pages")
+pages:
+  stage: build
+  needs: []
+  image: ${CI_REGISTRY}/khassel/jekyll:latest
+  script:
+    - cp -v .gitlab-ci.yml ${CI_PROJECT_DIR}/pages/_data/gitlab.yml
+    - uglify.sh ${CI_PROJECT_DIR}/pages/assets/js
+    - cd pages
+    - cp -v $HOME/Gemfile .
+    - bundle exec jekyll build -d ${CI_PROJECT_DIR}/public
+  artifacts:
+    paths:
+      - public
+  rules:
+  - if: ($CI_COMMIT_BRANCH == "master" && $TASK == "runtime") || ($TASK == "pages")
 
 # see https://docs.gitlab.com/ee/user/application_security/container_scanning/
 # see https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Security/Container-Scanning.gitlab-ci.yml
