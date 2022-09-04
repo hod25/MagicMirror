@@ -1,7 +1,8 @@
 ARG SLIM
 ARG NODE_VERSION
-ARG BUILDER_IMG
-FROM ${BUILDER_IMG} as builder
+ARG TARGETARCH
+ARG BUILDER_IMG_BASE
+FROM ${BUILDER_IMG_BASE}_${TARGETARCH}_artifacts as builder
 FROM node:${NODE_VERSION}-bullseye${SLIM} AS branch-version-amd64
 FROM node:${NODE_VERSION}-bullseye${SLIM} AS branch-version-arm64
 FROM node:${NODE_VERSION}-buster${SLIM} AS branch-version-arm
