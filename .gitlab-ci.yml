@@ -114,6 +114,7 @@ variables:
 build_slim:
   variables:
     SLIM: "-slim"
+    TARGETPLATFORM: "linux/amd64"
     # TARGETPLATFORM: "linux/amd64,linux/arm64,linux/arm"
   # needs: ["build_artifacts: [amd64]"]
   extends: .runtime

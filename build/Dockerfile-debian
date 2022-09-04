@@ -1,13 +1,15 @@
 ARG SLIM
 ARG NODE_VERSION
-ARG TARGETARCH
 ARG BUILDER_IMG_BASE
-FROM ${BUILDER_IMG_BASE}_${TARGETARCH}_artifacts as builder
+FROM ${BUILDER_IMG_BASE}_amd64_artifacts as builder-version-amd64
+FROM ${BUILDER_IMG_BASE}_arm64_artifacts as builder-version-arm64
+FROM ${BUILDER_IMG_BASE}_arm_artifacts as builder-version-arm
 FROM node:${NODE_VERSION}-bullseye${SLIM} AS branch-version-amd64
 FROM node:${NODE_VERSION}-bullseye${SLIM} AS branch-version-arm64
 FROM node:${NODE_VERSION}-buster${SLIM} AS branch-version-arm
 
 ARG TARGETARCH
+FROM  builder-version-${TARGETARCH} as builder
 FROM branch-version-${TARGETARCH}
 
 LABEL maintainer="Karsten Hassel"
@@ -18,7 +20,7 @@ WORKDIR /opt/magic_mirror
 
 # copy startscripts into container:
 COPY *.sh /opt/magic_mirror/
-COPY --from=builder --chown=node:node /opt/magic_mirror /opt/magic_mirror
+# COPY --from=builder --chown=node:node /opt/magic_mirror /opt/magic_mirror
 
 # procps, arp-scan and sudo needed for the module MMM-NetworkScanner
 # sudo needed for the module MMM-Remote-Control
