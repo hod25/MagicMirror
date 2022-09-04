@@ -10,6 +10,7 @@ include:
 # todo: docker readme if readme changes on master
 # todo: remove buildkit branch
 # todo: change DOCKER_HUB_REPO
+# todo: remove c_rehash
 
 # image: ${CI_REGISTRY}/khassel/container/kaniko:latest
 
@@ -114,7 +115,7 @@ variables:
 build_slim:
   variables:
     SLIM: "-slim"
-    TARGETPLATFORM: "linux/amd64"
+    TARGETPLATFORM: "linux/arm"
     # TARGETPLATFORM: "linux/amd64,linux/arm64,linux/arm"
   # needs: ["build_artifacts: [amd64]"]
   extends: .runtime
