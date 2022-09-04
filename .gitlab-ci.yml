@@ -7,6 +7,9 @@ include:
   - project: "khassel/buildkit"
     file: "/.buildkit.yml"
 
+# todo: docker readme if readme changes on master
+# todo: remove buildkit branch, e.g. in NO_IMAGE_REBUILD
+
 # image: ${CI_REGISTRY}/khassel/container/kaniko:latest
 
 variables:
@@ -17,6 +20,7 @@ variables:
   DEBIAN_VERSION: "bullseye"
   DEBIAN_VERSION_ARM: "buster"
   GitRepo: "https://github.com/MichMich/MagicMirror.git"
+  NO_IMAGE_REBUILD: "(master|buildkit)"
 
 .rule:
   rules:
@@ -39,8 +43,6 @@ variables:
     export GIT_INFO="commit=${CI_COMMIT_SHORT_SHA} ref=${CI_COMMIT_REF_NAME} date=${CI_COMMIT_TIMESTAMP} author=${CI_COMMIT_AUTHOR} title=${CI_COMMIT_TITLE}"
 
 build_artifacts:
-  # todo: debug image
-  # --build-arg debug="${debug}"
   extends:
   - .docker_buildkit
   - .beforescript
@@ -58,12 +60,16 @@ build_artifacts:
     fi
     export PUSH_IMAGES="${BUILDER_IMG}"
     export BUILDKIT_ARGS="--opt build-arg:NODE_VERSION=$NODE_VERSION --opt build-arg:GIT_INFO=$GIT_INFO --opt build-arg:BuildRef=$BuildRef --opt build-arg:GitRepo=$GitRepo --opt build-arg:imgarch=$imgarch"
-  # todo: skopeo ???
   - set | grep -E "BUILDER_IMG=|NODE_VERSION=|BuildRef=|GitRepo="
-    # if [ "$(skopeo inspect docker://${BUILDER_IMG})" ] && [ "${CI_COMMIT_BRANCH}" = "master" ]; then
-    #   echo "no builder image rebuild"
-    #   exit 0
-    # fi
+  - |
+    if [ $(echo "${CI_COMMIT_BRANCH}" | grep -E "$NO_IMAGE_REBUILD") ]; then
+      # only check here with skopeo
+      apk add skopeo
+      if [ "$(skopeo inspect docker://${BUILDER_IMG})" ]; then
+        echo "no builder image rebuild"
+        exit 0
+      fi
+    fi
   - echo "builder image (re)build"
   - !reference [.docker_buildkit, script]
   parallel:
