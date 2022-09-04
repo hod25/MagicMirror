@@ -57,7 +57,7 @@ build_artifacts:
       export BuildRef="develop"
     fi
     export PUSH_IMAGES="${BUILDER_IMG}"
-    export BUILDKIT_ARGS="--opt build-arg:NODE_VERSION=$NODE_VERSION --opt build-arg:GIT_INFO=$GIT_INFO --opt build-arg:BuildRef=$BuildRef --opt build-arg:GitRepo=$GitRepo"
+    export BUILDKIT_ARGS="--opt build-arg:NODE_VERSION=$NODE_VERSION --opt build-arg:GIT_INFO=$GIT_INFO --opt build-arg:BuildRef=$BuildRef --opt build-arg:GitRepo=$GitRepo --opt build-arg:imgarch=$imgarch"
   # todo: skopeo ???
   - set | grep -E "BUILDER_IMG=|NODE_VERSION=|BuildRef=|GitRepo="
     # if [ "$(skopeo inspect docker://${BUILDER_IMG})" ] && [ "${CI_COMMIT_BRANCH}" = "master" ]; then
@@ -162,6 +162,7 @@ build_alpine:
   - .beforescript
   - .rule
   variables:
+    imgarch: "amd64"
     DOCKERFILE_NAME: "Dockerfile-alpine"
   script:
   - |
@@ -199,36 +200,36 @@ build_alpine:
 #   after_script:
 #     - docker.logout
 
-# test_alpine:
-#   stage: test
-#   needs: ["build_alpine"]
-#   variables:
-#     GIT_STRATEGY: none
-#   image: 
-#     name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine
-#     entrypoint: [""]
-#   script:
-#   - |
-#     cd /opt/magic_mirror
-#     git log -1 > /tmp/image.txt
-#     if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
-#       echo "CI_COMMIT_BRANCH is master"
-#       BuildRef="${MAGICMIRROR_VERSION}"
-#     else
-#       echo "CI_COMMIT_BRANCH is not master"
-#       BuildRef="develop"
-#     fi
-#     cd /tmp
-#     git clone --depth 1 -b "${BuildRef}" --single-branch "${GitRepo}" mm
-#     cd mm
-#     git log -1 > /tmp/clone.txt
-#     cat /tmp/image.txt
-#     echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-#     cat /tmp/clone.txt
-#     echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-#     diff /tmp/image.txt /tmp/clone.txt
-#     echo "no diffs detected."
-#   extends: .rule
+test_alpine:
+  stage: test
+  needs: ["build_alpine"]
+  variables:
+    GIT_STRATEGY: none
+  image: 
+    name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine
+    entrypoint: [""]
+  script:
+  - |
+    cd /opt/magic_mirror
+    git log -1 > /tmp/image.txt
+    if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+      echo "CI_COMMIT_BRANCH is master"
+      BuildRef="${MAGICMIRROR_VERSION}"
+    else
+      echo "CI_COMMIT_BRANCH is not master"
+      BuildRef="develop"
+    fi
+    cd /tmp
+    git clone --depth 1 -b "${BuildRef}" --single-branch "${GitRepo}" mm
+    cd mm
+    git log -1 > /tmp/clone.txt
+    cat /tmp/image.txt
+    echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+    cat /tmp/clone.txt
+    echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+    diff /tmp/image.txt /tmp/clone.txt
+    echo "no diffs detected."
+  extends: .rule
 
 # # test raspi-image with gpio support and python
 # build_gpio:

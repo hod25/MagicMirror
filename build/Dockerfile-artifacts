@@ -22,7 +22,7 @@ RUN set -e; \
     echo GitRepo="${GitRepo}"; \
     git clone --depth 1 -b "${BuildRef}" --single-branch "${GitRepo}" .; \
     git log -1; \
-    if [ -z "${debug}" ]; then \
+    if [ "${imgarch}" != "debug" ]; then \
       npmargs="--omit=dev"; \
       if [ "${imgarch}" = "amd64" ]; then \
         npmargs="${npmargs} --omit=optional"; \
@@ -46,7 +46,7 @@ RUN set -e; \
     mv config mount_ori/; \
     mv css mount_ori/; \
     # remove not needed node_modules stuff
-    [ -z "${debug}" ] && node-prune || echo "no node-prune"; \
+    [ "${imgarch}" != "debug" ] && node-prune || echo "no node-prune"; \
     cp /tmp/build_info.sh .; \
     ./build_info.sh "Artifacts" "$GIT_INFO"; \
     rm -f build_info.sh;
