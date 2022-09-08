@@ -6,11 +6,8 @@ include:
   - template: Security/Container-Scanning.gitlab-ci.yml
   - project: "khassel/container"
     file: "/.yaml/docker_readme.yaml"
-    # todo: remove:
-    ref: "develop"
 
-# todo: revert back to latest:
-image: ${CI_REGISTRY}/khassel/container/kaniko:develop
+image: ${CI_REGISTRY}/khassel/container/kaniko:latest
 
 variables:
   GIT_DEPTH: 1
@@ -20,6 +17,7 @@ variables:
   DEBIAN_VERSION: "bullseye"
   DEBIAN_VERSION_ARM: "buster"
   GitRepo: "https://github.com/MichMich/MagicMirror.git"
+  TOOLBOX_IMG: "${CI_REGISTRY}/khassel/container/toolbox:latest"
 
 .rule:
   rules:
@@ -57,8 +55,7 @@ variables:
 
 check_artifacts:
   stage: build
-  # todo: revert back to latest:
-  image: ${CI_REGISTRY}/khassel/container/toolbox:develop
+  image: ${TOOLBOX_IMG}
   script:
   - |
     touch buildvars
@@ -182,8 +179,7 @@ build_debug:
   extends: .runtime
 
 sync_slim:
-  # todo: revert back to latest:
-  image: ${CI_REGISTRY}/khassel/container/toolbox:develop
+  image: ${TOOLBOX_IMG}
   needs:
   - build_amd64
   - build_arm64
@@ -208,8 +204,7 @@ sync_slim:
   - .rule
 
 sync_fat:
-  # todo: revert back to latest:
-  image: ${CI_REGISTRY}/khassel/container/toolbox:develop
+  image: ${TOOLBOX_IMG}
   needs:
   - build_amd64_fat
   - build_arm64_fat
@@ -259,8 +254,7 @@ build_alpine:
 sync_alpine:
   needs: 
   - build_alpine
-  # todo: revert back to latest:
-  image: ${CI_REGISTRY}/khassel/container/toolbox:develop
+  image: ${TOOLBOX_IMG}
   stage: build
   script:
   - |
