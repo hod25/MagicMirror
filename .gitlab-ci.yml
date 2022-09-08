@@ -1,12 +1,16 @@
 stages:
-  - buildartifacts
   - build
   - test
 
 include:
   - template: Security/Container-Scanning.gitlab-ci.yml
+  - project: "khassel/container"
+    file: "/.yaml/docker_readme.yaml"
+    # todo: remove:
+    ref: "develop"
 
-image: ${CI_REGISTRY}/khassel/container/kaniko:latest
+# todo: revert back to latest:
+image: ${CI_REGISTRY}/khassel/container/kaniko:develop
 
 variables:
   GIT_DEPTH: 1
@@ -24,7 +28,8 @@ variables:
 .beforescript:
   before_script:
     - docker.gitlab.login
-    - | 
+    - |
+      set -e
       # set build arch
       if [ "${imgarch}" = "arm" ]; then
         export buildarch="arm32v7/"
@@ -50,23 +55,48 @@ variables:
   after_script:
     - docker.logout
 
-build_artifacts:
-  stage: buildartifacts
+check_artifacts:
+  stage: build
+  # todo: revert back to latest:
+  image: ${CI_REGISTRY}/khassel/container/toolbox:develop
   script:
   - |
+    touch buildvars
     if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+      for arch in "amd64" "arm" "arm64" "debug"; do
+        img="${CI_REGISTRY_IMAGE}:${MAGICMIRROR_VERSION}_${arch}_artifacts"
+        echo "checking $img ..."
+        [ "$(skopeo inspect docker://${img})" ] || echo "${arch}_" >> buildvars
+      done
+      cat buildvars
+    fi
+  rules:
+  - if: $TASK == "runtime"
+  artifacts:
+    paths:
+    - buildvars
+
+build_artifacts:
+  stage: build
+  needs:
+  - job: check_artifacts
+    artifacts: true
+  script:
+  - |
+    set -e
+    if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+      cat buildvars
+      if [ "$(cat buildvars) | grep ${imgarch}_)" != "${imgarch}_" ]; then
+        echo "no builder image rebuild"
+        exit 0
+      fi
       echo "CI_COMMIT_BRANCH is master"
       BuildRef="${MAGICMIRROR_VERSION}"
     else
       echo "CI_COMMIT_BRANCH is not master"
       BuildRef="develop"
     fi
-    set | grep -E "BUILDER_IMG=|NODE_VERSION=|buildarch=|BuildRef=|GitRepo="
-    if [ "$(skopeo inspect docker://${BUILDER_IMG})" ] && [ "${CI_COMMIT_BRANCH}" = "master" ]; then
-      echo "no builder image rebuild"
-      exit 0
-    fi
-    echo "builder image (re)build"
+    set | grep -E "BUILDER_IMG=|NODE_VERSION=|buildarch=|BuildRef=|GitRepo=|PRE_IMGARCH="
     build --context "./build" \
     --dockerfile "Dockerfile-artifacts" \
     --destination "${BUILDER_IMG}" \
@@ -87,14 +117,10 @@ build_artifacts:
   stage: build
   script:
   - |
-    if [ -z "${SLIM}" ]; then
-      export FAT="_fat"
-      export DEFAULT_TAG="fat"
-    else
-      export DEFAULT_TAG="latest"
-    fi
+    set -e
+    [ -z "${SLIM}" ] && export FAT="_fat"
     [ -z "${debug}" ] && export NODE_ENV="production" || export NODE_ENV="test"
-    set | grep -E "BUILDER_IMG=|NODE_VERSION=|buildarch=|FAT"
+    set | grep -E "BUILDER_IMG=|NODE_VERSION=|buildarch=|FAT="
     build --context "./build" \
       --dockerfile "Dockerfile-debian" \
       --destination "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${FAT}_${imgarch}" \
@@ -105,17 +131,6 @@ build_artifacts:
       --build-arg BUILDER_IMG="${BUILDER_IMG}" \
       --build-arg SLIM="${SLIM}" \
       --build-arg NODE_ENV="${NODE_ENV}"
-
-    [ -z "${debug}" ] || exit 0
-
-    if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
-      docker.manifest "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${FAT}" "${DEFAULT_TAG}"
-      docker.manifest "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${FAT}" "${MAGICMIRROR_VERSION}${FAT}"
-      docker.sync "${CI_REGISTRY_IMAGE}:${DEFAULT_TAG} ${CI_REGISTRY_IMAGE}:${MAGICMIRROR_VERSION}${FAT}"
-    else
-      docker.manifest "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${FAT}" "${CI_COMMIT_BRANCH}${FAT}"
-      docker.sync "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${FAT}"
-    fi
   extends: 
   - .beforescript
   - .rule
@@ -166,6 +181,58 @@ build_debug:
   needs: ["build_artifacts: [debug]"]
   extends: .runtime
 
+sync_slim:
+  # todo: revert back to latest:
+  image: ${CI_REGISTRY}/khassel/container/toolbox:develop
+  needs:
+  - build_amd64
+  - build_arm64
+  - build_arm
+  stage: build
+  script:
+  - |
+    set -e
+    set | grep -E "CI_COMMIT_BRANCH=|CI_REGISTRY_IMAGE=|MAGICMIRROR_VERSION="
+    docker.gitlab.login
+    if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+      docker.manifest "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}" "latest"
+      docker.manifest "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}" "${MAGICMIRROR_VERSION}"
+      docker.sync "${CI_REGISTRY_IMAGE}:latest ${CI_REGISTRY_IMAGE}:${MAGICMIRROR_VERSION}"
+    else
+      docker.manifest "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}" "${CI_COMMIT_BRANCH}"
+      docker.sync "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}"
+    fi
+  after_script:
+    - docker.logout
+  extends: 
+  - .rule
+
+sync_fat:
+  # todo: revert back to latest:
+  image: ${CI_REGISTRY}/khassel/container/toolbox:develop
+  needs:
+  - build_amd64_fat
+  - build_arm64_fat
+  - build_arm_fat
+  stage: build
+  script:
+  - |
+    set -e
+    set | grep -E "CI_COMMIT_BRANCH=|CI_REGISTRY_IMAGE=|MAGICMIRROR_VERSION="
+    docker.gitlab.login
+    if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+      docker.manifest "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_fat" "fat"
+      docker.manifest "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_fat" "${MAGICMIRROR_VERSION}_fat"
+      docker.sync "${CI_REGISTRY_IMAGE}:fat ${CI_REGISTRY_IMAGE}:${MAGICMIRROR_VERSION}_fat"
+    else
+      docker.manifest "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_fat" "${CI_COMMIT_BRANCH}_fat"
+      docker.sync "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_fat"
+    fi
+  after_script:
+    - docker.logout
+  extends: 
+  - .rule
+
 build_alpine:
   needs: ["build_artifacts: [amd64]"]
   variables:
@@ -173,6 +240,7 @@ build_alpine:
   stage: build
   script:
   - |
+    set -e
     set | grep -E "BUILDER_IMG=|NODE_VERSION="
     dest="--destination ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine"
     if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
@@ -184,13 +252,25 @@ build_alpine:
       --build-arg NODE_VERSION="${NODE_VERSION}" \
       --build-arg GIT_INFO="${GIT_INFO}" \
       --build-arg BUILDER_IMG="${BUILDER_IMG}"
+  extends: 
+  - .beforescript
+  - .rule
+
+sync_alpine:
+  needs: 
+  - build_alpine
+  # todo: revert back to latest:
+  image: ${CI_REGISTRY}/khassel/container/toolbox:develop
+  stage: build
+  script:
+  - |
+    set -e
     if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
       docker.sync "${CI_REGISTRY_IMAGE}:alpine"
     else
       docker.sync "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine"
     fi
   extends: 
-  - .beforescript
   - .rule
 
 build_distroless:
@@ -199,6 +279,7 @@ build_distroless:
   stage: build
   script:
   - |
+    set -e
     docker.gitlab.login
     export NODE_VERSION="16"
     export BUILDER_IMG="${CI_REGISTRY_IMAGE}:develop_${imgarch}_artifacts"
@@ -223,6 +304,7 @@ test_alpine:
     entrypoint: [""]
   script:
   - |
+    set -e
     cd /opt/magic_mirror
     git log -1 > /tmp/image.txt
     if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
@@ -251,6 +333,7 @@ build_gpio:
     imgarch: "arm"
   script:
   - |
+    set -e
     docker.gitlab.login
     build --context "./build" \
       --dockerfile "Dockerfile-gpio" \
@@ -325,3 +408,11 @@ triage:
     - gitlab-triage --dry-run --token $TRIAGE_API_TOKEN --source projects --source-id $CI_PROJECT_PATH
   rules:
   - if: $TASK == "triage"
+
+sync_readme:
+  extends: .docker_readme
+  rules:
+  - if: $TASK == "readme"
+  - if: $CI_COMMIT_BRANCH == "master"
+    changes:
+    - README.md
