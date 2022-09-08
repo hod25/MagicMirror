@@ -72,6 +72,8 @@ check_artifacts:
   artifacts:
     paths:
     - buildvars
+  environment:
+    name: "$CI_COMMIT_BRANCH/Check Artifacts"
 
 build_artifacts:
   stage: build
@@ -109,6 +111,8 @@ build_artifacts:
   parallel:
     matrix:
       - imgarch: ["amd64", "arm", "arm64", "debug"]
+  environment:
+    name: "$CI_COMMIT_BRANCH/Build Artifacts $imgarch"
 
 .runtime:
   stage: build
@@ -138,12 +142,16 @@ build_amd64:
     SLIM: "-slim"
   needs: ["build_artifacts: [amd64]"]
   extends: .runtime
+  environment:
+    name: "$CI_COMMIT_BRANCH/Build amd64"
 
 build_amd64_fat:
   variables:
     imgarch: "amd64"
   needs: ["build_artifacts: [amd64]"]
   extends: .runtime
+  environment:
+    name: "$CI_COMMIT_BRANCH/Build amd64 fat"
 
 build_arm:
   variables:
@@ -151,12 +159,16 @@ build_arm:
     SLIM: "-slim"
   needs: ["build_artifacts: [arm]"]
   extends: .runtime
+  environment:
+    name: "$CI_COMMIT_BRANCH/Build arm"
 
 build_arm_fat:
   variables:
     imgarch: "arm"
   needs: ["build_artifacts: [arm]"]
   extends: .runtime
+  environment:
+    name: "$CI_COMMIT_BRANCH/Build arm fat"
 
 build_arm64:
   variables:
@@ -164,12 +176,16 @@ build_arm64:
     SLIM: "-slim"
   needs: ["build_artifacts: [arm64]"]
   extends: .runtime
+  environment:
+    name: "$CI_COMMIT_BRANCH/Build arm64"
 
 build_arm64_fat:
   variables:
     imgarch: "arm64"
   needs: ["build_artifacts: [arm64]"]
   extends: .runtime
+  environment:
+    name: "$CI_COMMIT_BRANCH/Build arm64 fat"
 
 build_debug:
   variables:
@@ -177,6 +193,8 @@ build_debug:
     SLIM: "-slim"
   needs: ["build_artifacts: [debug]"]
   extends: .runtime
+  environment:
+    name: "$CI_COMMIT_BRANCH/Build Debug"
 
 sync_slim:
   image: ${TOOLBOX_IMG}
@@ -202,6 +220,9 @@ sync_slim:
     - docker.logout
   extends: 
   - .rule
+  environment:
+    name: "$CI_COMMIT_BRANCH/Docker Sync Debian"
+    url: https://hub.docker.com/r/karsten13/magicmirror/tags
 
 sync_fat:
   image: ${TOOLBOX_IMG}
@@ -227,6 +248,9 @@ sync_fat:
     - docker.logout
   extends: 
   - .rule
+  environment:
+    name: "$CI_COMMIT_BRANCH/Docker Sync Debian Fat"
+    url: https://hub.docker.com/r/karsten13/magicmirror/tags
 
 build_alpine:
   needs: ["build_artifacts: [amd64]"]
@@ -250,6 +274,8 @@ build_alpine:
   extends: 
   - .beforescript
   - .rule
+  environment:
+    name: "$CI_COMMIT_BRANCH/Build Alpine"
 
 sync_alpine:
   needs: 
@@ -266,6 +292,9 @@ sync_alpine:
     fi
   extends: 
   - .rule
+  environment:
+    name: "$CI_COMMIT_BRANCH/Docker Sync Alpine"
+    url: https://hub.docker.com/r/karsten13/magicmirror/tags
 
 build_distroless:
   variables:
@@ -287,6 +316,8 @@ build_distroless:
   - if: $TASK == "distroless"
   after_script:
     - docker.logout
+  environment:
+    name: "$CI_COMMIT_BRANCH/Build Distroless"
 
 test_alpine:
   stage: test
@@ -319,6 +350,8 @@ test_alpine:
     diff /tmp/image.txt /tmp/clone.txt
     echo "no diffs detected."
   extends: .rule
+  environment:
+    name: "$CI_COMMIT_BRANCH/Test Alpine"
 
 # test raspi-image with gpio support and python
 build_gpio:
@@ -335,6 +368,8 @@ build_gpio:
       --build-arg BASE_IMG="${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_arm"
   rules:
   - if: $TASK == "gpio"
+  environment:
+    name: "$CI_COMMIT_BRANCH/Build Gpio"
 
 test_debug:
   stage: test
@@ -348,6 +383,8 @@ test_debug:
   script:
   - /opt/magic_mirror/entrypoint.sh
   extends: .rule
+  environment:
+    name: "$CI_COMMIT_BRANCH/Test MagicMirror"
 
 snyk_amd64:
   stage: test
@@ -363,6 +400,8 @@ snyk_amd64:
   - snyk test --all-projects
   rules:
   - if: $TASK == "snyk"
+  environment:
+    name: "$CI_COMMIT_BRANCH/Snyk Security Scan"
 
 pages:
   stage: build
@@ -379,6 +418,9 @@ pages:
       - public
   rules:
   - if: ($CI_COMMIT_BRANCH == "master" && $TASK == "runtime") || ($TASK == "pages")
+  environment:
+    name: "$CI_COMMIT_BRANCH/Documentation"
+    url: https://khassel.gitlab.io/magicmirror/
 
 # see https://docs.gitlab.com/ee/user/application_security/container_scanning/
 # see https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Security/Container-Scanning.gitlab-ci.yml
@@ -389,6 +431,8 @@ container_scanning:
     GIT_STRATEGY: fetch
   rules:
   - if: $TASK == "containerscan"
+  environment:
+    name: "$CI_COMMIT_BRANCH/Gitlab Security Scan"
 
 triage:
   # Links:
@@ -399,9 +443,12 @@ triage:
   image: ruby:2.7
   script:
     - gem install gitlab-triage
-    - gitlab-triage --dry-run --token $TRIAGE_API_TOKEN --source projects --source-id $CI_PROJECT_PATH
+    - gitlab-triage --token $TRIAGE_API_TOKEN --source projects --source-id $CI_PROJECT_PATH
   rules:
   - if: $TASK == "triage"
+  environment:
+    name: "$CI_COMMIT_BRANCH/Triage"
+
 
 sync_readme:
   extends: .docker_readme
@@ -410,3 +457,6 @@ sync_readme:
   - if: $CI_COMMIT_BRANCH == "master"
     changes:
     - README.md
+  environment:
+    name: "$CI_COMMIT_BRANCH/Docker Readme"
+    url: https://hub.docker.com/r/karsten13/magicmirror
