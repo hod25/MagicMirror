@@ -85,7 +85,7 @@ build_artifacts:
     set -e
     if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
       cat buildvars
-      if [ "$(cat buildvars) | grep ${imgarch}_)" != "${imgarch}_" ]; then
+      if [ "$(cat buildvars | grep ${imgarch}_)" != "${imgarch}_" ]; then
         echo "no builder image rebuild"
         exit 0
       fi
