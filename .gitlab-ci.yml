@@ -420,7 +420,8 @@ pages:
     paths:
       - public
   rules:
-  - if: ($CI_COMMIT_BRANCH == "master" && $TASK == "runtime") || ($TASK == "pages")
+  - if: $TASK == "pages"
+  - if: $CI_COMMIT_BRANCH == "master" && $TASK == "runtime"
   environment:
     name: "$CI_COMMIT_BRANCH/Documentation"
     url: https://khassel.gitlab.io/magicmirror/
@@ -454,12 +455,15 @@ triage:
 
 
 sync_readme:
+  stage: build
+  needs:
+  - sync_slim
+  - sync_fat
+  - sync_alpine
   extends: .docker_readme
   rules:
   - if: $TASK == "readme"
-  - if: $CI_COMMIT_BRANCH == "master"
-    changes:
-    - README.md
+  - if: $CI_COMMIT_BRANCH == "master" && $TASK == "runtime"
   environment:
     name: "$CI_COMMIT_BRANCH/Docker Readme"
     url: https://hub.docker.com/r/karsten13/magicmirror
