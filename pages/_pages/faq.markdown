@@ -66,9 +66,9 @@ sudo apt-get install -y iputils-ping
 
 Since release `v2.17.1` a new image `karsten13/magicmirror:fat` is provided. This image is based on `debian:buster` (not on `debian:buster-slim` as `latest`) and contains already many dependencies, e.g. python. You can try this image if you need packages missing in `latest`. Be aware that this image is really `fat` so pulling this image takes longer, especially on a raspberry pi.
 
-## How to start MagicMirror without docker-compose?
+## How to start MagicMirror without using `docker-compose.yml` files?
 
-If you don't want to use `docker-compose` yo can start and stop your container with `docker` commands. For starting the container you have to translate the `docker-compose.yml` file into a `docker run ...` command. Here an example:
+If you don't want to use `docker-compose.yml` files yo can start and stop your container with `docker run` commands. For starting the container you have to translate the `docker-compose.yml` file into a `docker run ...` command. Here an example:
 
 `docker-compose.yml`:
 ```yaml
@@ -144,7 +144,7 @@ services:
     ...
 ```
 
-Thats it. If you need to restart the MagicMirror container just execute `docker-compose up -d`.
+Thats it. If you need to restart the MagicMirror container just execute `docker compose up -d`.
 
 ## My container doesn't start
 
@@ -167,7 +167,7 @@ to
       - infinity
 ```
 
-and restart the container with `docker-compose up -d`. Then you can login into the container with `docker exec -it mm bash`. You are by default in the MagicMirror directory (`/opt/magic_mirror`). From here you can start the mirror with `npm run server` in server-only mode or with `npm run start` on your raspberry pi. Now you can examine the logs to catch the errors.
+and restart the container with `docker compose up -d`. Then you can login into the container with `docker exec -it mm bash`. You are by default in the MagicMirror directory (`/opt/magic_mirror`). From here you can start the mirror with `npm run server` in server-only mode or with `npm run start` on your raspberry pi. Now you can examine the logs to catch the errors.
 
 ## Error: Cannot find module `request`
 
@@ -206,4 +206,4 @@ This fix is persistent because the `modules` folder is mounted to the host. If y
 
 ## Running on a raspberry pi ends with a white or black screen after a while
 
-I had this behavior running the module `MMM-RAIN-MAP` which is fetching a greater amount of images for the map. So if you are running modules which needs a greater amount of shared memory, you have to increase `shm_size` in the `docker-compose.yaml`. The default there is `shm_size: "128mb"` so edit this value and restart the container with `docker-compose up -d`.
+I had this behavior running the module `MMM-RAIN-MAP` which is fetching a greater amount of images for the map. So if you are running modules which needs a greater amount of shared memory, you have to increase `shm_size` in the `docker-compose.yml`. The default there is `shm_size: "128mb"` so edit this value and restart the container with `docker compose up -d`.

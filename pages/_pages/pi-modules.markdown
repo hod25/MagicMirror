@@ -96,4 +96,4 @@ The full example is contained in this repo:
 - [docker-compose.yml](https://gitlab.com/khassel/magicmirror/-/blob/master/run/rpi_gpio.yml)
 - docker image: `registry.gitlab.com/khassel/magicmirror:master_gpio`
 
-To use it clone this repository, navigate to `run`, rename `rpi_gpio.yml` into `docker-compose.yml` and run `docker-compose up -d`.
+To use it clone this repository, navigate to `run`, rename `rpi_gpio.yml` into `docker-compose.yml` and run `docker compose up -d`.

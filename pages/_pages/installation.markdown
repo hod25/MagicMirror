@@ -6,10 +6,8 @@ permalink: /installation/
 
 ## Installation prerequisites
 
-* [Docker](https://docs.docker.com/engine/installation/)
-* I recommend [docker-compose](https://docs.docker.com/compose/install/). The images can also started with `docker run ...` commands instead,
-  but this would result in very long statements. `docker-compose` uses yml-Files which are included in this setup. You find an example using
-  docker in the [FAQ]({{ site.baseurl }}/faq/#how-to-start-magicmirror-without-docker-compose).
+- [Docker](https://docs.docker.com/engine/installation/)
+- To run `docker` commands without needing `sudo` please refer to the [linux postinstall documentation](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user)
 
 ## Additional prerequisites for running on a raspberry pi with Scenario **electron** ✌️
 
@@ -62,12 +60,12 @@ cp rpi.yml docker-compose.yml
 Navigate to `~/magicmirror/run` and execute
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 The container will start and with scenario **electron** ✌️ the MagicMirror should appear on the screen of your pi. In server only mode opening a browser at `http://localhost:8080` should show the MagicMirror (scenario **server** ☝️).
 
-> The container is configured to restart automatically so after executing `docker-compose up -d` it will also restart after a reboot of your pi.
+> The container is configured to restart automatically so after executing `docker compose up -d` it will also restart after a reboot of your pi.
 
 
 You can see the logs with
@@ -83,12 +81,12 @@ docker ps -a
 will show all containers and 
 
 ```bash
-docker-compose down
+docker compose down
 ```
 
 will stop and remove the MagicMirror container.
 
-You can restart the container with one command `docker-compose up -d --force-recreate`. This is e.g. necessary if you change the configuration.
+You can restart the container with one command `docker compose up -d --force-recreate`. This is e.g. necessary if you change the configuration.
 
 ## Updating the image
 
@@ -99,13 +97,13 @@ This project ist updated weekly because the image contains debian as operating s
 To get the newest image you have to update this locally. Navigate to `~/magicmirror/run` and execute
 
 ```bash
-docker-compose pull
+docker compose pull
 ```
 
 After the new image is pulled you have to restart the container with
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 > With every new image the old image remains on your hard disc and occupies disk space. To get rid of all old images you can execute `docker image prune -f`.

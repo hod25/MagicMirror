@@ -5,7 +5,7 @@ permalink: /images/
 toc: false
 ---
 
-## Images on Docker Hub:  [![](https://dockeri.co/image/karsten13/magicmirror)](https://hub.docker.com/r/karsten13/magicmirror/)
+## Images on [Docker Hub](https://hub.docker.com/r/karsten13/magicmirror/):  [![](https://img.shields.io/docker/pulls/karsten13/magicmirror.svg)](https://hub.docker.com/r/karsten13/magicmirror/)
 
 The docker image `karsten13/magicmirror` is available with these tags:
 
