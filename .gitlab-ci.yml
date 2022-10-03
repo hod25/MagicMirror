@@ -405,10 +405,6 @@ snyk_amd64:
 
 pages:
   stage: build
-  needs:
-  - sync_slim
-  - sync_fat
-  - sync_alpine
   image: ${CI_REGISTRY}/khassel/jekyll:latest
   script:
     - cp -v .gitlab-ci.yml ${CI_PROJECT_DIR}/pages/_data/gitlab.yml
