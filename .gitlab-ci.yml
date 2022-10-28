@@ -96,6 +96,7 @@ build_artifacts:
       BuildRef="develop"
     fi
     set | grep -E "BUILDER_IMG=|NODE_VERSION=|buildarch=|BuildRef=|GitRepo=|PRE_IMGARCH="
+    export imgarch=""
     build --context "./build" \
     --dockerfile "Dockerfile-artifacts" \
     --destination "${BUILDER_IMG}" \
