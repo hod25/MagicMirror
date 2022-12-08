@@ -6,6 +6,10 @@ permalink: /pi-modules/
 
 Many modules are working out of the box with this docker setup. But if you want to use modules which needs hardware of the raspberry pi the setup can be tricky. This step-by-step example is a showcase how to solve such problems when you want to use a PIR motion sensor.
 
+> 👉 This guide is outdated: 
+> - The mentioned MMM-Pir-Sensor module is not maintained anymore, so use another one
+> - Using `karsten13/magicmirror:fat` instead of `karsten13/magicmirror:latest` is now recommended because this image contains already python and other stuff
+
 # MagicMirror with PIR motion sensor
 
 ## Install module MMM-Pir-Sensor
@@ -87,13 +91,44 @@ In the `config.js` we defined `powerSavingDelay: 60` which means turn HDMI off a
 
 So after looking into the source code of the module I found that `/usr/bin/vcgencmd display_power 0` is executed for turning off the screen. But `vcgencmd` is not installed in the docker image. The last fix is to add another volume mount into your `docker-compose.yml` in the `volumes:` section: `- /usr/bin/vcgencmd:/usr/bin/vcgencmd`.
 
+Here the full `docker-compose.yml` file:
+
+```yaml
+version: '3'
+
+services:
+  magicmirror:
+    container_name: mm
+    image: registry.gitlab.com/khassel/magicmirror:develop_gpio
+    volumes:
+      - ../mounts/config:/opt/magic_mirror/config
+      - ../mounts/modules:/opt/magic_mirror/modules
+      - ../mounts/css:/opt/magic_mirror/css
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /opt/vc:/opt/vc/:ro
+      - /sys:/sys
+      - /usr/bin/vcgencmd:/usr/bin/vcgencmd
+      - /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket
+    devices:
+      - /dev/vchiq
+    environment:
+      LD_LIBRARY_PATH: /opt/vc/lib
+      DISPLAY: unix:0.0
+    network_mode: host
+    shm_size: "128mb"
+    restart: unless-stopped
+    command: 
+      - npm
+      - run
+      - start
+```
+
 ## Conclusion
 
 Running hardware related modules within a docker image is possible, but needs further investigation to get it running.
 
 The full example is contained in this repo:
 - [Dockerfile](https://gitlab.com/khassel/magicmirror/-/blob/master/build/Dockerfile-gpio)
-- [docker-compose.yml](https://gitlab.com/khassel/magicmirror/-/blob/master/run/rpi_gpio.yml)
-- docker image: `registry.gitlab.com/khassel/magicmirror:master_gpio`
+- docker image: `registry.gitlab.com/khassel/magicmirror:develop_gpio`
 
-To use it clone this repository, navigate to `run`, rename `rpi_gpio.yml` into `docker-compose.yml` and run `docker compose up -d`.
+To use it clone this repository, navigate to `run`, create `docker-compose.yml` with above content and run `docker compose up -d`.
