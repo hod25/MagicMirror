@@ -15,7 +15,6 @@ variables:
   NODE_VERSION_MASTER: "18"
   NODE_VERSION_DEVELOP: "19"
   DEBIAN_VERSION: "bullseye"
-  DEBIAN_VERSION_ARM: "buster"
   GitRepo: "https://github.com/MichMich/MagicMirror.git"
   TOOLBOX_IMG: "${CI_REGISTRY}/khassel/container/toolbox:latest"
 
@@ -31,7 +30,6 @@ variables:
       # set build arch
       if [ "${imgarch}" = "arm" ]; then
         export buildarch="arm32v7/"
-        export DEBIAN_VERSION=${DEBIAN_VERSION_ARM}
       elif [ "${imgarch}" = "arm64" ]; then
         export buildarch="arm64v8/"
       elif [ "${imgarch}" = "debug" ]; then
@@ -122,10 +120,11 @@ build_artifacts:
     set -e
     [ -z "${SLIM}" ] && export FAT="_fat"
     [ -z "${debug}" ] && export NODE_ENV="production" || export NODE_ENV="test"
-    set | grep -E "BUILDER_IMG=|NODE_VERSION=|buildarch=|FAT="
+    [ "${DEBIAN_VERSION}" == "buster" ] && _suffix="_buster"
+    set | grep -E "BUILDER_IMG=|NODE_VERSION=|buildarch=|FAT=|DEBIAN_VERSION="
     build --context "./build" \
       --dockerfile "Dockerfile-debian" \
-      --destination "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${FAT}_${imgarch}" \
+      --destination "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${_suffix}${FAT}_${imgarch}" \
       --build-arg NODE_VERSION="${NODE_VERSION}" \
       --build-arg DEBIAN_VERSION="${DEBIAN_VERSION}" \
       --build-arg GIT_INFO="${GIT_INFO}" \
@@ -170,6 +169,25 @@ build_arm_fat:
   extends: .runtime
   environment:
     name: "$CI_COMMIT_BRANCH/Build arm fat"
+
+build_arm_buster:
+  variables:
+    imgarch: "arm"
+    SLIM: "-slim"
+    DEBIAN_VERSION: "buster"
+  needs: ["build_artifacts: [arm]"]
+  extends: .runtime
+  environment:
+    name: "$CI_COMMIT_BRANCH/Build arm buster"
+
+build_arm_buster_fat:
+  variables:
+    imgarch: "arm"
+    DEBIAN_VERSION: "buster"
+  needs: ["build_artifacts: [arm]"]
+  extends: .runtime
+  environment:
+    name: "$CI_COMMIT_BRANCH/Build arm buster fat"
 
 build_arm64:
   variables:
@@ -295,6 +313,29 @@ sync_alpine:
   - .rule
   environment:
     name: "$CI_COMMIT_BRANCH/Docker Sync Alpine"
+    url: https://hub.docker.com/r/karsten13/magicmirror/tags
+
+sync_buster:
+  needs: 
+  - build_arm_buster
+  - build_arm_buster_fat
+  image: ${TOOLBOX_IMG}
+  stage: build
+  script:
+  - |
+    # --destination "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${_suffix}${FAT}_${imgarch}" \
+    set -e
+    [ "${CI_COMMIT_BRANCH}" = "master" ] || _suffix="${CI_COMMIT_BRANCH}"
+    skopeo copy --src-creds ${CI_REGISTRY_USER}:${CI_REGISTRY_PASSWORD} \
+      --dest-creds ${DOCKER_USER}:${DOCKER_PASS} \
+      docker://${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_buster_fat_arm docker://${DOCKER_USER}/magicmirror:${_suffix}_buster_fat
+    skopeo copy --src-creds ${CI_REGISTRY_USER}:${CI_REGISTRY_PASSWORD} \
+      --dest-creds ${DOCKER_USER}:${DOCKER_PASS} \
+      docker://${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_buster_arm docker://${DOCKER_USER}/magicmirror:${_suffix}_buster
+  extends: 
+  - .rule
+  environment:
+    name: "$CI_COMMIT_BRANCH/Docker Sync Buster"
     url: https://hub.docker.com/r/karsten13/magicmirror/tags
 
 build_distroless:
