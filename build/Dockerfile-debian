@@ -22,6 +22,7 @@ ARG GIT_INFO
 ARG buildarch
 ARG NODE_ENV
 ARG DEBIAN_VERSION
+ARG SLIM
 RUN set -e; \
     apt-get update; \
     DEBIAN_FRONTEND=noninteractive apt-get -qy --no-install-recommends install git nano sudo gettext-base openssl ca-certificates wget tini gnupg; \
@@ -29,7 +30,8 @@ RUN set -e; \
       _pck="${_pck} libgtk-3-0 libx11-xcb-dev libnss3-dev libxss1 libxtst6 libasound2 libdrm2 libgbm1 libxshmfence1 fonts-arphic-uming procps arp-scan"; \
       if [ -n "${buildarch}" ] && [ "${DEBIAN_VERSION}" != "buster" ]; then \
         # install pi stuff
-        _pck="${_pck} libraspberrypi-bin libgl1-mesa-dri libglapi-mesa libllvm11 libsensors5 libdrm-radeon1 libelf1 libdrm-amdgpu1 libdrm-nouveau2"; \
+        _pck="${_pck} libraspberrypi-bin libgl1-mesa-dri libglapi-mesa libllvm11 libsensors5 libdrm-radeon1 libelf1 libdrm-amdgpu1 libdrm-nouveau2 x11-xserver-utils"; \
+        [ -z "${SLIM}" ] && _pck="${_pck} python3-rpi.gpio"; \
         wget https://archive.raspbian.org/raspbian.public.key -O - | apt-key add -; \
         echo 'deb http://raspbian.raspberrypi.org/raspbian/ '${DEBIAN_VERSION}' main contrib non-free rpi' | tee -a /etc/apt/sources.list; \
         wget -O - http://archive.raspberrypi.org/debian/raspberrypi.gpg.key | sudo apt-key add -; \
@@ -47,6 +49,8 @@ RUN set -e; \
     chmod +x *.sh; \
     chown node:node *.sh; \
     c_rehash; \
+    groupadd --gid 997 gpio; \
+    usermod -a -G gpio node; \
     ./build_info.sh "Runtime" "$GIT_INFO"; \
     rm -f build_info.sh;
 
@@ -75,3 +79,11 @@ ENTRYPOINT ["/usr/bin/tini", "--", "./entrypoint.sh"]
 # - /usr/lib/arm-linux-gnueabihf/libbcm_host.so.0:/usr/lib/arm-linux-gnueabihf/libbcm_host.so.0
 # - /usr/lib/arm-linux-gnueabihf/libvcsm.so.0:/usr/lib/arm-linux-gnueabihf/libvcsm.so.0
 # - /usr/lib/arm-linux-gnueabihf/libvcos.so.0:/usr/lib/arm-linux-gnueabihf/libvcos.so.0
+
+# sudo apt update && sudo apt install -y python3-rpi.gpio x11-xserver-utils
+# sudo python3 -u modules/MMM-PIR-Sensor-Lite/pir.py 23
+
+# xrandr --output HDMI-1 --rotate normal --auto
+# xrandr --output HDMI-1 --off
+
+# sudo groupadd --gid 997 gpio && sudo usermod -a -G gpio node
