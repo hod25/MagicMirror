@@ -395,24 +395,6 @@ test_alpine:
   environment:
     name: "$CI_COMMIT_BRANCH/Test Alpine"
 
-# test raspi-image with gpio support and python
-build_gpio:
-  stage: build
-  variables:
-    imgarch: "arm"
-  script:
-  - |
-    set -e
-    docker.gitlab.login
-    build --context "./build" \
-      --dockerfile "Dockerfile-gpio" \
-      --destination "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_gpio" \
-      --build-arg BASE_IMG="${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_arm"
-  rules:
-  - if: $TASK == "gpio"
-  environment:
-    name: "$CI_COMMIT_BRANCH/Build Gpio"
-
 test_debug:
   stage: test
   needs: ["build_debug"]

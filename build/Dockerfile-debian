@@ -67,23 +67,3 @@ ENV ELECTRON_DISABLE_SANDBOX=1 \
 EXPOSE 8080
 
 ENTRYPOINT ["/usr/bin/tini", "--", "./entrypoint.sh"]
-
-# bullseye: avoid errors on electron start-up:
-# sudo apt install -y libgl1-mesa-dri libglapi-mesa libllvm11 libsensors5 libdrm-radeon1 libelf1 libdrm-amdgpu1 libdrm-nouveau2
-# vcgencmd:
-# - /usr/bin/vcgencmd:/usr/bin/vcgencmd
-# - /usr/lib/arm-linux-gnueabihf/libvchiq_arm.so.0:/usr/lib/arm-linux-gnueabihf/libvchiq_arm.so.0
-# - /usr/lib/arm-linux-gnueabihf/libmmal_core.so.0:/usr/lib/arm-linux-gnueabihf/libmmal_core.so.0
-# - /usr/lib/arm-linux-gnueabihf/libmmal_util.so.0:/usr/lib/arm-linux-gnueabihf/libmmal_util.so.0
-# - /usr/lib/arm-linux-gnueabihf/libmmal_vc_client.so.0:/usr/lib/arm-linux-gnueabihf/libmmal_vc_client.so.0
-# - /usr/lib/arm-linux-gnueabihf/libbcm_host.so.0:/usr/lib/arm-linux-gnueabihf/libbcm_host.so.0
-# - /usr/lib/arm-linux-gnueabihf/libvcsm.so.0:/usr/lib/arm-linux-gnueabihf/libvcsm.so.0
-# - /usr/lib/arm-linux-gnueabihf/libvcos.so.0:/usr/lib/arm-linux-gnueabihf/libvcos.so.0
-
-# sudo apt update && sudo apt install -y python3-rpi.gpio x11-xserver-utils
-# sudo python3 -u modules/MMM-PIR-Sensor-Lite/pir.py 23
-
-# xrandr --output HDMI-1 --rotate normal --auto
-# xrandr --output HDMI-1 --off
-
-# sudo groupadd --gid 997 gpio && sudo usermod -a -G gpio node

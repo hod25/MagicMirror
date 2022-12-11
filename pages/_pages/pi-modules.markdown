@@ -6,92 +6,43 @@ permalink: /pi-modules/
 
 Many modules are working out of the box with this docker setup. But if you want to use modules which needs hardware of the raspberry pi the setup can be tricky. This step-by-step example is a showcase how to solve such problems when you want to use a PIR motion sensor.
 
-> 👉 This guide is outdated: 
-> - The mentioned MMM-Pir-Sensor module is not maintained anymore, so use another one
-> - Using `karsten13/magicmirror:fat` instead of `karsten13/magicmirror:latest` is now recommended because this image contains already python and other stuff
-
 # MagicMirror with PIR motion sensor
 
-## Install module MMM-Pir-Sensor
+## Install module MMM-Pir-Sensor-Lite
 
-Start image `karsten13/magicmirror:latest` on a raspberry pi and login into the running container with `docker exec -it mm bash`. Navigate to the `modules` folder and clone [MMM-PIR-Sensor](https://github.com/paviro/MMM-PIR-Sensor) with `git clone https://github.com/paviro/MMM-PIR-Sensor.git`. Now `cd` into the new folgder `MMM-PIR-Sensor` and run `npm install`.
+Start the container and login with `docker exec -it mm bash`. Navigate to the `modules` folder and clone [MMM-PIR-Sensor-Lite](https://github.com/grenagit/MMM-PIR-Sensor-Lite.git) with `git clone https://github.com/grenagit/MMM-PIR-Sensor-Lite.git`. Now `cd` into the new folder `MMM-PIR-Sensor-Lite` and run `npm install`.
 
-This will throw errors because some packages are needed but not installed: python3, g++ and make.
+## Configure MMM-PIR-Sensor-Lite
 
-So we have to build a new Docker image:
-
-```Dockerfile
-FROM karsten13/magicmirror:latest
-
-USER root
-
-RUN set -e; \
-    apt-get update; \
-    DEBIAN_FRONTEND=noninteractive apt-get -qy --no-install-recommends install python3 g++ make; \
-    apt-get clean; \
-    rm -rf /var/lib/apt/lists/*;
-
-USER node
-```
-
-First we have to switch to user `root` so we can install packages. In the `RUN` section the missing packages are installed and we clean up for a small image size. After this, we switch back to the default user `node`.
-
-We need to build this image and update the `docker-compose.yml` with the new image name.
-
-## Configure MMM-PIR-Sensor
-
-Every module needs to be configured in the `config.js` file. You can choose the [example](https://github.com/paviro/MMM-PIR-Sensor#example) from the module website:
+Every module needs to be configured in the `config.js` file. Here is my config for testing the module:
 
 ```javascript
-	{
-		module: 'MMM-PIR-Sensor', 
-		position: "top_center", // Remove this line to avoid having an visible indicator
-		config: {
-			sensorPin: 23,
-			powerSavingDelay: 60, // Turn HDMI OFF after 60 seconds of no motion, until motion is detected again
-			preventHDMITimeout: 4, // Turn HDMI ON and OFF again every 4 minutes when power saving, to avoid LCD/TV timeout
-			supportCEC: true, 
-			presenceIndicator: "fa-eye", // Customizing the indicator
-			presenceOffIndicator: "fa-eye", // Customizing the indicator
-			presenceIndicatorColor: "#f51d16", // Customizing the indicator
-			presenceOffIndicatorColor: "#2b271c" // Customizing the indicator
-		}
-	}
+  {
+    module: "MMM-PIR-Sensor-Lite",
+    position: "top_right",
+    config: {
+      sensorPin: 23, // GPIO pin
+      deactivateDelay: 20000, // 20 sec
+      showCountDown: true,
+      showDetection: true,
+    }
+  }
 ```
 
+The `sensorPin` is the gpio pin where you plugged in the motion sensor.
 After updating the `config.js` you have to restart the container.
 
-But the PIR-Sensor does'nt work, you find the following error message in the logs: `permission denied, open '/sys/class/gpio/export'`.
+But the module will not work with the default image `karsten13/magicmirror:latest`, the module will remain in `Loading...` state.
 
-To get this working you have to
-- add an additional volume mount into your `docker-compose.yml` in the `volumes:` section: `- /sys:/sys`
-- give the user `node` access to `/sys/class/gpio`.
+The module needs `python3` to work which is not installed in `karsten13/magicmirror:latest`. We could build a custom image on top and install `python3` but the simpler solution is to use `karsten13/magicmirror:fat` where `python3` is already included.
 
-For this we have to update our Dockerfile:
+So update your `docker-compose.yaml` with the new image and restart the container.
 
-```Dockerfile
-FROM karsten13/magicmirror:latest
+But the PIR-Sensor still does'nt work, because the used python script fails with: `RuntimeError: No access to /dev/mem.  Try running as root!`.
 
-USER root
+To get this working you have to add an additional device into your `docker-compose.yml` in the `devices:` section: ` - /dev/gpiomem`.
 
-RUN set -e; \
-    apt-get update; \
-    DEBIAN_FRONTEND=noninteractive apt-get -qy --no-install-recommends install python3 g++ make; \
-    apt-get clean; \
-    rm -rf /var/lib/apt/lists/*; \
-    groupadd --gid 997 gpio; \
-    usermod -a -G gpio node;
-
-USER node
-```
-
-After rebuilding the docker image, updating the `docker-compose.yml` and restarting the container our PIR-Sensor should work. The icon on the mirror becomes red if motion is detected.
-
-In the `config.js` we defined `powerSavingDelay: 60` which means turn HDMI off after 60 seconds. So we cover the PIR-Sensor and wait 60 seconds expecting a blank screen, but nothing happens - and nothing in the logs.
-
-So after looking into the source code of the module I found that `/usr/bin/vcgencmd display_power 0` is executed for turning off the screen. But `vcgencmd` is not installed in the docker image. The last fix is to add another volume mount into your `docker-compose.yml` in the `volumes:` section: `- /usr/bin/vcgencmd:/usr/bin/vcgencmd`.
-
-Here the full `docker-compose.yml` file:
+Your `docker-compose.yml` file should now look like:
 
 ```yaml
 version: '3'
@@ -99,36 +50,64 @@ version: '3'
 services:
   magicmirror:
     container_name: mm
-    image: registry.gitlab.com/khassel/magicmirror:develop_gpio
+    image: karsten13/magicmirror:fat
     volumes:
       - ../mounts/config:/opt/magic_mirror/config
       - ../mounts/modules:/opt/magic_mirror/modules
       - ../mounts/css:/opt/magic_mirror/css
       - /tmp/.X11-unix:/tmp/.X11-unix
-      - /opt/vc:/opt/vc/:ro
-      - /sys:/sys
-      - /usr/bin/vcgencmd:/usr/bin/vcgencmd
       - /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket
     devices:
       - /dev/vchiq
+      - /dev/gpiomem
     environment:
-      LD_LIBRARY_PATH: /opt/vc/lib
       DISPLAY: unix:0.0
     network_mode: host
     shm_size: "128mb"
     restart: unless-stopped
-    command: 
-      - npm
-      - run
-      - start
+    command:
+     - npm
+     - run
+     - start
 ```
 
-## Conclusion
+After restarting the container our PIR-Sensor should now work, you should see the countdown in the upper right corner.
+You can interrupt the countdown by waking the sensor up. After 20 sec. without motion the screen should go off, you can wake up the screen with the sensor.
 
-Running hardware related modules within a docker image is possible, but needs further investigation to get it running.
+One ugly thing is now left because in my setup MagicMirror is not running in fullscreen anymore. This is related to the `xrandr` calls which are activating the monitor. As solution I found only a workaround, put the following `electronOptions` into your `config.js` file
 
-The full example is contained in this repo:
-- [Dockerfile](https://gitlab.com/khassel/magicmirror/-/blob/master/build/Dockerfile-gpio)
-- docker image: `registry.gitlab.com/khassel/magicmirror:develop_gpio`
+```javascript
+let config = {
+  electronOptions: {
+    width: 1920,
+    height: 1080,
+    alwaysOnTop: true,
+  },
+  address: "0.0.0.0",
+  ...
+```
 
-To use it clone this repository, navigate to `run`, create `docker-compose.yml` with above content and run `docker compose up -d`.
+where the `width` and `height` values should match with your screen resolution. If someone has a better solution for the fullscreen problem please let me know.
+
+## Debugging
+
+Start the container and login with `docker exec -it mm bash`.
+
+Test if you can activate/deactivate the monitor by running:
+
+- deactivate: `xrandr --output HDMI-1 --off`
+- activate: `xrandr --output HDMI-1 --rotate normal --auto`
+
+Test if your PIR-Sensor is working by running:
+
+`python3 -u modules/MMM-PIR-Sensor-Lite/pir.py 23` where `23` is the used GPIO pin.
+
+Output should look like
+
+```bash
+PIR_START
+USER_PRESENCE
+USER_PRESENCE
+```
+
+where every line `USER_PRESENCE` represents a motion detection.
