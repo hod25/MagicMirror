@@ -3,7 +3,7 @@ version: '3'
 services:
   magicmirror:
     container_name: mm
-    image: karsten13/magicmirror:latest
+    image: karsten13/magicmirror:buster
     volumes:
       - ../mounts/config:/opt/magic_mirror/config
       - ../mounts/modules:/opt/magic_mirror/modules
