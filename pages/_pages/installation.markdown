@@ -55,6 +55,8 @@ cd ./magicmirror/run
 cp rpi.yml docker-compose.yml
 ```
 
+> ⚠️ If you are still running debian buster on your raspberry pi you need another yml file, so please substitute `cp rpi.yml docker-compose.yml` with `cp rpi_buster.yml docker-compose.yml`.
+
 ## Start MagicMirror²
 
 Navigate to `~/magicmirror/run` and execute

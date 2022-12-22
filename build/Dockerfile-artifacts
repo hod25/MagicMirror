@@ -23,7 +23,7 @@ RUN set -e; \
     git clone --depth 1 -b "${BuildRef}" --single-branch "${GitRepo}" .; \
     git log -1; \
     if [ -z "${debug}" ]; then \
-      npmargs="--omit=dev"; \
+      npmargs="--no-audit --no-fund --no-update-notifier --omit=dev"; \
       if [ -z "${buildarch}" ]; then \
         npmargs="${npmargs} --omit=optional"; \
       elif [ "${buildarch}" = "arm32v7/" ]; then \

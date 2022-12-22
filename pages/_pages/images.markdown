@@ -7,6 +7,8 @@ toc: false
 
 ## Images on [Docker Hub](https://hub.docker.com/r/karsten13/magicmirror/):  [![](https://img.shields.io/docker/pulls/karsten13/magicmirror.svg)](https://hub.docker.com/r/karsten13/magicmirror/)
 
+> ⚠️ Beginning with MagicMirror² version `v2.22.0` all images are based on debian bullseye, before this release the `linux/arm` images were based on debian buster. So if you are still running debian buster on your raspberry pi the `karsten13/magicmirror:v2.22.0` and `karsten13/magicmirror:latest` images won't work anymore, you have to switch to the compatible image `karsten13/magicmirror:buster`.
+
 The docker image `karsten13/magicmirror` is available with these tags:
 
 TAG                | OS/ARCH     | ELECTRON | DISTRO | DESCRIPTION
