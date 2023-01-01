@@ -323,15 +323,14 @@ sync_buster:
   stage: build
   script:
   - |
-    # --destination "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${_suffix}${FAT}_${imgarch}" \
     set -e
-    [ "${CI_COMMIT_BRANCH}" = "master" ] || _suffix="${CI_COMMIT_BRANCH}"
+    [ "${CI_COMMIT_BRANCH}" = "master" ] || _suffix="${CI_COMMIT_BRANCH}_"
     skopeo copy --src-creds ${CI_REGISTRY_USER}:${CI_REGISTRY_PASSWORD} \
       --dest-creds ${DOCKER_USER}:${DOCKER_PASS} \
-      docker://${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_buster_fat_arm docker://${DOCKER_USER}/magicmirror:${_suffix}_buster_fat
+      docker://${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_buster_fat_arm docker://${DOCKER_USER}/magicmirror:${_suffix}buster_fat
     skopeo copy --src-creds ${CI_REGISTRY_USER}:${CI_REGISTRY_PASSWORD} \
       --dest-creds ${DOCKER_USER}:${DOCKER_PASS} \
-      docker://${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_buster_arm docker://${DOCKER_USER}/magicmirror:${_suffix}_buster
+      docker://${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_buster_arm docker://${DOCKER_USER}/magicmirror:${_suffix}buster
   extends: 
   - .rule
   environment:
