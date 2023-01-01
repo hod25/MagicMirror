@@ -207,3 +207,61 @@ This fix is persistent because the `modules` folder is mounted to the host. If y
 ## Running on a raspberry pi ends with a white or black screen after a while
 
 I had this behavior running the module `MMM-RAIN-MAP` which is fetching a greater amount of images for the map. So if you are running modules which needs a greater amount of shared memory, you have to increase `shm_size` in the `docker-compose.yml`. The default there is `shm_size: "128mb"` so edit this value and restart the container with `docker compose up -d`.
+
+## Running on an operating system without desktop
+
+This is more a fun case but it is possible. Here is an example running the application in Fedora CoreOS within Virtual Box.
+
+You need a running `xserver` for this and as this is not part of Fedora CoreOS we build our own and start it as docker container.
+
+Here the Dockerfile of the `xserver`:
+
+```Dockerfile
+FROM debian:bullseye-slim
+
+RUN set -e; \
+    apt-get update; \
+    DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends xorg xserver-xorg-input-evdev xserver-xorg-input-all; \
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/*;
+
+ENTRYPOINT ["/usr/bin/X", ":0", "-nolisten", "tcp", "vt1"]
+```
+
+Now build the image running `docker build -t xserver:latest .`. After this there should be a local docker image `xserver:latest` on your machine.
+
+For running MagicMirror we need an image which contains electron so I use my debug image `registry.gitlab.com/khassel/magicmirror:develop_debug` in the following `docker-compose.yml` file:
+
+```yaml
+version: '3'
+
+services:
+  xserver:
+    container_name: xserver
+    image: xserver:latest
+    privileged: true
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:z
+    environment:
+      DISPLAY: unix:0.0
+  magicmirror:
+    container_name: mm
+    image: registry.gitlab.com/khassel/magicmirror:develop_debug
+    volumes:
+      - ../mounts/config:/opt/magic_mirror/config:Z
+      - ../mounts/modules:/opt/magic_mirror/modules:Z
+      - ../mounts/css:/opt/magic_mirror/css:Z
+      - /tmp/.X11-unix:/tmp/.X11-unix:z
+    environment:
+      DISPLAY: unix:0.0
+    shm_size: "128mb"
+    restart: unless-stopped
+    command:
+      - npm
+      - run
+      - start
+```
+
+Starting this file will create 2 containers and MagicMirror will show up in the Virtual Box Window.
+
+Same construction should also work with `Raspberry Pi OS Lite`.
