@@ -25,7 +25,7 @@ ARG DEBIAN_VERSION
 ARG SLIM
 RUN set -e; \
     apt-get update; \
-    DEBIAN_FRONTEND=noninteractive apt-get -qy --no-install-recommends install git nano sudo gettext-base openssl ca-certificates wget tini gnupg; \
+    DEBIAN_FRONTEND=noninteractive apt-get -qy --no-install-recommends install git nano sudo openssl ca-certificates wget tini gnupg; \
     if [ -n "${buildarch}" ] || [ "${NODE_ENV}" = "test" ]; then \
       _pck="${_pck} libgtk-3-0 libx11-xcb-dev libnss3-dev libxss1 libxtst6 libasound2 libdrm2 libgbm1 libxshmfence1 fonts-arphic-uming procps arp-scan"; \
       if [ -n "${buildarch}" ] && [ "${DEBIAN_VERSION}" != "buster" ]; then \

@@ -32,13 +32,6 @@ sudo chown -R node:node /opt/magic_mirror/modules &
 sudo chown -R node:node ${config_dir}
 sudo chown -R node:node ${css_dir}
 
-if [ -f "${config_dir}/config.js.template" ]; then
-  if [ -f "${config_dir}/config.js" ]; then
-    mv -v ${config_dir}/config.js ${config_dir}/config.js-old
-  fi
-  envsubst < ${config_dir}/config.js.template > ${config_dir}/config.js
-fi
-
 if [ ! -f "${config_dir}/config.js" ]; then
   echo "copy default config.js to host ..."
   cp /opt/magic_mirror/mount_ori/config/config.js.sample ${config_dir}/config.js
