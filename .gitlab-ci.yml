@@ -61,7 +61,7 @@ check_artifacts:
       for arch in "amd64" "arm" "arm64" "debug"; do
         img="${CI_REGISTRY_IMAGE}:${MAGICMIRROR_VERSION}_${arch}_artifacts"
         echo "checking $img ..."
-        [ "$(skopeo inspect docker://${img})" ] || echo "${arch}_" >> buildvars
+        [ "$(crane config ${img}:${CI_COMMIT_BRANCH} >/dev/null 2>&1)" ] || echo "${arch}_" >> buildvars
       done
       cat buildvars
     fi
@@ -324,13 +324,11 @@ sync_buster:
   script:
   - |
     set -e
+    crane auth login "registry.gitlab.com" -u "${CI_REGISTRY_USER}" -p "${CI_REGISTRY_PASSWORD}"
+    crane auth login "docker.io" -u "${DOCKER_USER}" -p "${DOCKER_PASS}"
     [ "${CI_COMMIT_BRANCH}" = "master" ] || _suffix="${CI_COMMIT_BRANCH}_"
-    skopeo copy --src-creds ${CI_REGISTRY_USER}:${CI_REGISTRY_PASSWORD} \
-      --dest-creds ${DOCKER_USER}:${DOCKER_PASS} \
-      docker://${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_buster_fat_arm docker://${DOCKER_USER}/magicmirror:${_suffix}buster_fat
-    skopeo copy --src-creds ${CI_REGISTRY_USER}:${CI_REGISTRY_PASSWORD} \
-      --dest-creds ${DOCKER_USER}:${DOCKER_PASS} \
-      docker://${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_buster_arm docker://${DOCKER_USER}/magicmirror:${_suffix}buster
+    crane copy "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_buster_fat_arm" "${DOCKER_USER}/magicmirror:${_suffix}buster_fat"
+    crane copy "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_buster_arm" "${DOCKER_USER}/magicmirror:${_suffix}buster"
   extends: 
   - .rule
   environment:
