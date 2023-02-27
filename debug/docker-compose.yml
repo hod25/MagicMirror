@@ -4,7 +4,7 @@ version: '3'
 services:
   magicmirror:
     container_name: mm
-    image: registry.gitlab.com/khassel/magicmirror:develop_debug
+    image: registry.gitlab.com/khassel/magicmirror:develop_debug19
     ports:
       - "8080:8080"
     stdin_open: true

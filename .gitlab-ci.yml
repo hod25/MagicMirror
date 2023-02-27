@@ -27,13 +27,15 @@ variables:
     - docker.gitlab.login
     - |
       set -e
+      artarch="${imgarch}"
       # set build arch
       if [ "${imgarch}" = "arm" ]; then
         export buildarch="arm32v7/"
       elif [ "${imgarch}" = "arm64" ]; then
         export buildarch="arm64v8/"
-      elif [ "${imgarch}" = "debug" ]; then
+      elif [ -z "${imgarch%%debug*}" ]; then
         export debug="true"
+        artarch="debug"
       elif [ ! "${imgarch}" = "amd64" ]; then
         echo "unsupported image arch: ${imgarch}"
         exit 1
@@ -41,12 +43,12 @@ variables:
       # master or not
       if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
         BuilderTag=${MAGICMIRROR_VERSION}
-        export NODE_VERSION=${NODE_VERSION_MASTER}
+        [ -z "${NODE_VERSION}" ] && export NODE_VERSION=${NODE_VERSION_MASTER}
       else
         BuilderTag=${CI_COMMIT_BRANCH}
-        export NODE_VERSION=${NODE_VERSION_DEVELOP}
+        [ -z "${NODE_VERSION}" ] && export NODE_VERSION=${NODE_VERSION_DEVELOP}
       fi
-      export BUILDER_IMG="${CI_REGISTRY_IMAGE}:${BuilderTag}_${imgarch}_artifacts"
+      export BUILDER_IMG="${CI_REGISTRY_IMAGE}:${BuilderTag}_${artarch}_artifacts"
       export GIT_INFO="commit=${CI_COMMIT_SHORT_SHA} ref=${CI_COMMIT_REF_NAME} date=${CI_COMMIT_TIMESTAMP} author=${CI_COMMIT_AUTHOR} title=${CI_COMMIT_TITLE}"
   after_script:
     - docker.logout
@@ -206,14 +208,37 @@ build_arm64_fat:
   environment:
     name: "$CI_COMMIT_BRANCH/Build arm64 fat"
 
-build_debug:
+.build_debug:
   variables:
-    imgarch: "debug"
     SLIM: "-slim"
   needs: ["build_artifacts: [debug]"]
   extends: .runtime
   environment:
     name: "$CI_COMMIT_BRANCH/Build Debug"
+
+build_debug19:
+  variables:
+    imgarch: "debug19"
+    NODE_VERSION: "19"
+  extends:
+  - .runtime
+  - .build_debug
+
+build_debug18:
+  variables:
+    imgarch: "debug18"
+    NODE_VERSION: "18"
+  extends:
+  - .runtime
+  - .build_debug
+
+build_debug16:
+  variables:
+    imgarch: "debug16"
+    NODE_VERSION: "16"
+  extends:
+  - .runtime
+  - .build_debug
 
 sync_slim:
   image: ${TOOLBOX_IMG}
@@ -392,20 +417,37 @@ test_alpine:
   environment:
     name: "$CI_COMMIT_BRANCH/Test Alpine"
 
-test_debug:
+.test_debug:
   stage: test
-  needs: ["build_debug"]
   variables:
     GIT_STRATEGY: none
     StartEnv: test
-  image: 
-    name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_debug
-    entrypoint: [""]
   script:
   - /opt/magic_mirror/entrypoint.sh
   extends: .rule
   environment:
     name: "$CI_COMMIT_BRANCH/Test MagicMirror"
+
+test_debug19:
+  needs: ["build_debug19"]
+  image: 
+    name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_debug19
+    entrypoint: [""]
+  extends: .test_debug
+
+test_debug18:
+  needs: ["build_debug18"]
+  image: 
+    name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_debug18
+    entrypoint: [""]
+  extends: .test_debug
+
+test_debug16:
+  needs: ["build_debug16"]
+  image: 
+    name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_debug16
+    entrypoint: [""]
+  extends: .test_debug
 
 snyk_amd64:
   stage: test
