@@ -13,7 +13,7 @@ variables:
   GIT_DEPTH: 1
   MAGICMIRROR_VERSION: "v2.23.0"
   NODE_VERSION_MASTER: "18"
-  NODE_VERSION_DEVELOP: "19"
+  NODE_VERSION_DEVELOP: "20"
   DEBIAN_VERSION: "bullseye"
   GitRepo: "https://github.com/MichMich/MagicMirror.git"
   TOOLBOX_IMG: "${CI_REGISTRY}/khassel/container/toolbox:latest"
@@ -48,6 +48,8 @@ variables:
         BuilderTag=${CI_COMMIT_BRANCH}
         [ -z "${NODE_VERSION}" ] && export NODE_VERSION=${NODE_VERSION_DEVELOP}
       fi
+      # Node > v19 not supported in buster:
+      [ "${DEBIAN_VERSION}" == "buster" ] && export NODE_VERSION=${NODE_VERSION_MASTER}
       export BUILDER_IMG="${CI_REGISTRY_IMAGE}:${BuilderTag}_${artarch}_artifacts"
       export GIT_INFO="commit=${CI_COMMIT_SHORT_SHA} ref=${CI_COMMIT_REF_NAME} date=${CI_COMMIT_TIMESTAMP} author=${CI_COMMIT_AUTHOR} title=${CI_COMMIT_TITLE}"
   after_script:
@@ -216,10 +218,10 @@ build_arm64_fat:
   environment:
     name: "$CI_COMMIT_BRANCH/Build Debug"
 
-build_debug19:
+build_debug20:
   variables:
-    imgarch: "debug19"
-    NODE_VERSION: "19"
+    imgarch: "debug20"
+    NODE_VERSION: "20"
   extends:
   - .runtime
   - .build_debug
@@ -428,10 +430,10 @@ test_alpine:
   environment:
     name: "$CI_COMMIT_BRANCH/Test MagicMirror"
 
-test_debug19:
-  needs: ["build_debug19"]
+test_debug20:
+  needs: ["build_debug20"]
   image: 
-    name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_debug19
+    name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_debug20
     entrypoint: [""]
   extends: .test_debug
 
@@ -452,7 +454,7 @@ test_debug16:
 snyk_amd64:
   stage: test
   image: 
-    name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_debug
+    name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_debug20
     entrypoint: [""]
   script:
   - sudo npm install -g snyk npm-check-updates
@@ -531,7 +533,7 @@ test_manual_build:
   stage: test
   variables:
     # defaults
-    NODE_VERSION: "19"
+    NODE_VERSION: "20"
     BuildRef: "develop"
   script:
   - |

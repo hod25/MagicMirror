@@ -4,7 +4,7 @@ version: '3'
 services:
   magicmirror:
     container_name: mm
-    image: registry.gitlab.com/khassel/magicmirror:develop_debug19
+    image: registry.gitlab.com/khassel/magicmirror:develop_debug20
     ports:
       - "8080:8080"
     stdin_open: true
@@ -17,7 +17,7 @@ services:
         #rm -rf ./*
         #rm -rf ./.*
         #git clone -b develop https://github.com/khassel/MagicMirror.git .
-        #npm install
+        #npm install --lockfile-version=2
         #mv config/config.js.sample config/config.js
         #sed -i 's|address:.*|address: "0.0.0.0",|g;s|ipWhitelist:.*|ipWhitelist: [],|g' config/config.js
         #touch css/custom.css
