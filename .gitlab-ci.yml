@@ -22,20 +22,29 @@ variables:
   rules:
   - if: $TASK == "runtime"
 
+# imgkey=architecture-optionaldeps-devdeps
+# examples
+# amd64-on-dn for x86, no optionaldeps, no devdeps
+# arm-oy-dn for arm32, with  optionaldeps, no devdeps
+# arm64-oy-dn for arm64, with  optionaldeps, no devdeps
 .beforescript:
   before_script:
     - docker.gitlab.login
     - |
       set -e
-      artarch="${imgarch}"
+      IFS=- read -r imgarch opt dev <<EOF
+      ${imgkey}
+      EOF
+      # needed for kaniko build script and qemu:
+      export imgarch
+      # needed for artifact builds:
+      export opt
+      export dev
       # set build arch
       if [ "${imgarch}" = "arm" ]; then
         export buildarch="arm32v7/"
       elif [ "${imgarch}" = "arm64" ]; then
         export buildarch="arm64v8/"
-      elif [ -z "${imgarch%%debug*}" ]; then
-        export debug="true"
-        artarch="debug"
       elif [ ! "${imgarch}" = "amd64" ]; then
         echo "unsupported image arch: ${imgarch}"
         exit 1
@@ -48,9 +57,7 @@ variables:
         BuilderTag=${CI_COMMIT_BRANCH}
         [ -z "${NODE_VERSION}" ] && export NODE_VERSION=${NODE_VERSION_DEVELOP}
       fi
-      # Node > v19 not supported in buster:
-      [ "${DEBIAN_VERSION}" == "buster" ] && export NODE_VERSION=${NODE_VERSION_MASTER}
-      export BUILDER_IMG="${CI_REGISTRY_IMAGE}:${BuilderTag}_${artarch}_artifacts"
+      export BUILDER_IMG="${CI_REGISTRY_IMAGE}:${BuilderTag}_${imgkey}_artifacts"
       export GIT_INFO="commit=${CI_COMMIT_SHORT_SHA} ref=${CI_COMMIT_REF_NAME} date=${CI_COMMIT_TIMESTAMP} author=${CI_COMMIT_AUTHOR} title=${CI_COMMIT_TITLE}"
   after_script:
     - docker.logout
@@ -62,7 +69,7 @@ check_artifacts:
   - |
     touch buildvars
     if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
-      for arch in "amd64" "arm" "arm64" "debug"; do
+      for arch in "arm64-on-dn" "arm-on-dn" "arm64-oy-dn" "arm-oy-dn" "amd64-on-dn" "amd64-oy-dn" "amd64-oy-dy"; do
         img="${CI_REGISTRY_IMAGE}:${MAGICMIRROR_VERSION}_${arch}_artifacts"
         echo "checking $img ..."
         [ "$(crane config ${img}:${CI_COMMIT_BRANCH} >/dev/null 2>&1)" ] || echo "${arch}_" >> buildvars
@@ -77,7 +84,7 @@ check_artifacts:
   environment:
     name: "$CI_COMMIT_BRANCH/Check Artifacts"
 
-build_artifacts:
+bld_art:
   stage: build
   needs:
   - job: check_artifacts
@@ -87,7 +94,7 @@ build_artifacts:
     set -e
     if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
       cat buildvars
-      if [ "$(cat buildvars | grep ${imgarch}_)" != "${imgarch}_" ]; then
+      if [ "$(cat buildvars | grep ${imgkey}_)" != "${imgkey}_" ]; then
         echo "no builder image rebuild"
         exit 0
       fi
@@ -97,25 +104,27 @@ build_artifacts:
       echo "CI_COMMIT_BRANCH is not master"
       BuildRef="develop"
     fi
-    set | grep -E "BUILDER_IMG=|NODE_VERSION=|buildarch=|BuildRef=|GitRepo=|PRE_IMGARCH="
+    # clear imagearch to avoid using qemu:
     export imgarch=""
+    set | grep -E "BUILDER_IMG=|NODE_VERSION=|buildarch=|BuildRef=|GitRepo="
     build --context "./build" \
     --dockerfile "Dockerfile-artifacts" \
     --destination "${BUILDER_IMG}" \
     --build-arg NODE_VERSION="${NODE_VERSION}" \
     --build-arg GIT_INFO="${GIT_INFO}" \
     --build-arg buildarch="${buildarch}" \
+    --build-arg opt="${opt}" \
+    --build-arg dev="${dev}" \
     --build-arg BuildRef="${BuildRef}" \
-    --build-arg GitRepo="${GitRepo}" \
-    --build-arg debug="${debug}"
+    --build-arg GitRepo="${GitRepo}"
   extends: 
   - .beforescript
   - .rule
   parallel:
     matrix:
-      - imgarch: ["amd64", "arm", "arm64", "debug"]
+      - imgkey: ["arm64-on-dn", "arm-on-dn", "arm64-oy-dn", "arm-oy-dn", "amd64-on-dn", "amd64-oy-dn", "amd64-oy-dy"]
   environment:
-    name: "$CI_COMMIT_BRANCH/Build Artifacts $imgarch"
+    name: "$CI_COMMIT_BRANCH/Build Artifacts $imgkey"
 
 .runtime:
   stage: build
@@ -123,12 +132,12 @@ build_artifacts:
   - |
     set -e
     [ -z "${SLIM}" ] && export FAT="_fat"
-    [ -z "${debug}" ] && export NODE_ENV="production" || export NODE_ENV="test"
+    [ "${dev}" == "dn" ] && export NODE_ENV="production" || export NODE_ENV="test"
     [ "${DEBIAN_VERSION}" == "buster" ] && _suffix="_buster"
-    set | grep -E "BUILDER_IMG=|NODE_VERSION=|buildarch=|FAT=|DEBIAN_VERSION="
+    set | grep -E "BUILDER_IMG=|NODE_VERSION=|buildarch=|FAT=|DEBIAN_VERSION=|ADD_TAG="
     build --context "./build" \
       --dockerfile "Dockerfile-debian" \
-      --destination "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${_suffix}${FAT}_${imgarch}" \
+      --destination "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}${_suffix}${FAT}_${ADD_TAG}" \
       --build-arg NODE_VERSION="${NODE_VERSION}" \
       --build-arg DEBIAN_VERSION="${DEBIAN_VERSION}" \
       --build-arg GIT_INFO="${GIT_INFO}" \
@@ -142,70 +151,81 @@ build_artifacts:
 
 build_amd64:
   variables:
-    imgarch: "amd64"
+    imgkey: "amd64-on-dn"
     SLIM: "-slim"
-  needs: ["build_artifacts: [amd64]"]
+    ADD_TAG: "amd64"
+  needs: ["bld_art: [amd64-on-dn]"]
   extends: .runtime
   environment:
     name: "$CI_COMMIT_BRANCH/Build amd64"
 
 build_amd64_fat:
   variables:
-    imgarch: "amd64"
-  needs: ["build_artifacts: [amd64]"]
+    imgkey: "amd64-oy-dn"
+    ADD_TAG: "amd64"
+  needs: ["bld_art: [amd64-oy-dn]"]
   extends: .runtime
   environment:
     name: "$CI_COMMIT_BRANCH/Build amd64 fat"
 
 build_arm:
   variables:
-    imgarch: "arm"
+    imgkey: "arm-oy-dn"
     SLIM: "-slim"
-  needs: ["build_artifacts: [arm]"]
+    ADD_TAG: "arm"
+  needs: ["bld_art: [arm-oy-dn]"]
   extends: .runtime
   environment:
     name: "$CI_COMMIT_BRANCH/Build arm"
 
 build_arm_fat:
   variables:
-    imgarch: "arm"
-  needs: ["build_artifacts: [arm]"]
+    imgkey: "arm-oy-dn"
+    ADD_TAG: "arm"
+  needs: ["bld_art: [arm-oy-dn]"]
   extends: .runtime
   environment:
     name: "$CI_COMMIT_BRANCH/Build arm fat"
 
 build_arm_buster:
   variables:
-    imgarch: "arm"
+    imgkey: "arm-oy-dn"
     SLIM: "-slim"
+    ADD_TAG: "arm"
     DEBIAN_VERSION: "buster"
-  needs: ["build_artifacts: [arm]"]
+    # Node > v19 not supported in buster:
+    NODE_VERSION: ${NODE_VERSION_MASTER}
+  needs: ["bld_art: [arm-oy-dn]"]
   extends: .runtime
   environment:
     name: "$CI_COMMIT_BRANCH/Build arm buster"
 
 build_arm_buster_fat:
   variables:
-    imgarch: "arm"
+    imgkey: "arm-oy-dn"
+    ADD_TAG: "arm"
     DEBIAN_VERSION: "buster"
-  needs: ["build_artifacts: [arm]"]
+    # Node > v19 not supported in buster:
+    NODE_VERSION: ${NODE_VERSION_MASTER}
+  needs: ["bld_art: [arm-oy-dn]"]
   extends: .runtime
   environment:
     name: "$CI_COMMIT_BRANCH/Build arm buster fat"
 
 build_arm64:
   variables:
-    imgarch: "arm64"
+    imgkey: "arm64-oy-dn"
     SLIM: "-slim"
-  needs: ["build_artifacts: [arm64]"]
+    ADD_TAG: "arm64"
+  needs: ["bld_art: [arm64-oy-dn]"]
   extends: .runtime
   environment:
     name: "$CI_COMMIT_BRANCH/Build arm64"
 
 build_arm64_fat:
   variables:
-    imgarch: "arm64"
-  needs: ["build_artifacts: [arm64]"]
+    imgkey: "arm64-oy-dn"
+  needs: ["bld_art: [arm64-oy-dn]"]
   extends: .runtime
   environment:
     name: "$CI_COMMIT_BRANCH/Build arm64 fat"
@@ -213,33 +233,31 @@ build_arm64_fat:
 .build_debug:
   variables:
     SLIM: "-slim"
-  needs: ["build_artifacts: [debug]"]
+    imgkey: "amd64-oy-dy"
+  needs: ["bld_art: [amd64-oy-dy]"]
   extends: .runtime
   environment:
     name: "$CI_COMMIT_BRANCH/Build Debug"
 
 build_debug20:
   variables:
-    imgarch: "debug20"
+    ADD_TAG: "debug20"
     NODE_VERSION: "20"
   extends:
-  - .runtime
   - .build_debug
 
 build_debug18:
   variables:
-    imgarch: "debug18"
+    ADD_TAG: "debug18"
     NODE_VERSION: "18"
   extends:
-  - .runtime
   - .build_debug
 
 build_debug16:
   variables:
-    imgarch: "debug16"
+    ADD_TAG: "debug16"
     NODE_VERSION: "16"
   extends:
-  - .runtime
   - .build_debug
 
 sync_slim:
@@ -298,24 +316,22 @@ sync_fat:
     name: "$CI_COMMIT_BRANCH/Docker Sync Debian Fat"
     url: https://hub.docker.com/r/karsten13/magicmirror/tags
 
-build_alpine:
-  needs: ["build_artifacts: [amd64]"]
-  variables:
-    imgarch: "amd64"
+.build_alpine:
   stage: build
   script:
   - |
     set -e
-    set | grep -E "BUILDER_IMG=|NODE_VERSION="
-    dest="--destination ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine"
+    set | grep -E "BUILDER_IMG=|NODE_VERSION=|ADD_TAG="
+    dest="--destination ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine_${ADD_TAG}"
     if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
-      dest="${dest} --destination ${CI_REGISTRY_IMAGE}:alpine"
+      dest="${dest} --destination ${CI_REGISTRY_IMAGE}:alpine_${ADD_TAG}"
     fi
     build --context "./build" \
       --dockerfile "Dockerfile-alpine" \
       ${dest} \
       --build-arg NODE_VERSION="${NODE_VERSION}" \
       --build-arg GIT_INFO="${GIT_INFO}" \
+      --build-arg buildarch="${buildarch}" \
       --build-arg BUILDER_IMG="${BUILDER_IMG}"
   extends: 
   - .beforescript
@@ -323,17 +339,51 @@ build_alpine:
   environment:
     name: "$CI_COMMIT_BRANCH/Build Alpine"
 
+build_alpine_amd64:
+  variables:
+    imgkey: "amd64-on-dn"
+    ADD_TAG: "amd64"
+  needs: 
+  - "bld_art: [amd64-on-dn]"
+  extends: 
+  - .build_alpine
+
+build_alpine_arm:
+  variables:
+    imgkey: "arm-on-dn"
+    ADD_TAG: "arm"
+    # problem with npm in node20 arm image:
+    NODE_VERSION: ${NODE_VERSION_MASTER}
+  needs: 
+  - "bld_art: [arm-on-dn]"
+  extends: 
+  - .build_alpine
+
+build_alpine_arm64:
+  variables:
+    imgkey: "arm64-on-dn"
+    ADD_TAG: "arm64"
+  needs: 
+  - "bld_art: [arm64-on-dn]"
+  extends: 
+  - .build_alpine
+
 sync_alpine:
   needs: 
-  - build_alpine
+  - build_alpine_amd64
+  - build_alpine_arm
+  - build_alpine_arm64
   image: ${TOOLBOX_IMG}
   stage: build
   script:
   - |
     set -e
+    docker.gitlab.login
     if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+      docker.manifest "${CI_REGISTRY_IMAGE}:alpine" "alpine"
       docker.sync "${CI_REGISTRY_IMAGE}:alpine"
     else
+      docker.manifest "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine" "${CI_COMMIT_BRANCH}_alpine"
       docker.sync "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine"
     fi
   extends: 
@@ -364,14 +414,14 @@ sync_buster:
 
 build_distroless:
   variables:
-    imgarch: "amd64"
+    imgkey: "amd64-on-dn"
+    NODE_VERSION: "16"
   stage: build
   script:
   - |
     set -e
     docker.gitlab.login
-    export NODE_VERSION="16"
-    export BUILDER_IMG="${CI_REGISTRY_IMAGE}:develop_${imgarch}_artifacts"
+    export BUILDER_IMG="${CI_REGISTRY_IMAGE}:develop_${imgkey}_artifacts"
     set | grep -E "BUILDER_IMG=|NODE_VERSION="
     build --context ./build \
       --dockerfile Dockerfile-distroless \
@@ -387,11 +437,11 @@ build_distroless:
 
 test_alpine:
   stage: test
-  needs: ["build_alpine"]
+  needs: ["build_alpine_amd64"]
   variables:
     GIT_STRATEGY: none
   image: 
-    name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine
+    name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_alpine_amd64
     entrypoint: [""]
   script:
   - |

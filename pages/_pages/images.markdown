@@ -17,11 +17,11 @@ TAG                | OS/ARCH     | ELECTRON | DISTRO | DESCRIPTION
 **latest** (or {{ site.data.gitlab.variables.MAGICMIRROR_VERSION }}) | linux/arm   | yes      | debian {{ site.data.gitlab.variables.DEBIAN_VERSION }} slim | for raspberry pi
 **buster** | linux/arm   | yes      | debian buster slim | for raspberry pi (deprecated)
 **latest** (or {{ site.data.gitlab.variables.MAGICMIRROR_VERSION }}) | linux/arm64 | yes      | debian {{ site.data.gitlab.variables.DEBIAN_VERSION }} slim | for raspberry pi4 64-Bit-Version
-**fat** (or {{ site.data.gitlab.variables.MAGICMIRROR_VERSION }}_fat)| linux/amd64 | no       | debian {{ site.data.gitlab.variables.DEBIAN_VERSION }} | only `serveronly`-mode
+**fat** (or {{ site.data.gitlab.variables.MAGICMIRROR_VERSION }}_fat)| linux/amd64 | no       | debian {{ site.data.gitlab.variables.DEBIAN_VERSION }} | both modes
 **fat** (or {{ site.data.gitlab.variables.MAGICMIRROR_VERSION }}_fat)| linux/arm   | yes      | debian {{ site.data.gitlab.variables.DEBIAN_VERSION }} | for raspberry pi
-**buster_fat** | linux/arm   | yes      | debian buster | for raspberry pi (deprecated)
 **fat** (or {{ site.data.gitlab.variables.MAGICMIRROR_VERSION }}_fat)| linux/arm64 | yes      | debian {{ site.data.gitlab.variables.DEBIAN_VERSION }} | for raspberry pi4 64-Bit-Version
-**alpine**             | linux/amd64 | no       | alpine | only `serveronly`-mode, smaller in size
+**buster_fat** | linux/arm   | yes      | debian buster | for raspberry pi (deprecated)
+**alpine**             | all 3 archs | no       | alpine | only `serveronly`-mode, smaller in size
 
 Version {{ site.data.gitlab.variables.MAGICMIRROR_VERSION }} is the current release of MagicMirror. Older version tags remain on docker hub, the other tags are floating tags and therefore overwritten with every new build. The used Node version is {{ site.data.gitlab.variables.NODE_VERSION_MASTER }}.
 
@@ -35,10 +35,10 @@ TAG                | OS/ARCH     | ELECTRON | DISTRO | DESCRIPTION
 **develop**        | linux/arm   | yes      | debian {{ site.data.gitlab.variables.DEBIAN_VERSION }} slim | for raspberry pi
 **develop_buster** | linux/arm   | yes      | debian buster slim | for raspberry pi (deprecated)
 **develop**        | linux/arm64 | yes      | debian {{ site.data.gitlab.variables.DEBIAN_VERSION }} slim | for raspberry pi4 64-Bit-Version
-**develop_fat**    | linux/amd64 | no       | debian {{ site.data.gitlab.variables.DEBIAN_VERSION }} | only `serveronly`-mode
+**develop_fat**    | linux/amd64 | no       | debian {{ site.data.gitlab.variables.DEBIAN_VERSION }} | both modes
 **develop_fat**    | linux/arm   | yes      | debian {{ site.data.gitlab.variables.DEBIAN_VERSION }} | for raspberry pi
-**develop_buster_fat** | linux/arm   | yes      | debian buster | for raspberry pi (deprecated)
 **develop_fat**    | linux/arm64 | yes      | debian {{ site.data.gitlab.variables.DEBIAN_VERSION }} | for raspberry pi4 64-Bit-Version
-**develop_alpine** | linux/amd64 | no       | alpine | only `serveronly`-mode, smaller in size
+**develop_buster_fat** | linux/arm   | yes      | debian buster | for raspberry pi (deprecated)
+**develop_alpine** | all 3 archs | no       | alpine | only `serveronly`-mode, smaller in size
 
 These images are using the `develop` branch of the MagicMirror git repository and Node version {{ site.data.gitlab.variables.NODE_VERSION_DEVELOP }}.

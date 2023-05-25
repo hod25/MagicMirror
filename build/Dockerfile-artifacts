@@ -15,22 +15,25 @@ ARG GIT_INFO
 ARG BuildRef
 ARG GitRepo
 ARG buildarch
-ARG debug
+ARG opt
+ARG dev
 RUN set -e; \
     node -v; \
     echo BuildRef="${BuildRef}"; \
     echo GitRepo="${GitRepo}"; \
     git clone --depth 1 -b "${BuildRef}" --single-branch "${GitRepo}" .; \
     git log -1; \
-    if [ -z "${debug}" ]; then \
-      npmargs="--no-audit --no-fund --no-update-notifier --omit=dev"; \
-      if [ -z "${buildarch}" ]; then \
-        npmargs="${npmargs} --omit=optional"; \
-      elif [ "${buildarch}" = "arm32v7/" ]; then \
-        npmargs="${npmargs} --arch=armv7l"; \
-      elif [ "${buildarch}" = "arm64v8/" ]; then \
-        npmargs="${npmargs} --arch=arm64"; \
-      fi; \
+    npmargs="--no-audit --no-fund --no-update-notifier"; \
+    if [ "${buildarch}" = "arm32v7/" ]; then \
+      npmargs="${npmargs} --arch=armv7l"; \
+    elif [ "${buildarch}" = "arm64v8/" ]; then \
+      npmargs="${npmargs} --arch=arm64"; \
+    fi; \
+    if [ "${opt}" = "on" ]; then \
+      npmargs="${npmargs} --omit=optional"; \
+    fi; \
+    if [ "${dev}" = "dn" ]; then \
+      npmargs="${npmargs} --omit=dev"; \
     fi; \
     if [ ! $(echo "${BuildRef}" | grep -E "^v[0-9]+.[0-9]+.[0-9]+$") ]; then \
       # if not mm-version then delete package-lock.json to get newest dependencies
@@ -46,7 +49,7 @@ RUN set -e; \
     mv config mount_ori/; \
     mv css mount_ori/; \
     # remove not needed node_modules stuff
-    [ -z "${debug}" ] && node-prune || echo "no node-prune"; \
+    [ "${dev}" = "dn" ] && node-prune || echo "no node-prune"; \
     cp /tmp/build_info.sh .; \
     ./build_info.sh "Artifacts" "$GIT_INFO"; \
     rm -f build_info.sh;
