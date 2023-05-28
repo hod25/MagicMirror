@@ -15,11 +15,11 @@ TAG                | OS/ARCH     | ELECTRON | DISTRO | DESCRIPTION
 ------------------ | ----------- | -------- | -------|------------------------------------------
 **latest** (or {{ site.data.gitlab.variables.MAGICMIRROR_VERSION }}) | linux/amd64 | no       | debian {{ site.data.gitlab.variables.DEBIAN_VERSION }} slim | only `serveronly`-mode
 **latest** (or {{ site.data.gitlab.variables.MAGICMIRROR_VERSION }}) | linux/arm   | yes      | debian {{ site.data.gitlab.variables.DEBIAN_VERSION }} slim | for raspberry pi
-**buster** | linux/arm   | yes      | debian buster slim | for raspberry pi (deprecated)
 **latest** (or {{ site.data.gitlab.variables.MAGICMIRROR_VERSION }}) | linux/arm64 | yes      | debian {{ site.data.gitlab.variables.DEBIAN_VERSION }} slim | for raspberry pi4 64-Bit-Version
-**fat** (or {{ site.data.gitlab.variables.MAGICMIRROR_VERSION }}_fat)| linux/amd64 | no       | debian {{ site.data.gitlab.variables.DEBIAN_VERSION }} | both modes
+**fat** (or {{ site.data.gitlab.variables.MAGICMIRROR_VERSION }}_fat)| linux/amd64 | yes      | debian {{ site.data.gitlab.variables.DEBIAN_VERSION }} | both modes
 **fat** (or {{ site.data.gitlab.variables.MAGICMIRROR_VERSION }}_fat)| linux/arm   | yes      | debian {{ site.data.gitlab.variables.DEBIAN_VERSION }} | for raspberry pi
 **fat** (or {{ site.data.gitlab.variables.MAGICMIRROR_VERSION }}_fat)| linux/arm64 | yes      | debian {{ site.data.gitlab.variables.DEBIAN_VERSION }} | for raspberry pi4 64-Bit-Version
+**buster** | linux/arm   | yes      | debian buster slim | for raspberry pi (deprecated)
 **buster_fat** | linux/arm   | yes      | debian buster | for raspberry pi (deprecated)
 **alpine**             | all 3 archs | no       | alpine | only `serveronly`-mode, smaller in size
 
@@ -33,11 +33,11 @@ TAG                | OS/ARCH     | ELECTRON | DISTRO | DESCRIPTION
 ------------------ | ----------- | -------- | -------|------------------------------------------
 **develop**        | linux/amd64 | no       | debian {{ site.data.gitlab.variables.DEBIAN_VERSION }} slim | only `serveronly`-mode
 **develop**        | linux/arm   | yes      | debian {{ site.data.gitlab.variables.DEBIAN_VERSION }} slim | for raspberry pi
-**develop_buster** | linux/arm   | yes      | debian buster slim | for raspberry pi (deprecated)
 **develop**        | linux/arm64 | yes      | debian {{ site.data.gitlab.variables.DEBIAN_VERSION }} slim | for raspberry pi4 64-Bit-Version
-**develop_fat**    | linux/amd64 | no       | debian {{ site.data.gitlab.variables.DEBIAN_VERSION }} | both modes
+**develop_fat**    | linux/amd64 | yes      | debian {{ site.data.gitlab.variables.DEBIAN_VERSION }} | both modes
 **develop_fat**    | linux/arm   | yes      | debian {{ site.data.gitlab.variables.DEBIAN_VERSION }} | for raspberry pi
 **develop_fat**    | linux/arm64 | yes      | debian {{ site.data.gitlab.variables.DEBIAN_VERSION }} | for raspberry pi4 64-Bit-Version
+**develop_buster** | linux/arm   | yes      | debian buster slim | for raspberry pi (deprecated)
 **develop_buster_fat** | linux/arm   | yes      | debian buster | for raspberry pi (deprecated)
 **develop_alpine** | all 3 archs | no       | alpine | only `serveronly`-mode, smaller in size
 

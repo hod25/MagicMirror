@@ -1,0 +1,22 @@
+build_distroless:
+  variables:
+    imgkey: "amd64-on-dn"
+    NODE_VERSION: "16"
+  stage: build
+  script:
+  - |
+    set -e
+    docker.gitlab.login
+    export BUILDER_IMG="${CI_REGISTRY_IMAGE}:develop_${imgkey}_artifacts"
+    set | grep -E "BUILDER_IMG=|NODE_VERSION="
+    build --context ./build \
+      --dockerfile Dockerfile-distroless \
+      --destination ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_distroless \
+      --build-arg NODE_VERSION=${NODE_VERSION} \
+      --build-arg BUILDER_IMG=${BUILDER_IMG}
+  rules:
+  - if: $TASK == "distroless"
+  after_script:
+    - docker.logout
+  environment:
+    name: "$CI_COMMIT_BRANCH/Build Distroless"
