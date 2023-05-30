@@ -16,6 +16,7 @@
       --build-arg buildarch="${buildarch}" \
       --build-arg BUILDER_IMG="${BUILDER_IMG}" \
       --build-arg SLIM="${SLIM}" \
+      --build-arg opt="${opt}" \
       --build-arg NODE_ENV="${NODE_ENV}"
   extends: 
   - .beforescript
