@@ -14,7 +14,7 @@ check_artifacts:
       for arch in "arm64-on-dn" "arm-on-dn" "arm64-oy-dn" "arm-oy-dn" "amd64-on-dn" "amd64-oy-dn" "amd64-oy-dy"; do
         img="${CI_REGISTRY_IMAGE}:${MAGICMIRROR_VERSION}_${arch}_artifacts"
         echo "checking $img ..."
-        [ "$(crane config ${img}:${CI_COMMIT_BRANCH} >/dev/null 2>&1)" ] || echo "${arch}_" >> buildvars
+        [ "$(crane config ${img} 2>/dev/null)" ] || echo "${arch}_" >> buildvars
       done
       cat buildvars
     fi
