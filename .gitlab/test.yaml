@@ -5,8 +5,8 @@
     StartEnv: test
   script:
   - /opt/magic_mirror/entrypoint.sh
-  rules:
-  - if: $CI_COMMIT_BRANCH != "master" && $TASK == "runtime"
+  extends:
+  - .rulenomaster
   environment:
     name: "$CI_COMMIT_BRANCH/Test MagicMirror"
 

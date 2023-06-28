@@ -1,4 +1,4 @@
-.runtime:
+.runtimebuild:
   stage: build
   script:
   - |
@@ -20,6 +20,10 @@
       --build-arg NODE_ENV="${NODE_ENV}"
   extends: 
   - .beforescript
+
+.runtime:
+  extends:
+  - .runtimebuild
   - .rule
 
 build_amd64:
@@ -108,7 +112,9 @@ build_arm64_fat:
     SLIM: "-slim"
     imgkey: "amd64-oy-dy"
   needs: ["bld_art: [amd64-oy-dy]"]
-  extends: .runtime
+  extends:
+  - .runtimebuild
+  - .rulenomaster
   environment:
     name: "$CI_COMMIT_BRANCH/Build Debug"
 
