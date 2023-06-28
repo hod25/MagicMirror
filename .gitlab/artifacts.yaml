@@ -10,16 +10,14 @@ check_artifacts:
   script:
   - |
     touch buildvars
-    if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
-      for arch in "arm64-on-dn" "arm-on-dn" "arm64-oy-dn" "arm-oy-dn" "amd64-on-dn" "amd64-oy-dn" "amd64-oy-dy"; do
-        img="${CI_REGISTRY_IMAGE}:${MAGICMIRROR_VERSION}_${arch}_artifacts"
-        echo "checking $img ..."
-        [ "$(crane config ${img} 2>/dev/null)" ] || echo "${arch}_" >> buildvars
-      done
-      cat buildvars
-    fi
-  extends: 
-  - .rule
+    for arch in "arm64-on-dn" "arm-on-dn" "arm64-oy-dn" "arm-oy-dn" "amd64-on-dn" "amd64-oy-dn" "amd64-oy-dy"; do
+      img="${CI_REGISTRY_IMAGE}:${MAGICMIRROR_VERSION}_${arch}_artifacts"
+      echo "checking $img ..."
+      [ "$(crane config ${img} 2>/dev/null)" ] || echo "${arch}_" >> buildvars
+    done
+    cat buildvars
+  rules:
+  - if: $TASK == "runtime" && $CI_COMMIT_BRANCH == "master"
   artifacts:
     paths:
     - buildvars
@@ -28,9 +26,6 @@ check_artifacts:
 
 bld_art:
   stage: build
-  needs:
-  - job: check_artifacts
-    artifacts: true
   script:
   - |
     set -e
@@ -61,7 +56,12 @@ bld_art:
     --build-arg GitRepo="${GitRepo}"
   extends: 
   - .beforescript
-  - .rule
+  rules:
+  - if: $TASK == "runtime" && $CI_COMMIT_BRANCH == "master"
+    needs:
+    - job: check_artifacts
+      artifacts: true
+  - if: $TASK == "runtime"
   parallel:
     matrix:
       - imgkey: ["arm64-on-dn", "arm-on-dn", "arm64-oy-dn", "arm-oy-dn", "amd64-on-dn", "amd64-oy-dn", "amd64-oy-dy"]
