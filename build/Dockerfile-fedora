@@ -1,0 +1,51 @@
+ARG buildarch="arm64v8/"
+ARG BUILDER_IMG="registry.gitlab.com/khassel/magicmirror:develop_arm64-oy-dn_artifacts"
+ARG FEDORA_VERSION="38"
+FROM ${BUILDER_IMG} as builder
+FROM ${buildarch}fedora:${FEDORA_VERSION}
+LABEL maintainer="Karsten Hassel"
+
+USER root
+
+WORKDIR /opt/magic_mirror
+
+RUN set -e; \
+    useradd -u 1000 node; \
+    echo "node ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers;
+
+# copy startscripts into container:
+COPY *.sh /opt/magic_mirror/
+COPY --from=builder --chown=node:node /opt/magic_mirror /opt/magic_mirror
+
+# todo ... ARG NODE_VERSION
+ARG GIT_INFO="xxxxx"
+ARG opt="oy"
+RUN set -e; \
+    # tini wget needed in entrypoint
+    # libgpiod libgpiod-utils xrandr needed for gpio access and screen on/off
+    # nss at-spi2-atk-devel cups-libs gtk3 mesa-libgbm alsa-lib needed for electron
+    _pck="nodejs nodejs-npm git nano tini wget"; \
+    if [ "${opt}" = "oy" ]; then \
+    #   _pck="${_pck} libgpiod libgpiod-utils xrandr nss atk at-spi2-atk-devel cups gtk3"; \
+      _pck="${_pck} libgpiod libgpiod-utils xrandr nss at-spi2-atk-devel cups-libs gtk3 mesa-libgbm alsa-lib"; \
+    fi; \
+    dnf install --setopt=install_weak_deps=False -y ${_pck}; \
+    dnf clean all; \
+    chmod +x *.sh; \
+    chown node:node *.sh; \
+    ./build_info.sh "Runtime" "$GIT_INFO"; \
+    rm -f build_info.sh;
+
+USER node
+
+ARG NODE_ENV
+ENV ELECTRON_DISABLE_SANDBOX=1 \
+    ELECTRON_DISABLE_GPU=1 \
+    DBUS_SESSION_BUS_ADDRESS="unix:path=/var/run/dbus/system_bus_socket" \
+    NODE_ENV=${NODE_ENV} \
+    MM_OVERRIDE_DEFAULT_MODULES=true \
+    MM_OVERRIDE_CSS=true
+
+EXPOSE 8080
+
+ENTRYPOINT ["/usr/bin/tini", "--", "./entrypoint.sh"]
