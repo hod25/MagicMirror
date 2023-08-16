@@ -9,6 +9,7 @@ include:
   - ".gitlab/alpine.yaml"
   - ".gitlab/artifacts.yaml"
   - ".gitlab/debian.yaml"
+  - ".gitlab/fedora.yaml"
   - ".gitlab/distroless.yaml"
   - ".gitlab/test.yaml"
 
