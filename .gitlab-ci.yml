@@ -10,7 +10,6 @@ include:
   - ".gitlab/artifacts.yaml"
   - ".gitlab/debian.yaml"
   - ".gitlab/fedora.yaml"
-  - ".gitlab/distroless.yaml"
   - ".gitlab/test.yaml"
 
 image: ${CI_REGISTRY}/khassel/container/kaniko:latest

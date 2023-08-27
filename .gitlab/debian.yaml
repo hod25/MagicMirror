@@ -132,12 +132,12 @@ build_debug18:
   extends:
   - .build_debug
 
-build_debug16:
-  variables:
-    ADD_TAG: "debug16"
-    NODE_VERSION: "16"
-  extends:
-  - .build_debug
+# build_debug21:
+#   variables:
+#     ADD_TAG: "debug21"
+#     NODE_VERSION: "21"
+#   extends:
+#   - .build_debug
 
 sync_slim:
   image: ${TOOLBOX_IMG}

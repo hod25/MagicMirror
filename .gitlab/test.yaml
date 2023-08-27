@@ -24,12 +24,12 @@ test_debug18:
     entrypoint: [""]
   extends: .test_debug
 
-test_debug16:
-  needs: ["build_debug16"]
-  image: 
-    name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_debug16
-    entrypoint: [""]
-  extends: .test_debug
+# test_debug21:
+#   needs: ["build_debug21"]
+#   image: 
+#     name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_debug21
+#     entrypoint: [""]
+#   extends: .test_debug
 
 snyk_amd64:
   stage: test
