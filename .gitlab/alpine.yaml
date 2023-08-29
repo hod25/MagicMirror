@@ -34,8 +34,6 @@ build_alpine_arm:
   variables:
     imgkey: "arm-on-dn"
     ADD_TAG: "arm"
-    # problem with npm in node20 arm image:
-    NODE_VERSION: ${NODE_VERSION_MASTER}
   needs: 
   - "bld_art: [arm-on-dn]"
   extends: 
