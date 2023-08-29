@@ -9,32 +9,11 @@ permalink: /installation/
 - to run `docker` commands without needing `sudo` please refer to the [linux postinstall documentation](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user)
 - as we are using `docker compose` commands the compose plugin must be installed. If missing you find [here](https://docs.docker.com/compose/install/linux/) instructions how to install it. If you don't want to use compose, see [this section in the FAQ](/magicmirror/faq/#how-to-start-magicmirror-without-using-docker-composeyml-files)
 
-## Additional prerequisites for running on a raspberry pi with Scenario **electron** ✌️
+## Additional prerequisites for running on a raspberry pi with Scenario **electron** ✌️ or **client** 👌
 
-> 👉 if you use [MagicMirrorOS](https://github.com/guysoft/MagicMirrorOS) the steps in this section are already done.
-
-### Setup for graphical desktop
-- install unclutter: `sudo apt-get install -y unclutter`
-- edit (here with nano) `sudo nano /etc/xdg/lxsession/LXDE-pi/autostart` and insert the following lines for disabling screensaver and mouse cursor:
-
-  ```bash
-  @xset s noblank
-  @xset s off
-  @xset -dpms
-  @unclutter -idle 0.1 -pi
-  @xhost +local:
-  ```
-
-  > Hint: With older debian versions you must edit `nano /home/pi/.config/lxsession/LXDE-pi/autostart`.
-
-- uncomment the existing lines, otherwise you will see the pi desktop before MagicMirror has started
-- edit (here with nano) `nano ~/.bashrc` and insert the following line (otherwise docker has no access on the pi display):
-  ```bash
-  xhost +local:
-  ```
-- execute `sudo raspi-config` and navigate to "3 boot options" and choose "B2 Wait for Network at Boot". If not set, some modules will remaining in "load"-state because MagicMirror starts to early.
-
-> Before next installation steps please reboot your pi 
+- disable the screensaver (depends on the underlying os), otherwise MagicMirror will disappear after a while.
+- enable "Wait for Network at Boot" (with `sudo raspi-config`, navigate to "3 boot options" and choose "B2 Wait for Network at Boot"). If not set, some modules will remaining in "loading..." state because MagicMirror starts to early.
+- when using wlan you should disable "power_save" (depends on the underlying os, e.g. `sudo iw wlan0 set power_save off`), otherwise MagicMirror can not update the displayed data without working internet connection.
 
 ## Installation of this Repository
 
@@ -43,7 +22,9 @@ Open a shell in your home directory and run
 git clone https://gitlab.com/khassel/magicmirror.git
 ```
 
-Now cd into the new directory `magicmirror/run` and copy the yml-file depending on the scenario, for scenario **server** ☝️:
+Now cd into the new directory `magicmirror/run` and copy the yml-file depending on the scenario.
+
+For scenario **server** ☝️:
 ```bash
 cd ./magicmirror/run
 cp serveronly.yml docker-compose.yml
@@ -54,8 +35,15 @@ For scenario **electron** ✌️:
 cd ./magicmirror/run
 cp rpi.yml docker-compose.yml
 ```
-
 > ⚠️ If you are still running debian buster on your raspberry pi you need another yml file, so please substitute `cp rpi.yml docker-compose.yml` with `cp rpi_buster.yml docker-compose.yml`.
+
+For scenario **client** 👌:
+```bash
+cd ./magicmirror/run
+cp clientonly.yml docker-compose.yml
+```
+
+> ⚠️ You have to edit the `docker-compose.yml` and substitute the address and port parameters with your own values.
 
 ## Start MagicMirror²
 
@@ -65,7 +53,7 @@ Navigate to `~/magicmirror/run` and execute
 docker compose up -d
 ```
 
-The container will start and with scenario **electron** ✌️ the MagicMirror should appear on the screen of your pi. In server only mode opening a browser at `http://localhost:8080` should show the MagicMirror (scenario **server** ☝️).
+The container will start and with scenario **electron** ✌️ or **client** 👌 the MagicMirror should appear on the screen of your pi. In server only mode opening a browser at `http://localhost:8080` should show the MagicMirror (scenario **server** ☝️).
 
 > The container is configured to restart automatically so after executing `docker compose up -d` it will also restart after a reboot of your pi.
 

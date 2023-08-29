@@ -10,6 +10,7 @@ services:
       - ../mounts/css:/opt/magic_mirror/css
       - /tmp/.X11-unix:/tmp/.X11-unix
       - /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket
+    privileged: true # avoids dbus errors in logs
     devices:
       - /dev/vchiq
     environment:
