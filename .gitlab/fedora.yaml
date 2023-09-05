@@ -1,3 +1,7 @@
+include:
+  - project: "khassel/buildkit"
+    file: "/.buildkit.yml"
+
 .build_fedora:
   stage: build
   script:
@@ -16,7 +20,6 @@
       --build-arg BUILDER_IMG="${BUILDER_IMG}"
   extends: 
   - .beforescript
-  - .rule
   environment:
     name: "$CI_COMMIT_BRANCH/Build Fedora"
 
@@ -28,6 +31,34 @@ build_fedora_arm64:
   - "bld_art: [arm64-oy-dn]"
   extends: 
   - .build_fedora
+  - .rule
+
+manual_build_fedora_arm64:
+  stage: build
+  variables:
+    imgkey: "arm64-oy-dn"
+    ADD_TAG: "arm64"
+    DOCKERFILE_NAME: "Dockerfile-fedora"
+    PUSH_IMAGES: "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_fedora_${ADD_TAG}"
+    TARGETPLATFORM: "linux/arm64"
+  extends:
+  - .docker_buildkit
+  before_script:
+  - |
+    # master or not
+    if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+      BuilderTag=${MAGICMIRROR_VERSION}
+    else
+      BuilderTag=${CI_COMMIT_BRANCH}
+    fi
+    export BUILDER_IMG="${CI_REGISTRY_IMAGE}:${BuilderTag}_${imgkey}_artifacts"
+    export GIT_INFO="commit=${CI_COMMIT_SHORT_SHA} ref=${CI_COMMIT_REF_NAME} date=${CI_COMMIT_TIMESTAMP} author=${CI_COMMIT_AUTHOR} title=${CI_COMMIT_TITLE}"
+  - !reference [.docker_buildkit, before_script]
+  script:
+  - export BUILDKIT_ARGS="--opt build-arg:GIT_INFO=${GIT_INFO} --opt build-arg:buildarch=${buildarch} --opt build-arg:BUILDER_IMG=${BUILDER_IMG}"
+  - !reference [.docker_buildkit, script]
+  rules:
+  - if: $TASK == "fedora"
 
 sync_fedora:
   needs: 
@@ -41,7 +72,7 @@ sync_fedora:
     crane auth login "docker.io" -u "${DOCKER_USER}" -p "${DOCKER_PASS}"
     [ "${CI_COMMIT_BRANCH}" = "master" ] || _suffix="${CI_COMMIT_BRANCH}_"
     crane copy "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_fedora_arm64" "${DOCKER_USER}/magicmirror:${_suffix}fedora"
-  extends: 
+  extends:
   - .rule
   environment:
     name: "$CI_COMMIT_BRANCH/Docker Sync Fedora"
