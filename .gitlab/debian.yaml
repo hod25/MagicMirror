@@ -71,7 +71,7 @@ build_arm_buster:
     ADD_TAG: "arm"
     DEBIAN_VERSION: "buster"
     # Node > v19 not supported in buster:
-    NODE_VERSION: ${NODE_VERSION_MASTER}
+    NODE_VERSION: "18"
   needs: ["bld_art: [arm-oy-dn]"]
   extends: .runtime
   environment:
@@ -83,7 +83,7 @@ build_arm_buster_fat:
     ADD_TAG: "arm"
     DEBIAN_VERSION: "buster"
     # Node > v19 not supported in buster:
-    NODE_VERSION: ${NODE_VERSION_MASTER}
+    NODE_VERSION: "18"
   needs: ["bld_art: [arm-oy-dn]"]
   extends: .runtime
   environment:
