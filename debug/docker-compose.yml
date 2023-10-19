@@ -1,10 +1,14 @@
-# start with: dc run --rm --service-ports magicmirror
+# start with: dc run --rm --name mm --service-ports magicmirror
 version: '3'
 
 services:
   magicmirror:
-    container_name: mm
     image: registry.gitlab.com/khassel/magicmirror:develop_debug20
+#    volumes:
+#      - /tmp/.X11-unix:/tmp/.X11-unix
+#      - /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket
+#    environment:
+#      DISPLAY: unix:0.0
     ports:
       - "8080:8080"
     stdin_open: true
@@ -16,8 +20,8 @@ services:
         # comment out if needed:
         #rm -rf ./*
         #rm -rf ./.*
-        #git clone -b develop https://github.com/khassel/MagicMirror.git .
-        #npm install --lockfile-version=2
+        #git clone -b cloneobject https://github.com/khassel/MagicMirror.git .
+        #npm install
         #mv config/config.js.sample config/config.js
         #sed -i 's|address:.*|address: "0.0.0.0",|g;s|ipWhitelist:.*|ipWhitelist: [],|g' config/config.js
         #touch css/custom.css
