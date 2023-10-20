@@ -19,7 +19,8 @@ variables:
   MAGICMIRROR_VERSION: "v2.25.0"
   NODE_VERSION_MASTER: "20"
   NODE_VERSION_DEVELOP: "21"
-  DEBIAN_VERSION: "bullseye"
+  DEBIAN_VERSION_MASTER: "bullseye"
+  DEBIAN_VERSION_DEVELOP: "bullseye"
   GitRepo: "https://github.com/MichMich/MagicMirror.git"
   TOOLBOX_IMG: "${CI_REGISTRY}/khassel/container/toolbox:latest"
 
@@ -57,9 +58,11 @@ variables:
       if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
         BuilderTag=${MAGICMIRROR_VERSION}
         [ -z "${NODE_VERSION}" ] && export NODE_VERSION=${NODE_VERSION_MASTER}
+        [ -z "${DEBIAN_VERSION}" ] && export DEBIAN_VERSION=${DEBIAN_VERSION_MASTER}
       else
         BuilderTag=${CI_COMMIT_BRANCH}
         [ -z "${NODE_VERSION}" ] && export NODE_VERSION=${NODE_VERSION_DEVELOP}
+        [ -z "${DEBIAN_VERSION}" ] && export DEBIAN_VERSION=${DEBIAN_VERSION_DEVELOP}
       fi
       export BUILDER_IMG="${CI_REGISTRY_IMAGE}:${BuilderTag}_${imgkey}_artifacts"
       export GIT_INFO="commit=${CI_COMMIT_SHORT_SHA} ref=${CI_COMMIT_REF_NAME} date=${CI_COMMIT_TIMESTAMP} author=${CI_COMMIT_AUTHOR} title=${CI_COMMIT_TITLE}"
