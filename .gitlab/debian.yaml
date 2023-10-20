@@ -118,26 +118,19 @@ build_arm64_fat:
   environment:
     name: "$CI_COMMIT_BRANCH/Build Debug"
 
+build_debug21:
+  variables:
+    ADD_TAG: "debug21"
+    NODE_VERSION: "21"
+  extends:
+  - .build_debug
+
 build_debug20:
   variables:
     ADD_TAG: "debug20"
     NODE_VERSION: "20"
   extends:
   - .build_debug
-
-build_debug18:
-  variables:
-    ADD_TAG: "debug18"
-    NODE_VERSION: "18"
-  extends:
-  - .build_debug
-
-# build_debug21:
-#   variables:
-#     ADD_TAG: "debug21"
-#     NODE_VERSION: "21"
-#   extends:
-#   - .build_debug
 
 sync_slim:
   image: ${TOOLBOX_IMG}

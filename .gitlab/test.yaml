@@ -17,24 +17,17 @@ test_debug20:
     entrypoint: [""]
   extends: .test_debug
 
-test_debug18:
-  needs: ["build_debug18"]
+test_debug21:
+  needs: ["build_debug21"]
   image: 
-    name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_debug18
+    name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_debug21
     entrypoint: [""]
   extends: .test_debug
-
-# test_debug21:
-#   needs: ["build_debug21"]
-#   image: 
-#     name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_debug21
-#     entrypoint: [""]
-#   extends: .test_debug
 
 snyk_amd64:
   stage: test
   image: 
-    name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_debug20
+    name: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_debug21
     entrypoint: [""]
   script:
   - sudo npm install -g snyk npm-check-updates
@@ -80,7 +73,7 @@ test_manual_build:
   stage: test
   variables:
     # defaults
-    NODE_VERSION: "20"
+    NODE_VERSION: $NODE_VERSION_DEVELOP
     BuildRef: "develop"
   script:
   - |
