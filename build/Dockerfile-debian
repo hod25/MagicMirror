@@ -31,7 +31,12 @@ RUN set -e; \
       _pck="${_pck} libgtk-3-0 libx11-xcb-dev libnss3-dev libxss1 libxtst6 libasound2 libdrm2 libgbm1 libxshmfence1 fonts-arphic-uming procps arp-scan"; \
       if [ -n "${buildarch}" ] && [ "${DEBIAN_VERSION}" != "buster" ]; then \
         # install pi stuff
-        _pck="${_pck} libraspberrypi-bin libgl1-mesa-dri libglapi-mesa libllvm11 libsensors5 libdrm-radeon1 libelf1 libdrm-amdgpu1 libdrm-nouveau2 x11-xserver-utils"; \
+        if [ "${DEBIAN_VERSION}" = "bookworm" ]; then \
+          _pck="${_pck} libllvm14"; \
+        else \
+          _pck="${_pck} libllvm11"; \
+        fi; \
+        _pck="${_pck} libraspberrypi-bin libgl1-mesa-dri libglapi-mesa libsensors5 libdrm-radeon1 libelf1 libdrm-amdgpu1 libdrm-nouveau2 x11-xserver-utils"; \
         wget https://archive.raspbian.org/raspbian.public.key -O - | apt-key add -; \
         echo 'deb http://raspbian.raspberrypi.org/raspbian/ '${DEBIAN_VERSION}' main contrib non-free rpi' | tee -a /etc/apt/sources.list; \
         wget -O - http://archive.raspberrypi.org/debian/raspberrypi.gpg.key | sudo apt-key add -; \
@@ -45,7 +50,10 @@ RUN set -e; \
     if [ -z "${SLIM}" ]; then \
       # need newest version for arm32 so using pip
       DEBIAN_FRONTEND=noninteractive apt-get -qy install python3-dev python3-pip; \
-      python3 -m pip install RPi.GPIO --no-cache-dir; \
+      if [ "${DEBIAN_VERSION}" = "bookworm" ]; then \
+        _pip_param="--break-system-packages"; \
+      fi; \
+      python3 -m pip install RPi.GPIO --no-cache-dir ${_pip_param}; \
       DEBIAN_FRONTEND=noninteractive apt-get -qy remove python3-dev python3-pip; \
       DEBIAN_FRONTEND=noninteractive apt-get -qy autoremove; \
     fi; \

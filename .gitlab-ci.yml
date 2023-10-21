@@ -20,7 +20,7 @@ variables:
   NODE_VERSION_MASTER: "20"
   NODE_VERSION_DEVELOP: "21"
   DEBIAN_VERSION_MASTER: "bullseye"
-  DEBIAN_VERSION_DEVELOP: "bullseye"
+  DEBIAN_VERSION_DEVELOP: "bookworm"
   GitRepo: "https://github.com/MichMich/MagicMirror.git"
   TOOLBOX_IMG: "${CI_REGISTRY}/khassel/container/toolbox:latest"
 
