@@ -34,7 +34,6 @@ USER node
 
 ARG NODE_ENV
 ENV ELECTRON_DISABLE_SANDBOX=1 \
-    ELECTRON_DISABLE_GPU=1 \
     DBUS_SESSION_BUS_ADDRESS="unix:path=/var/run/dbus/system_bus_socket" \
     NODE_ENV=${NODE_ENV} \
     MM_OVERRIDE_DEFAULT_MODULES=true \
