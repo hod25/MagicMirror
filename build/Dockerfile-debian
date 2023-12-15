@@ -24,6 +24,7 @@ ARG NODE_ENV
 ARG DEBIAN_VERSION
 ARG SLIM
 ARG opt
+ARG CONTAINER_PCK_REG_TOKEN
 RUN set -e; \
     apt-get update; \
     DEBIAN_FRONTEND=noninteractive apt-get -qy --no-install-recommends install git nano sudo openssl ca-certificates wget tini gnupg; \
@@ -44,7 +45,10 @@ RUN set -e; \
         apt-get update; \
       fi; \
     fi; \
-    [ "${NODE_ENV}" = "test" ] && _pck="${_pck} xvfb"; \
+    if [ "${NODE_ENV}" = "test" ]; then \
+      _pck="${_pck} xvfb"; \
+      wget -P /usr/local/lib --header "PRIVATE-TOKEN: $CONTAINER_PCK_REG_TOKEN" "https://gitlab.com/api/v4/projects/18135941/packages/generic/libfaketime/0.0.1/libfaketime.so.1"; \
+    fi; \
     DEBIAN_FRONTEND=noninteractive apt-get -qy --no-install-recommends install ${_pck}; \
     DEBIAN_FRONTEND=noninteractive apt-get -qy remove gnupg; \
     if [ -z "${SLIM}" ]; then \

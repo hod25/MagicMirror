@@ -8,6 +8,8 @@ services:
 #      - /tmp/.X11-unix:/tmp/.X11-unix
 #      - /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket
 #    environment:
+#      LD_PRELOAD: /usr/local/lib/libfaketime.so.1
+#      FAKETIME: -1d
 #      DISPLAY: unix:0.0
     ports:
       - "8080:8080"

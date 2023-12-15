@@ -17,6 +17,7 @@
       --build-arg BUILDER_IMG="${BUILDER_IMG}" \
       --build-arg SLIM="${SLIM}" \
       --build-arg opt="${opt}" \
+      --build-arg CONTAINER_PCK_REG_TOKEN="${CONTAINER_PCK_REG_TOKEN}" \
       --build-arg NODE_ENV="${NODE_ENV}"
   extends: 
   - .beforescript
