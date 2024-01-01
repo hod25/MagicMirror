@@ -5,8 +5,6 @@ permalink: /
 toc: false
 ---
 
-> ⚠️ Beginning with MagicMirror² version `v2.22.0` all images are based on debian bullseye, before this release the `linux/arm` images were based on debian buster. So if you are still running raspberry pi os (buster) on your raspberry pi the new images won't work anymore, you have to switch to the compatible image `karsten13/magicmirror:buster` or update your pi to raspberry pi os (bullseye).
-
 # MagicMirror²
 
 is an open source modular smart mirror platform. For more info visit the [project website](https://github.com/MichMich/MagicMirror). This project packs MagicMirror into a docker image.
