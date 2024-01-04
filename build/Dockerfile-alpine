@@ -15,7 +15,7 @@ COPY --chown=node:node *.sh /opt/magic_mirror/
 
 ARG GIT_INFO
 RUN set -e; \
-    apk add --no-cache git nano sudo tzdata tini; \
+    apk add --no-cache git nano sudo tzdata tini coreutils; \
     echo "node ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers; \
     echo "Set disable_coredump false" > /etc/sudo.conf; \
     chown -R node:node /home/node/; \

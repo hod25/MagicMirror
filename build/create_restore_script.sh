@@ -7,10 +7,14 @@ config="${1:-config/config.js}"
 css="css/custom.css"
 modules="modules"
 
+_info() {
+  echo "[create restore script $(date +%T.%3N)] $1"
+}
+
 # Tests
-[ -f "$base/$config" ] || (echo "config.js does not exists" && exit 1)
-[ -f "$base/$css" ] || (echo "custom.css does not exists" && exit 1)
-[ -d "$base/$modules" ] || (echo "modules directory does not exists" && exit 1)
+[ -f "$base/$config" ] || (_info "config.js does not exists" && exit 1)
+[ -f "$base/$css" ] || (_info "custom.css does not exists" && exit 1)
+[ -d "$base/$modules" ] || (_info "modules directory does not exists" && exit 1)
 
 
 echo "#!/bin/sh" > $restore
@@ -53,7 +57,7 @@ do
   [ -f "$base/$moddir/package.json" ] && echo "cd \$base/$moddir && npm install" >> $restore
 done
 
-echo "Created restore script $restore" 
+_info "Created restore script $restore" 
 
 chmod +x $restore
 
