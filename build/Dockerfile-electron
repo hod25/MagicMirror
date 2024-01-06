@@ -1,0 +1,50 @@
+FROM node:21-alpine as builder
+
+WORKDIR /opt/magic_mirror
+
+RUN set -e; \
+    apk add --no-cache git;
+
+RUN set -e; \
+    node -v; \
+    git clone --depth 1 -b develop --single-branch "https://github.com/MagicMirrorOrg/MagicMirror.git" .; \
+    git log -1; \
+    npmargs="--no-audit --no-fund --no-update-notifier --arch=arm64 --omit=optional --omit=dev"; \
+    rm -f package-lock.json; \
+    echo "now executing: npm install ${npmargs}"; \
+    npm install ${npmargs}; \
+    cat package.json; \
+    sed -i "s:address\: \"localhost\":address\: \"0.0.0.0\":" config/config.js.sample; \
+    sed -i "s:ipWhitelist\: \[.*\],:ipWhitelist\: \[\],:" config/config.js.sample; \
+    cp config/config.js.sample config/config.js;
+
+FROM debian:bookworm
+LABEL maintainer="Karsten Hassel"
+
+RUN set -e; \
+    apt-get update; \
+    DEBIAN_FRONTEND=noninteractive apt-get -qy --no-install-recommends install git nano sudo wget ca-certificates libgtk-3-0 libx11-xcb-dev libnss3-dev \
+      libxss1 libxtst6 libasound2 libdrm2 libgbm1 libxshmfence1 fonts-arphic-uming procps unzip; \
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/*; \
+    useradd -u 1000 node; \
+    usermod -a -G video node; \
+    echo "node ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers; \
+    groupadd --gid 997 gpio; \
+    usermod -a -G gpio node;
+
+ENV ELECTRON_DISABLE_SANDBOX=1 \
+    DBUS_SESSION_BUS_ADDRESS="unix:path=/var/run/dbus/system_bus_socket"
+
+COPY --from=builder --chown=node:node /opt/magic_mirror /opt/magic_mirror
+
+USER node
+
+WORKDIR /home/node/electron
+
+RUN set -e; \
+    wget -O /tmp/electron.zip https://github.com/electron/electron/releases/download/v28.1.1/electron-v28.1.1-linux-x64.zip; \
+    unzip /tmp/electron.zip -d /home/node/electron/; \
+    rm -f /tmp/electron.zip;
+
+ENTRYPOINT ["/home/node/electron/electron", "/opt/magic_mirror"]
