@@ -1,36 +1,27 @@
 ARG buildarch
 ARG BUILDER_IMG
+ARG BASE_IMG
 FROM ${BUILDER_IMG} as builder
-FROM ${buildarch}fedora:latest
+FROM ${BASE_IMG}
 LABEL maintainer="Karsten Hassel"
-
-USER root
-
-WORKDIR /opt/magic_mirror
 
 RUN set -e; \
     useradd -u 1000 node; \
     echo "node ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers;
 
-# copy startscripts into container:
-COPY *.sh /opt/magic_mirror/
-COPY --from=builder --chown=node:node /opt/magic_mirror /opt/magic_mirror
-
-# todo ... ARG NODE_VERSION
-ARG GIT_INFO
-RUN set -e; \
-    # tini wget needed in entrypoint
-    # libgpiod libgpiod-utils xrandr needed for gpio access and screen on/off
-    # nss at-spi2-atk-devel cups-libs gtk3 mesa-libgbm alsa-lib needed for electron
-    _pck="nodejs nodejs-npm git nano tini wget libgpiod libgpiod-utils xrandr nss at-spi2-atk-devel cups-libs gtk3 mesa-libgbm alsa-lib"; \
-    dnf install --setopt=install_weak_deps=False -y ${_pck}; \
-    dnf clean all; \
-    chmod +x *.sh; \
-    chown node:node *.sh; \
-    ./build_info.sh "Runtime" "$GIT_INFO"; \
-    rm -f build_info.sh;
+WORKDIR /opt/magic_mirror
 
 USER node
+
+# copy startscripts into container:
+COPY --chown=node:node *.sh /opt/magic_mirror/
+COPY --from=builder --chown=node:node /opt/magic_mirror /opt/magic_mirror
+
+ARG GIT_INFO
+RUN set -e; \
+    chmod +x *.sh; \
+    ./build_info.sh "Runtime" "$GIT_INFO"; \
+    rm -f build_info.sh;
 
 ARG NODE_ENV
 ENV ELECTRON_DISABLE_SANDBOX=1 \

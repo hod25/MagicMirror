@@ -2,12 +2,39 @@ include:
   - project: "khassel/buildkit"
     file: "/.buildkit.yml"
 
+.fedorabaserule:
+  rules:
+  - if: $TASK == "fedorabase"
+
+.build_fedora_base:
+  stage: build
+  script:
+  - |
+    set -e
+    set | grep -E "ADD_TAG="
+    dest="--destination ${CI_REGISTRY_IMAGE}:fedora_base_${ADD_TAG}"
+    build --context "./build" \
+      --dockerfile "Dockerfile-fedora-base" \
+      ${dest} \
+      --build-arg buildarch="${buildarch}"
+  extends: 
+  - .beforescript
+  - .fedorabaserule
+
+build_fedora_base_arm64:
+  variables:
+    imgkey: "arm64-oy-dn"
+    ADD_TAG: "arm64"
+  extends: 
+  - .build_fedora_base
+
 .build_fedora:
   stage: build
   script:
   - |
     set -e
-    set | grep -E "BUILDER_IMG=|ADD_TAG="
+    BASE_IMG="${CI_REGISTRY_IMAGE}:fedora_base_${ADD_TAG}"
+    set | grep -E "BUILDER_IMG=|ADD_TAG=|BASE_IMG="
     dest="--destination ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}_fedora_${ADD_TAG}"
     if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
       dest="${dest} --destination ${CI_REGISTRY_IMAGE}:fedora_${ADD_TAG}"
@@ -17,7 +44,8 @@ include:
       ${dest} \
       --build-arg GIT_INFO="${GIT_INFO}" \
       --build-arg buildarch="${buildarch}" \
-      --build-arg BUILDER_IMG="${BUILDER_IMG}"
+      --build-arg BUILDER_IMG="${BUILDER_IMG}" \
+      --build-arg BASE_IMG="${BASE_IMG}"
   extends: 
   - .beforescript
   environment:
