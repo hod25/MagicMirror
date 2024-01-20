@@ -1,8 +1,9 @@
 #!/bin/sh
 
-default_dir="/opt/magic_mirror/modules/default"
-config_dir="/opt/magic_mirror/config"
-css_dir="/opt/magic_mirror/css"
+base="/opt/magic_mirror"
+default_dir="${base}/modules/default"
+config_dir="${base}/config"
+css_dir="${base}/css"
 
 _info() {
   echo "[entrypoint $(date +%T.%3N)] $1"
@@ -23,7 +24,7 @@ if [ "${MM_OVERRIDE_DEFAULT_MODULES}" = "true" ]; then
   _info "copy default modules to host"
   sudo rm -rf ${default_dir}
   sudo mkdir -p ${default_dir}
-  sudo cp -r /opt/magic_mirror/mount_ori/modules/default/. ${default_dir}/
+  sudo cp -r ${base}/mount_ori/modules/default/. ${default_dir}/
 fi
 
 sudo mkdir -p ${config_dir}
@@ -34,28 +35,28 @@ sudo mkdir -p ${css_dir}
 
 if [ "${MM_OVERRIDE_CSS}" = "true" ]; then
   _info "copy css files to host"
-  sudo cp /opt/magic_mirror/mount_ori/css/* ${css_dir}/
+  sudo cp ${base}/mount_ori/css/* ${css_dir}/
 fi
 
 # create css/custom.css file https://github.com/MichMich/MagicMirror/issues/1977
 [ ! -f "${css_dir}/custom.css" ] && sudo touch ${css_dir}/custom.css
 
 _info "chown modules and config folder"
-sudo chown -R node:node /opt/magic_mirror/modules &
+sudo chown -R node:node ${base}/modules &
 sudo chown -R node:node ${config_dir}
 sudo chown -R node:node ${css_dir}
 
 if [ ! -f "${config_dir}/config.js" ]; then
   _info "copy default config.js to host"
-  cp /opt/magic_mirror/mount_ori/config/config.js.sample ${config_dir}/config.js
+  cp ${base}/mount_ori/config/config.js.sample ${config_dir}/config.js
 fi
 
 if [ "$MM_SHOW_CURSOR" = "true" ]; then
   _info "enable mouse cursor"
-  sed -i "s|  cursor: .*;|  cursor: auto;|" /opt/magic_mirror/css/main.css
+  sed -i "s|  cursor: .*;|  cursor: auto;|" ${base}/css/main.css
 fi
 
-[ -z "$MM_RESTORE_SCRIPT_CONFIG" ] || (/opt/magic_mirror/create_restore_script.sh "$MM_RESTORE_SCRIPT_CONFIG" || true)
+[ -z "$MM_RESTORE_SCRIPT_CONFIG" ] || (${base}/create_restore_script.sh "$MM_RESTORE_SCRIPT_CONFIG" || true)
 
 if [ "$StartEnv" = "test" ]; then
   set -e
@@ -67,7 +68,7 @@ if [ "$StartEnv" = "test" ]; then
   Xvfb :99 -screen 0 1024x768x16 &
   export DISPLAY=:99
 
-  cd /opt/magic_mirror
+  cd ${base}
 
   echo "/mount_ori/**/*" >> .prettierignore
   npm run test:prettier
@@ -79,14 +80,16 @@ if [ "$StartEnv" = "test" ]; then
 else
   _script=""
   if [ -f "start_script.sh" ]; then
-    _script="start_script.sh"
+    _script="${base}/start_script.sh"
   elif [ -f "config/start_script.sh" ]; then
-    _script="config/start_script.sh"
+    _script="${base}/config/start_script.sh"
+  elif [ -f "/config/start_script.sh" ]; then
+    _script="/config/start_script.sh"
   fi
   if [ -n "$_script" ]; then
     _info "executing script $_script"
     sudo chmod +x "$_script"
-    . "./$_script"
+    . "$_script"
   fi
 
   if [ $# -eq 0 ]; then
