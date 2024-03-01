@@ -12,7 +12,6 @@ RUN set -e; \
     chmod +x /tmp/build_info.sh;
 
 ARG GIT_INFO
-ARG BuildRef
 ARG GitRepo
 ARG buildarch
 ARG opt
